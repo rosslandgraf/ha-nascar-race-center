@@ -174,7 +174,10 @@ async def test_year_rollover_routes_new_season(
         return_value=datetime(2027, 1, 1, 1, tzinfo=UTC),
     ):
         await coordinator.async_refresh()
-    provider.async_get_schedule.assert_awaited_once_with(2027, 2)
+    assert provider.async_get_schedule.call_args_list == [
+        call(2027, 2),
+        call(2026, 2),
+    ]
 
 
 async def test_live_outage_does_not_fail_schedule(

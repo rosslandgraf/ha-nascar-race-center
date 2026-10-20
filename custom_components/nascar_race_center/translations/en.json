@@ -4,12 +4,16 @@
     "step": {
       "user": {
         "title": "NASCAR Race Center",
-        "description": "Offline demonstration uses handmade sample data and makes no network requests. NASCAR CF is experimental and requires your confirmation of applicable data-use permission. This setting does not grant permission. Live behavior and anonymous endpoint access remain unverified. Polling slows automatically away from a current race; shorter intervals are not guaranteed to be permitted.",
+        "description": "Offline demonstration uses handmade sample data and makes no network requests. NASCAR CF is experimental and requires your confirmation of applicable data-use permission. This setting does not grant permission. Live behavior and anonymous endpoint access remain unverified. Polling slows automatically away from a current race; shorter intervals are not guaranteed to be permitted. Choose up to 50 favorites across all series. Search the cached directory by name, series, car number, team or NASCAR ID. You may also enter a known numeric NASCAR driver ID; unavailable metadata does not remove your favorites. Directory entries do not establish an active roster. You can enter known numeric IDs now, or choose favorites by name in options after the source-specific directory loads. Demonstration driver IDs are fictional.",
         "data": {
           "provider": "Data source",
           "series": "Series to monitor",
           "data_use_authorized": "I have confirmed permission to access and poll NASCAR CF data",
-          "live_interval": "Minimum live polling interval (seconds; 300\u20133600)"
+          "live_interval": "Minimum live polling interval (seconds; 300–3600)",
+          "favorite_drivers": "Favorite drivers (NASCAR IDs)"
+        },
+        "data_description": {
+          "favorite_drivers": "Optional numeric NASCAR driver IDs. Choose favorites by name in options after the directory loads. Use NASCAR IDs, not car numbers; demonstration driver IDs are fictional."
         }
       }
     },
@@ -17,7 +21,8 @@
       "authorization_required": "Confirm applicable data-use permission before selecting NASCAR CF.",
       "invalid_series": "Select at least one of series 1, 2 or 3.",
       "invalid_provider": "Select a supported data source.",
-      "invalid_interval": "Enter a whole number from 300 to 3600 seconds."
+      "invalid_interval": "Enter a whole number from 300 to 3600 seconds.",
+      "invalid_favorite_drivers": "Select up to 50 drivers or enter positive numeric NASCAR driver IDs."
     },
     "abort": {
       "already_configured": "NASCAR Race Center is already configured. Use its options to change your selections."
@@ -27,12 +32,16 @@
     "step": {
       "init": {
         "title": "NASCAR Race Center options",
-        "description": "Offline demonstration uses handmade sample data and makes no network requests. NASCAR CF is experimental and requires your confirmation of applicable data-use permission. This setting does not grant permission. Live behavior and anonymous endpoint access remain unverified. Polling slows automatically away from a current race; shorter intervals are not guaranteed to be permitted.",
+        "description": "Offline demonstration uses handmade sample data and makes no network requests. NASCAR CF is experimental and requires your confirmation of applicable data-use permission. This setting does not grant permission. Live behavior and anonymous endpoint access remain unverified. Polling slows automatically away from a current race; shorter intervals are not guaranteed to be permitted. Choose up to 50 favorites across all series. Search the cached directory by name, series, car number, team or NASCAR ID. You may also enter a known numeric NASCAR driver ID; unavailable metadata does not remove your favorites. Directory entries do not establish an active roster.",
         "data": {
           "provider": "Data source",
           "series": "Series to monitor",
           "data_use_authorized": "I have confirmed permission to access and poll NASCAR CF data",
-          "live_interval": "Minimum live polling interval (seconds; 300\u20133600)"
+          "live_interval": "Minimum live polling interval (seconds; 300–3600)",
+          "favorite_drivers": "Favorite drivers (NASCAR IDs)"
+        },
+        "data_description": {
+          "favorite_drivers": "Names and metadata are cached reference data. CF setup makes no request while this form is open; its searchable directory becomes available in options after setup. Use NASCAR driver IDs, not car numbers. Demo-prefixed choices use fictional IDs; changing sources preserves your selected IDs for review."
         }
       }
     },
@@ -40,7 +49,8 @@
       "authorization_required": "Confirm applicable data-use permission before selecting NASCAR CF.",
       "invalid_series": "Select at least one of series 1, 2 or 3.",
       "invalid_provider": "Select a supported data source.",
-      "invalid_interval": "Enter a whole number from 300 to 3600 seconds."
+      "invalid_interval": "Enter a whole number from 300 to 3600 seconds.",
+      "invalid_favorite_drivers": "Select up to 50 drivers or enter positive numeric NASCAR driver IDs."
     }
   },
   "entity": {
@@ -68,11 +78,19 @@
       },
       "last_successful_update": {
         "name": "Last successful live update"
+      },
+      "driver_metadata": {
+        "name": "Driver metadata"
       }
     },
     "binary_sensor": {
       "feed_stale": {
         "name": "Live source stale"
+      }
+    },
+    "calendar": {
+      "schedule": {
+        "name": "Schedule"
       }
     }
   }

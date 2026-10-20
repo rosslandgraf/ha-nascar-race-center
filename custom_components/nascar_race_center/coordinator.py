@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
@@ -30,6 +30,7 @@ class ScheduleData:
     races: dict[int, tuple[Race, ...]]
     failed_series: frozenset[int]
     updated_at: dict[int, datetime]
+    failed_seasons: dict[int, frozenset[int]] = field(default_factory=dict)
 
 
 class ScheduleCoordinator(DataUpdateCoordinator[ScheduleData]):
@@ -76,9 +77,15 @@ class ScheduleCoordinator(DataUpdateCoordinator[ScheduleData]):
         now = dt_util.utcnow()
         future = [
             race.start_time
-            for races in data.races.values()
+            for series_id, races in data.races.items()
             for race in races
-            if race.start_time is not None and race.start_time >= now
+            if race.start_time is not None
+            and series_id not in data.failed_series
+            and (race.season or now.year)
+            not in data.failed_seasons.get(series_id, frozenset())
+            and now
+            <= race.start_time
+            <= datetime.max.replace(tzinfo=dt_util.UTC) - timedelta(seconds=1)
         ]
         if future and not self._stopped:
             self._unsub_boundary = async_track_point_in_utc_time(
@@ -97,46 +104,107 @@ class ScheduleCoordinator(DataUpdateCoordinator[ScheduleData]):
         self._schedule_next_boundary(self.data)
 
     async def _async_update_data(self) -> ScheduleData:
-        """Keep independent successful schedules when another series fails."""
+        """Keep usable seasons independent, retaining failed ones for diagnostics."""
         now = dt_util.utcnow()
         races = dict(self.data.races) if self.data else {}
         updated = dict(self.data.updated_at) if self.data else {}
         failed: set[int] = set()
+        failed_seasons: dict[int, frozenset[int]] = {}
         error: ProviderError | None = None
         self.last_error_status = None
         for series_id in self.series:
-            try:
-                current = await self.provider.async_get_schedule(now.year, series_id)
-                # The next season is optional until published. Never discard the
-                # current season merely because the next feed is not ready.
-                if now.month >= 11:
-                    try:
-                        upcoming = await self.provider.async_get_schedule(
-                            now.year + 1, series_id
-                        )
-                        current = (*current, *upcoming)
-                    except ProviderError:
-                        pass
-                races[series_id] = tuple(
-                    sorted(
-                        current,
-                        key=lambda race: (
-                            race.start_time or datetime.max.replace(tzinfo=dt_util.UTC)
-                        ),
-                    )
+            previous = races.get(series_id, ())
+            # Source adapters supply seasons. Preserve Phase 1/custom-provider
+            # models without one by treating them as the requested current year.
+            season_rows = {
+                season: tuple(
+                    race
+                    for race in previous
+                    if (race.season or now.year) == season
+                    and (season >= now.year or self._has_remaining_time(race, now))
                 )
-                updated[series_id] = now
-            except ProviderError as err:
+                for season in range(
+                    max(1948, now.year - 1), min(9999, now.year + 1) + 1
+                )
+            }
+            years = [now.year]
+            if now.month >= 11 and now.year < 9999:
+                years.append(now.year + 1)
+            # Discover cross-year weekends after a restart in January. Continue
+            # refreshing an observed postponed weekend until its known times end.
+            if now.year > 1948 and (now.month == 1 or season_rows.get(now.year - 1)):
+                years.append(now.year - 1)
+            successful: set[int] = set()
+            failed_years: set[int] = set()
+            for year in years:
+                try:
+                    rows = await self.provider.async_get_schedule(year, series_id)
+                    season_rows[year] = (
+                        tuple(
+                            race for race in rows if self._has_remaining_time(race, now)
+                        )
+                        if year < now.year
+                        else rows
+                    )
+                    successful.add(year)
+                except ProviderError as err:
+                    failed_years.add(year)
+                    error = err
+                    self.last_error_status = err.status
+            failed_seasons[series_id] = frozenset(failed_years)
+            # A valid empty current season is meaningful. An empty optional
+            # season cannot conceal failure of the requested current schedule.
+            usable = now.year in successful or any(
+                season_rows[year] for year in successful
+            )
+            if not usable:
                 failed.add(series_id)
-                error = err
-                self.last_error_status = err.status
+            else:
+                updated[series_id] = now
+            unique = {
+                (race.series_id, race.season or year, race.race_id): race
+                for year, rows in season_rows.items()
+                for race in rows
+            }
+            races[series_id] = tuple(
+                sorted(
+                    unique.values(),
+                    key=lambda race: (
+                        race.start_time or datetime.max.replace(tzinfo=dt_util.UTC)
+                    ),
+                )
+            )
         if len(failed) == len(self.series):
             raise UpdateFailed(f"Schedule provider unavailable: {error}") from error
         data = ScheduleData(
-            races=races, failed_series=frozenset(failed), updated_at=updated
+            races=races,
+            failed_series=frozenset(failed),
+            updated_at=updated,
+            failed_seasons=failed_seasons,
         )
         self._schedule_next_boundary(data)
         return data
+
+    @staticmethod
+    def _has_remaining_time(race: Race, now: datetime) -> bool:
+        """Retain only known future/ongoing prior-season dates, never guess."""
+        return (race.start_time is not None and race.start_time >= now) or any(
+            boundary >= now
+            for session in race.sessions
+            if (boundary := session.end_time or session.start_time) is not None
+        )
+
+    def usable_races(self, series_id: int) -> tuple[Race, ...]:
+        """Exclude failed retained seasons from entities and polling decisions."""
+        if not self.last_update_success or series_id in self.data.failed_series:
+            return ()
+        failed = self.data.failed_seasons.get(series_id, frozenset())
+        year = dt_util.utcnow().year
+        return tuple(
+            race
+            for race in self.data.races.get(series_id, ())
+            if (race.season or year) not in failed
+        )
 
     def next_race(self, series_id: int) -> Race | None:
         """Find the next timestamped race without assuming provider list order."""
@@ -144,8 +212,10 @@ class ScheduleCoordinator(DataUpdateCoordinator[ScheduleData]):
         return next(
             (
                 race
-                for race in self.data.races.get(series_id, ())
-                if race.start_time is not None and race.start_time >= now
+                for race in self.usable_races(series_id)
+                if race.start_time is not None
+                and race.start_time >= now
+                and race.status not in {"canceled", "cancelled"}
             ),
             None,
         )
@@ -239,8 +309,8 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
         ):
             return self.live_interval
         interval = max(self.live_interval, LIVE_OFF_SEASON_INTERVAL)
-        for races in self.schedule.data.races.values():
-            for race in races:
+        for series_id in self.schedule.series:
+            for race in self.schedule.usable_races(series_id):
                 if race.start_time is None:
                     continue
                 delta = race.start_time - now

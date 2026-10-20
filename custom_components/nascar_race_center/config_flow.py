@@ -1,6 +1,6 @@
 """UI configuration for NASCAR Race Center."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 import probatio
 from homeassistant.config_entries import (
@@ -14,6 +14,7 @@ from homeassistant.helpers import selector
 
 from .const import (
     CONF_DATA_USE_AUTHORIZED,
+    CONF_FAVORITE_DRIVERS,
     CONF_LIVE_INTERVAL,
     CONF_PROVIDER,
     CONF_SERIES,
@@ -27,9 +28,64 @@ from .const import (
     PROVIDER_DEMO,
     SERIES_NAMES,
 )
+from .favorites import normalize_favorite_driver_ids
+from .reference import Driver, demo_drivers
+
+if TYPE_CHECKING:
+    from . import NascarConfigEntry
 
 
-def _schema(values: dict[str, Any]) -> probatio.Schema:
+def _available_drivers(
+    entry: ConfigEntry | None, provider: object
+) -> tuple[Driver, ...]:
+    """Use cached reference metadata; opening a form never polls NASCAR."""
+    if entry is not None:
+        previous_provider = entry.options.get(
+            CONF_PROVIDER, entry.data.get(CONF_PROVIDER, PROVIDER_DEMO)
+        )
+        if previous_provider == provider and getattr(entry, "runtime_data", None):
+            runtime = cast("NascarConfigEntry", entry).runtime_data
+            return tuple(runtime.reference.data.drivers.values())
+    return demo_drivers() if provider == PROVIDER_DEMO else ()
+
+
+def _driver_options(
+    values: dict[str, Any], drivers: tuple[Driver, ...]
+) -> list[selector.SelectOptionDict]:
+    """Searchable labels include only known metadata, plus preserved selections."""
+    options: dict[str, str] = {}
+    for driver in sorted(
+        drivers, key=lambda item: (item.name.casefold(), item.driver_id)
+    ):
+        details = [f"ID {driver.driver_id}"]
+        if driver.series_ids:
+            details.append(
+                " / ".join(SERIES_NAMES[value] for value in driver.series_ids)
+            )
+        if driver.car_number is not None:
+            details.append(f"#{driver.car_number}")
+        else:
+            for series_id in (1, 2, 3):
+                association = driver.association_for(series_id)
+                if association is not None and association.car_number is not None:
+                    details.append(f"Series {series_id} #{association.car_number}")
+        if driver.team is not None:
+            details.append(driver.team)
+        prefix = "Demo: " if values.get(CONF_PROVIDER) == PROVIDER_DEMO else ""
+        options[str(driver.driver_id)] = f"{prefix}{driver.name} — {', '.join(details)}"
+    selected = values.get(CONF_FAVORITE_DRIVERS, [])
+    if isinstance(selected, list):
+        for value in selected:
+            if isinstance(value, str) and value.isascii() and value.isdecimal():
+                options.setdefault(
+                    value, f"NASCAR driver ID {value} (metadata unavailable)"
+                )
+    return [{"value": value, "label": label} for value, label in options.items()]
+
+
+def _schema(
+    values: dict[str, Any], drivers: tuple[Driver, ...] = ()
+) -> probatio.Schema:
     """Provide the same validated controls for onboarding and options."""
     provider_options: list[selector.SelectOptionDict] = [
         {"value": PROVIDER_DEMO, "label": "Offline demonstration"},
@@ -68,6 +124,17 @@ def _schema(values: dict[str, Any]) -> probatio.Schema:
                 probatio.Coerce(int),
                 probatio.Range(min=MIN_LIVE_INTERVAL, max=MAX_LIVE_INTERVAL),
             ),
+            probatio.Optional(
+                CONF_FAVORITE_DRIVERS,
+                default=values.get(CONF_FAVORITE_DRIVERS, []),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=_driver_options(values, drivers),
+                    multiple=True,
+                    custom_value=True,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                )
+            ),
         }
     )
 
@@ -100,7 +167,27 @@ def _validate(values: dict[str, Any]) -> dict[str, str]:
         and values.get(CONF_DATA_USE_AUTHORIZED) is not True
     ):
         return {CONF_DATA_USE_AUTHORIZED: "authorization_required"}
+    favorites = values.get(CONF_FAVORITE_DRIVERS, [])
+    try:
+        if not isinstance(favorites, list):
+            raise ValueError("Favorite drivers must be a list")
+        normalize_favorite_driver_ids(favorites)
+    except ValueError:
+        return {CONF_FAVORITE_DRIVERS: "invalid_favorite_drivers"}
     return {}
+
+
+def _normalized_input(values: dict[str, Any]) -> dict[str, Any]:
+    """Store canonical IDs only when favorites were supplied by this form."""
+    if CONF_FAVORITE_DRIVERS not in values:
+        return values
+    return {
+        **values,
+        CONF_FAVORITE_DRIVERS: [
+            str(value)
+            for value in normalize_favorite_driver_ids(values[CONF_FAVORITE_DRIVERS])
+        ],
+    }
 
 
 class NascarRaceCenterConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -116,9 +203,17 @@ class NascarRaceCenterConfigFlow(ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
         errors = _validate(user_input) if user_input is not None else {}
         if user_input is not None and not errors:
-            return self.async_create_entry(title=NAME, data=user_input)
+            return self.async_create_entry(
+                title=NAME, data=_normalized_input(user_input)
+            )
+        values = user_input or {}
         return self.async_show_form(
-            step_id="user", data_schema=_schema(user_input or {}), errors=errors
+            step_id="user",
+            # Source choices can change client-side before this form submits.
+            # Names are offered in options only after the source is established,
+            # so selecting CF never presents fictional demo drivers as real.
+            data_schema=_schema(values),
+            errors=errors,
         )
 
     @staticmethod
@@ -135,14 +230,28 @@ class NascarRaceCenterOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the configured provider and selected series."""
+        if user_input is not None and CONF_FAVORITE_DRIVERS not in user_input:
+            previous = {**self.config_entry.data, **self.config_entry.options}
+            if CONF_FAVORITE_DRIVERS in previous:
+                user_input = {
+                    **user_input,
+                    CONF_FAVORITE_DRIVERS: previous[CONF_FAVORITE_DRIVERS],
+                }
         errors = _validate(user_input) if user_input is not None else {}
         if user_input is not None and not errors:
-            return self.async_create_entry(title="", data=user_input)
+            return self.async_create_entry(title="", data=_normalized_input(user_input))
         values = {
             **self.config_entry.data,
             **self.config_entry.options,
             **(user_input or {}),
         }
         return self.async_show_form(
-            step_id="init", data_schema=_schema(values), errors=errors
+            step_id="init",
+            data_schema=_schema(
+                values,
+                _available_drivers(
+                    self.config_entry, values.get(CONF_PROVIDER, PROVIDER_DEMO)
+                ),
+            ),
+            errors=errors,
         )

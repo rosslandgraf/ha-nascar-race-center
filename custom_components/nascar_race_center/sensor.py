@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import NascarConfigEntry
+from .driver_sensor import async_setup_favorites
 from .entity import LiveEntity, ScheduleEntity
 
 
@@ -36,6 +37,7 @@ async def async_setup_entry(
             )
         )
     async_add_entities(entities)
+    await async_setup_favorites(hass, entry, async_add_entities)
 
 
 class NascarScheduleSensor(ScheduleEntity, SensorEntity):
@@ -55,7 +57,7 @@ class NascarScheduleSensor(ScheduleEntity, SensorEntity):
     def native_value(self) -> str | int | datetime | None:
         """Unknown dates remain unknown rather than a fabricated countdown."""
         if self.key == "scheduled_races":
-            return len(self.coordinator.data.races.get(self.series_id, ()))
+            return len(self.coordinator.usable_races(self.series_id))
         race = self.coordinator.next_race(self.series_id)
         if race is None:
             return None
@@ -70,7 +72,7 @@ class NascarScheduleSensor(ScheduleEntity, SensorEntity):
             return {
                 "unknown_start_times": sum(
                     race.start_time is None
-                    for race in self.coordinator.data.races.get(self.series_id, ())
+                    for race in self.coordinator.usable_races(self.series_id)
                 )
             }
         race = self.coordinator.next_race(self.series_id)
