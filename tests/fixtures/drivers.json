@@ -1,0 +1,8 @@
+{
+  "response": [
+    {"Nascar_Driver_ID": 99011, "Full_Name": "Example Multi Driver", "Driver_Series": "nascar-cup-series", "Badge": "07", "Team": "Example Cup Team", "Manufacturer": "Example Manufacturer"},
+    {"Nascar_Driver_ID": 99011, "Full_Name": "Example Multi Driver", "Driver_Series": "nascar-xfinity-series", "Badge": "17", "Team": "Example Second Team"},
+    {"Nascar_Driver_ID": 99012, "Full_Name": "Example Truck Driver", "Driver_Series": "nascar-craftsman-truck-series", "Badge": "03", "Team": "Example Truck Team"},
+    {"Nascar_Driver_ID": 99013, "Full_Name": "Example Directory Driver"}
+  ]
+}

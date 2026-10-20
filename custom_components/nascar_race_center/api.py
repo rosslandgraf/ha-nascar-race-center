@@ -14,7 +14,7 @@ from email.utils import parsedate_to_datetime
 
 from aiohttp import ClientError, ClientSession, ClientTimeout
 
-from .endpoints import BASE_URL, LIVE_FEED
+from .endpoints import BASE_URL, DRIVERS, LIVE_FEED, TRACKS
 from .models import AccessDeniedError, ProviderError, RateLimitedError, SchemaError
 
 _MAX_RESPONSE_BYTES = 2 * 1024 * 1024
@@ -22,6 +22,7 @@ _MAX_CACHE_ENTRIES = 6
 # Malformed-but-finite Retry-After values must not overflow HA timedeltas.
 _MAX_RETRY_AFTER = 366 * 86400
 _SCHEDULE_PATH = re.compile(r"/cacher/[0-9]{4}/race_list_basic\.json")
+_SESSION_PATH = re.compile(r"/cacher/[0-9]{4}/[123]/schedule-feed\.json")
 _monotonic = time.monotonic
 
 
@@ -100,32 +101,47 @@ class NascarApiClient:
     to one leap year to keep downstream datetime arithmetic representable.
     """
 
-    def __init__(self, session: ClientSession) -> None:
+    def __init__(
+        self, session: ClientSession, *, max_cache_entries: int = _MAX_CACHE_ENTRIES
+    ) -> None:
         """Retain the caller-owned session; never close it on unload."""
         self._session = session
+        if not 1 <= max_cache_entries <= 24:
+            raise ValueError("Cache size must be between 1 and 24 endpoints")
+        self._max_cache_entries = max_cache_entries
         self._cache: OrderedDict[str, _CacheEntry] = OrderedDict()
         self._request_lock = asyncio.Lock()
         self._retry_at = 0.0
-        self._failures: dict[str, int] = {}
-        self._cooldowns: dict[str, tuple[float, int | None]] = {}
+        self._failures: OrderedDict[str, int] = OrderedDict()
+        self._cooldowns: OrderedDict[str, tuple[float, int | None]] = OrderedDict()
 
     def _failure(
         self, path: str, message: str, status: int | None, hint: float = 0
     ) -> ProviderError:
         failures = self._failures.get(path, 0) + 1
         self._failures[path] = failures
+        self._failures.move_to_end(path)
+        while len(self._failures) > 24:
+            self._failures.popitem(last=False)
         backoff = min(3600, 60 * 2 ** min(failures - 1, 6))
         delay = max(hint, backoff + random.uniform(0, backoff * 0.1))
         if status == 429:
             self._retry_at = _monotonic() + delay
         else:
             self._cooldowns[path] = (_monotonic() + delay, status)
+            self._cooldowns.move_to_end(path)
+            while len(self._cooldowns) > 24:
+                self._cooldowns.popitem(last=False)
         error = RateLimitedError if status == 429 else ProviderError
         return error(message, retry_after=delay, status=status)
 
     async def async_get_json(self, path: str, *, minimum_ttl: float = 0) -> object:
         """Fetch an allowlisted CF JSON document, with one in-flight request."""
-        if path != LIVE_FEED and _SCHEDULE_PATH.fullmatch(path) is None:
+        if (
+            path not in {LIVE_FEED, DRIVERS, TRACKS}
+            and _SCHEDULE_PATH.fullmatch(path) is None
+            and _SESSION_PATH.fullmatch(path) is None
+        ):
             raise ValueError("Endpoint is not in the approved catalog")
         async with self._request_lock:
             cached = self._cache.get(path)
@@ -137,8 +153,14 @@ class NascarApiClient:
                 retry_at, status = self._retry_at, 429
             remaining = retry_at - _monotonic()
             if remaining > 0:
-                error = RateLimitedError if status == 429 else ProviderError
-                raise error(
+                cooldown_error = (
+                    RateLimitedError
+                    if status == 429
+                    else AccessDeniedError
+                    if status in {401, 403}
+                    else ProviderError
+                )
+                raise cooldown_error(
                     "Provider cooldown is active",
                     retry_after=remaining,
                     status=status,
@@ -176,9 +198,15 @@ class NascarApiClient:
                         self._cooldowns.pop(path, None)
                         return cached.payload
                     if response.status in (401, 403):
+                        error = self._failure(
+                            path,
+                            "Anonymous CF endpoint access was denied",
+                            response.status,
+                        )
                         raise AccessDeniedError(
                             "Anonymous CF endpoint access was denied",
                             status=response.status,
+                            retry_after=error.retry_after,
                         )
                     if response.status == 429 or response.status >= 500:
                         raise self._failure(
@@ -188,9 +216,10 @@ class NascarApiClient:
                             _retry_after(response.headers.get("Retry-After")),
                         )
                     if response.status != 200:
-                        raise ProviderError(
+                        raise self._failure(
+                            path,
                             "CF endpoint returned an unexpected HTTP status",
-                            status=response.status,
+                            response.status,
                         )
                     body = bytearray()
                     async for chunk in response.content.iter_chunked(65536):
@@ -217,7 +246,7 @@ class NascarApiClient:
                             },
                         )
                         self._cache.move_to_end(path)
-                        while len(self._cache) > _MAX_CACHE_ENTRIES:
+                        while len(self._cache) > self._max_cache_entries:
                             self._cache.popitem(last=False)
                     else:
                         self._cache.pop(path, None)
