@@ -1,0 +1,11 @@
+{
+  "series_id": 1,
+  "race_id": 9001,
+  "run_id": 9901,
+  "run_type": 3,
+  "run_name": "Fictional Cup Demonstration",
+  "flag_state": 2,
+  "lap_number": 42,
+  "time_of_day_os": "2026-11-01T15:00:00-05:00",
+  "vehicles": []
+}

@@ -1,0 +1,79 @@
+{
+  "title": "NASCAR Race Center",
+  "config": {
+    "step": {
+      "user": {
+        "title": "NASCAR Race Center",
+        "description": "Offline demonstration uses handmade sample data and makes no network requests. NASCAR CF is experimental and requires your confirmation of applicable data-use permission. This setting does not grant permission. Live behavior and anonymous endpoint access remain unverified. Polling slows automatically away from a current race; shorter intervals are not guaranteed to be permitted.",
+        "data": {
+          "provider": "Data source",
+          "series": "Series to monitor",
+          "data_use_authorized": "I have confirmed permission to access and poll NASCAR CF data",
+          "live_interval": "Minimum live polling interval (seconds; 300\u20133600)"
+        }
+      }
+    },
+    "error": {
+      "authorization_required": "Confirm applicable data-use permission before selecting NASCAR CF.",
+      "invalid_series": "Select at least one of series 1, 2 or 3.",
+      "invalid_provider": "Select a supported data source.",
+      "invalid_interval": "Enter a whole number from 300 to 3600 seconds."
+    },
+    "abort": {
+      "already_configured": "NASCAR Race Center is already configured. Use its options to change your selections."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "NASCAR Race Center options",
+        "description": "Offline demonstration uses handmade sample data and makes no network requests. NASCAR CF is experimental and requires your confirmation of applicable data-use permission. This setting does not grant permission. Live behavior and anonymous endpoint access remain unverified. Polling slows automatically away from a current race; shorter intervals are not guaranteed to be permitted.",
+        "data": {
+          "provider": "Data source",
+          "series": "Series to monitor",
+          "data_use_authorized": "I have confirmed permission to access and poll NASCAR CF data",
+          "live_interval": "Minimum live polling interval (seconds; 300\u20133600)"
+        }
+      }
+    },
+    "error": {
+      "authorization_required": "Confirm applicable data-use permission before selecting NASCAR CF.",
+      "invalid_series": "Select at least one of series 1, 2 or 3.",
+      "invalid_provider": "Select a supported data source.",
+      "invalid_interval": "Enter a whole number from 300 to 3600 seconds."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "next_race": {
+        "name": "Next race"
+      },
+      "next_race_start": {
+        "name": "Next race start"
+      },
+      "scheduled_races": {
+        "name": "Scheduled races"
+      },
+      "race_status": {
+        "name": "Session type"
+      },
+      "flag": {
+        "name": "Flag"
+      },
+      "current_lap": {
+        "name": "Current lap"
+      },
+      "feed_status": {
+        "name": "Feed status"
+      },
+      "last_successful_update": {
+        "name": "Last successful live update"
+      }
+    },
+    "binary_sensor": {
+      "feed_stale": {
+        "name": "Live source stale"
+      }
+    }
+  }
+}
