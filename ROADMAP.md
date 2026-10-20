@@ -1,8 +1,10 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Each phase is a focused pull request with its own acceptance gate. Phase 2 and later begin only after Phase 1 review. This roadmap includes planned work and must not be read as a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phase 1 was reviewed and squash-merged into `main` with 113 passing tests. Phase 2 continues from that merged foundation on its own feature branch. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
+
+**Status:** reviewed and merged. Its entities, settings, IDs and regression protections remain supported.
 
 **Deliverables:** repository development instructions, architecture, endpoint/evidence matrix, permissions note, contributing guide, UI configuration/options, selected-series foundation, typed models, async provider transport, offline demonstration, experimental CF adapter, separate schedule/live coordinators, basic next-race/schedule/status/flag/lap entities, diagnostics, mocked tests, and CI.
 
@@ -14,11 +16,13 @@ The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target produ
 
 ## Phase 2 — Complete schedules and favorite drivers
 
-**Depends on:** Phase 1 review and evidence for additional schedule/reference shapes.
+**Status:** implemented for review, with structural mocks and community-supported adapter contracts. See [VALIDATION.md](docs/VALIDATION.md) for executed checks. Current anonymous CF response shapes and source semantics are not independently verified.
 
-**Work:** normalize race/weekend/session IDs; practice, qualifying and race times; track/location metadata; full schedules and calendars; postponements and next-season rollover; driver reference cache; per-series favorite-driver selection; optional entity groups and unit/time preferences. Extend translation coverage and preserve existing IDs.
+**Delivered:** immutable race/session models; full retained season schedules across all three series; optional practice/qualifying/race enrichment; per-series native calendars with date-range weekend entries and explicit unknown-duration notices; rescheduling and season rollover; typed driver/track references; multiple favorites keyed by NASCAR driver ID; searchable UI selectors and metadata entities; isolated slow reference updates; backward-compatible entry defaults and Phase 1 identifiers.
 
 **Acceptance:** fixtures cover all three series, ambiguous/missing times, DST, year boundary, postponed sessions, overlapping weekends and driver/car changes. Calendar times and entity availability are exercised through HA. Driver IDs survive display-name and car-number changes. Failures of reference feeds do not disable core schedules.
+
+**Evidence limits:** no source timezone is inferred from naive timestamps, including fields named `start_time_utc`. CF cancellation/postponement status fields and authoritative session IDs are not supported by current community evidence. Normalized status handling is available for providers that can identify it; current CF adapters apply published schedule revisions without claiming explicit cancellation detection. Internal session IDs survive time/order changes but may change when the source renames a session. General driver directories do not establish an active roster, and media URLs are not manufacturer metadata. No live favorite-driver positions, timing, event automations, production installation or release is included.
 
 ## Phase 3 — Live Race Center and automation events
 

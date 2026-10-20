@@ -1,4 +1,128 @@
-# Phase 1 delivery and validation
+# Phase 2 delivery and validation
+
+Validation date: 2026-10-20. Phase 2 began on feature branch
+`feat/phase-2-schedules-calendars-favorites` from reviewed, squash-merged
+`main` commit `0ad03aeb000a620f5e6ddc2afdedbbf9cf71eeb2`. The 113-test
+Phase 1 baseline passed before implementation. The earlier report below is
+retained as historical evidence, rather than the current feature inventory.
+
+## Implemented and exercised
+
+- All three national series retain their existing entities and configuration.
+  Immutable race/session models, optional global embedded sessions and per-series
+  session feeds provide complete published season schedules and multi-day
+  practice/qualifying/race weekends. Malformed optional embedded sessions retain
+  usable race identity/timing and expose a diagnostic failure count.
+- Native read-only series calendars expose overlapping sessions and derived
+  weekend date ranges through Home Assistant's actual `calendar.get_events`
+  service. Valid explicit-offset start/end pairs become timed events; known
+  starts without a reliable end become clearly labeled local-date notices.
+  Unknown starts are omitted. Local alarms advance active events and unload
+  cleanly, including overlapping weekend/session boundaries.
+- Daily independent driver/track reference refreshes share the authorized CF
+  transport. Driver IDs survive name, team, number and series changes. Track
+  identifiers enrich calendar descriptions without making references mandatory
+  for schedules. Each reference feed has independent failure/freshness state.
+- Up to 50 favorite NASCAR driver IDs are editable through UI configuration and
+  searchable cached options. Initial onboarding accepts optional numeric IDs;
+  source-specific names become available in options after setup. Unknown IDs and
+  selections survive directory outages. Compact metadata sensors expose reliable
+  facts, including at most three unambiguous per-series associations. Removing
+  a favorite cleans up its integration-owned metadata entity/device; retained
+  favorites keep their identities across reloads.
+- November/December prefetch tolerates unpublished next seasons. January startup
+  discovers prior-season events with known future/ongoing times, including after
+  a restart. Failed seasons remain available for diagnostics while healthy
+  seasons drive calendars, counts, next-race selection and schedule-based live
+  polling. A successful empty optional season cannot hide a current-season
+  failure. Accepted extreme timestamps cannot overflow calendar conversion or
+  boundary timers.
+- CF response caching is bounded to 16 endpoints; failure counters/cooldowns are
+  bounded to 24 each. Conditional validators remain cached across both seasons,
+  all three series and references. Negative cooldowns prevent repeated shared
+  schedule requests after denial/missing responses. Existing timeouts, response
+  limits, host-wide rate-limit handling and shared-session ownership remain.
+
+## Final local checks
+
+The prepared Python **3.14.8** / Home Assistant **2026.10.2** environment was
+reused without dependency installation. NASCAR calls in every automated test
+are mocked. Integration setup tests use actual Home Assistant fixtures and its
+shared aiohttp client; these are distinct from the independent environment smoke
+test.
+
+| Check | Result |
+| --- | --- |
+| `pytest -q` | **234 passed**, including the Phase 1 regression cases and 121 additional cases |
+| `ruff check .` | Passed |
+| `ruff format --check .` | Passed; 47 Python files |
+| `mypy custom_components/nascar_race_center` | Passed; 18 source files |
+| Official HA `2026.10.2` Hassfest | Passed; one integration, zero invalid integrations |
+| Prepared runtime smoke test | Passed; one independent test |
+| Prepared `hass --script check_config` | Passed; exit zero |
+| `git diff --check` | Passed |
+| HACS | Skipped while private; public visibility and brands checks remain release gates |
+| Anonymous CF/current feed or active-session verification | Not run; destination policy excludes `cf.nascar.com` and data-use gates remain unresolved |
+| Manual frontend/browser review | Not run; UI selectors and calendar services exercised through actual Home Assistant fixtures |
+
+Commands used after environment activation:
+
+```bash
+source /workspace/.cloud-setup/nascar-race-center/activate.sh
+pytest -q
+ruff check .
+ruff format --check .
+mypy custom_components/nascar_race_center
+PYTHONPATH=work/home-assistant-core python -m script.hassfest \
+  --integration-path custom_components/nascar_race_center
+pytest -q \
+  -c /workspace/.cloud-setup/nascar-race-center/validation/pytest.ini \
+  /workspace/.cloud-setup/nascar-race-center/validation/test_homeassistant_runtime.py
+hass --script check_config \
+  --config /workspace/.cloud-setup/nascar-race-center/hass-config
+git diff --check
+```
+
+Hassfest used official HA source commit
+`8d7fd8b68677c2585be36ec86043308f403875b8`. The sandbox's supported network
+permission was needed for fixture sockets, Hassfest multiprocessing sockets and
+the configured Git proxy. Initial isolated-network attempts failed or stalled;
+the final commands above succeeded with that permission and inherited proxy/TLS
+settings intact. No denied CF destination was probed or bypassed.
+
+Coverage includes DST spring/fall changes, month/year and exclusive query
+boundaries, overlap alarms, cancellations supplied by normalized synthetic
+models, unknown/naive/missing/overflow timestamps, rescheduling without UID
+changes, conflicting/oversized schemas, multi-series drivers and metadata
+changes, optional outages, stale data, cache validators/cooldowns, configuration
+updates, reload/restart discovery and clean unload. The January routing
+regression now expects the intentional previous-season request alongside the
+current season; its original new-year routing protection is retained.
+
+## Source limits and remaining work
+
+Community code supports the narrow structural contracts documented in
+[SCHEMA_EVIDENCE.md](SCHEMA_EVIDENCE.md); fixtures are handmade and do not
+redistribute NASCAR feed captures or media. Current response shapes and
+anonymous access remain unverified. Offset-free source values stay unknown,
+including fields whose names contain `utc`. Unknown durations are never guessed.
+An explicit detailed race session with an unknown/ambiguous start clears a
+potentially obsolete basic race time.
+
+The referenced schemas expose race IDs but no authoritative session ID or
+cancellation/postponement status contract. Session identity excludes dates and
+list order but may change on a source session rename. Revisions update schedules;
+the CF adapters do not claim explicit cancellation detection. A general driver
+directory does not establish an active roster; manufacturer media URLs are not
+treated as names. Direct schema/time/status checks, permissions, polling limits,
+branding, HACS and broader compatibility remain documented release gates.
+
+Phase 3 still owns favorite-driver live timing/positions, standings, pits, stages,
+points, session lifecycle and durable deduplicated automation events. This change
+does not start that work, install on production, merge itself, change visibility
+or publish a release. Hosted CI is reported separately in the pull request.
+
+# Historical Phase 1 delivery and validation
 
 Validation date: 2026-10-20. This report describes the foundation PR only. The complete product remains the target in [ROADMAP.md](../ROADMAP.md); Phase 2 waits for Phase 1 review.
 

@@ -2,7 +2,7 @@
 
 The primary provider is `https://cf.nascar.com`. The owner's browser inventory dated **2026-10-20** reports 24 working URLs and four Error/Login results. Those reports are preserved below. They do not establish anonymous access, permission, JSON shape, freshness, or availability for another season/session.
 
-No direct CF requests were made during Phase 1 development: the managed environment's destination policy does not include `cf.nascar.com`. Tests use synthetic structural fixtures. Third-party source references, where available, support parser hypotheses; they do not independently verify today's CF service. See [SCHEMA_EVIDENCE.md](SCHEMA_EVIDENCE.md) for parser-specific provenance and limitations.
+No direct CF requests were made during Phase 1 or Phase 2 development: the managed environment's destination policy does not include `cf.nascar.com`. Tests use synthetic structural fixtures. Third-party source references, where available, support parser hypotheses; they do not independently verify today's CF service. The owner's Phase 2 confirmation of the seven schedule/reference URLs does not alter this distinction. See [SCHEMA_EVIDENCE.md](SCHEMA_EVIDENCE.md) for parser-specific provenance and limitations.
 
 In the table, **owner: working** and **owner: Error/Login** are owner reports, not automated verification. **Unverified** means no direct anonymous endpoint/schema/live-race check has run in this task. CI never polls CF.
 
@@ -13,12 +13,12 @@ In the table, **owner: working** and **owner: Error/Login** are owner reports, n
 | Live | https://cf.nascar.com/live/feeds/live-pit-data.json | Working | Unverified | Phase 3 |
 | Live | https://cf.nascar.com/live/feeds/live-points.json | Working | Unverified | Phase 3 |
 | Live | https://cf.nascar.com/live/feeds/live-stage-points.json | Working | Unverified | Phase 3 |
-| Schedule/reference | https://cf.nascar.com/cacher/2026/race_list_basic.json | Working | Unverified | Experimental Phase 1 adapter |
-| Schedule/reference | https://cf.nascar.com/cacher/drivers.json | Working | Unverified | Phase 2 |
-| Schedule/reference | https://cf.nascar.com/cacher/tracks.json | Working | Unverified | Phase 2 |
-| Schedule/reference | https://cf.nascar.com/cacher/2026/1/schedule-feed.json | Working | Unverified | Phase 2 session enrichment |
-| Schedule/reference | https://cf.nascar.com/cacher/2026/2/schedule-feed.json | Working | Unverified | Phase 2 session enrichment |
-| Schedule/reference | https://cf.nascar.com/cacher/2026/3/schedule-feed.json | Working | Unverified | Phase 2 session enrichment |
+| Schedule/reference | https://cf.nascar.com/cacher/2026/race_list_basic.json | Working | Unverified | Experimental adapter; embedded sessions supported in Phase 2 |
+| Schedule/reference | https://cf.nascar.com/cacher/drivers.json | Working | Unverified | Experimental Phase 2 reference adapter |
+| Schedule/reference | https://cf.nascar.com/cacher/tracks.json | Working | Unverified | Experimental Phase 2 reference adapter |
+| Schedule/reference | https://cf.nascar.com/cacher/2026/1/schedule-feed.json | Working | Unverified | Experimental Phase 2 session enrichment |
+| Schedule/reference | https://cf.nascar.com/cacher/2026/2/schedule-feed.json | Working | Unverified | Experimental Phase 2 session enrichment |
+| Schedule/reference | https://cf.nascar.com/cacher/2026/3/schedule-feed.json | Working | Unverified | Experimental Phase 2 session enrichment |
 | Schedule/reference | https://cf.nascar.com/cacher/2026/1/race_list_basic.json | Working | Unverified | Reference only; adapter uses global schedule |
 | Historical/statistical | https://cf.nascar.com/cacher/2024/1/5392/weekend-feed.json | Working | Unverified | Phase 4 |
 | Historical/statistical | https://cf.nascar.com/cacher/2024/1/5392/lap-times.json | Working | Unverified | Phase 4 |
@@ -41,7 +41,13 @@ In the table, **owner: working** and **owner: Error/Login** are owner reports, n
 
 Only URL patterns backed by parser evidence and fixtures may enter the provider catalog. Generalizing an owner-tested 2026/series-1 URL to another year/series remains a compatibility hypothesis until verified; unsupported responses must fail safely. Tests of mocked response parsing are not endpoint compatibility tests.
 
-The Phase 1 CF adapter requests only the global season schedule `/cacher/{year}/race_list_basic.json` and `/live/feeds/live-feed.json`. The schedule envelope is filtered by selected series in memory and cached across calls, avoiding a request per series. Schedule field and live enum parsing are based on the Python models in [TannerYohe/nascar-api at 3ab85bb](https://github.com/TannerYohe/nascar-api/tree/3ab85bb543528d76521417b5534a6eedb09dcdf3) and the references detailed in [SCHEMA_EVIDENCE.md](SCHEMA_EVIDENCE.md), with synthetic fixtures; they remain third-party schema evidence rather than current provider verification.
+The CF provider uses the global season schedule `/cacher/{year}/race_list_basic.json`, optional `/cacher/{year}/{series}/schedule-feed.json` enrichment, independent `/cacher/drivers.json` and `/cacher/tracks.json` references, and the existing `/live/feeds/live-feed.json`. It does not enable the other listed endpoints. The basic schedule envelope is filtered by selected series in memory and cached across calls, avoiding a global-list request per series. Session feeds are fetched only for selected series/seasons. The next season remains optional until published. January also checks the prior season to discover cross-year weekends after a restart, retaining only events with known remaining times and continuing their refresh while needed.
+
+Race/embedded-session fields and live enum parsing use [TannerYohe/nascar-api at 3ab85bb](https://github.com/TannerYohe/nascar-api/tree/3ab85bb543528d76521417b5534a6eedb09dcdf3). Detailed sessions and reference directories use the other pinned community sources in [SCHEMA_EVIDENCE.md](SCHEMA_EVIDENCE.md). These are third-party schema evidence backed by synthetic fixture tests, not independent current provider verification. No current CF status, cancellation flag, authoritative session ID or naive timestamp timezone is established.
+
+Schedule polling remains on the six-hour coordinator cadence. In the absence of server cache directives, fallback response lifetimes are one hour for the basic global list, six hours for detailed session feeds, and 24 hours for driver/track references. References use a separate daily coordinator. ETag/Last-Modified, server cache directives, conditional requests and per-endpoint backoff retain their existing semantics.
+
+The shared CF transport uses a 16-entry LRU response cache (the usual two-season, three-series request set plus references/live uses eleven endpoints), a 2 MiB response limit, and failure/cooldown bookkeeping each bounded to 24 endpoints. Negative cooldowns include access denial and missing feeds, so a failed shared global list is not requested repeatedly for every selected series in one refresh. A 429 pauses the host; other endpoint failures remain isolated. All consumers use Home Assistant's managed aiohttp session. A failed optional reference/enrichment endpoint cannot invalidate a usable independent schedule. Failed-season rows retained for diagnostics do not provide calendar events or next-race selections. A successful HTTP refresh remains a transport observation, not proof that provider content is current.
 
 Before an authorized direct check, record the date, exact URL, ordinary anonymous client (no cookies or NASCAR authorization headers), HTTP result, minimal structural field notes, and applicable permission assumptions. Preserve no credentials or raw restricted assets. A successful historical response does not establish current live behavior, and a fresh HTTP response does not prove fresh timing data.
 
