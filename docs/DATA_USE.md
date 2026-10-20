@@ -22,4 +22,4 @@ No NASCAR-controlled logos, driver photographs, video assets or full captured fe
 | Branding/assets and Home Assistant brands submission | Deferred; no NASCAR assets distributed |
 | Production installation/public release | Not authorized by the Phase 1 task |
 
-HACS integration requirements include a Home Assistant brands entry. Phase 1 CI explicitly skips the `brands` validation while authorized branding is unresolved; this exception is a release blocker. The HACS validator is configured with comments disabled and no release/deployment workflow is provided.
+HACS integration requirements include a Home Assistant brands entry. Phase 1 CI explicitly skips the `brands` validation while authorized branding is unresolved; this exception is a release blocker. The official HACS action was attempted and refused this private repository. Its workflow job now runs only for public repositories, without changing visibility or making private-development CI fail. Full HACS validation remains unexecuted. The validator is configured with comments disabled and no release/deployment workflow is provided.

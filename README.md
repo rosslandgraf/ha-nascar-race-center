@@ -29,7 +29,7 @@ The existing [MIT license](LICENSE) applies to project code; NASCAR data and med
 
 ## HACS status
 
-The repository uses a HACS-compatible integration layout and includes `hacs.json` and validation workflows. It is not yet release-ready or approved for the HACS default catalog. CI temporarily skips the HACS brands check while authorized branding is pending; that exception and all permission/release gates must be resolved before public distribution. The optional frontend card will be packaged separately in a later phase.
+The repository uses a HACS-compatible integration layout and includes `hacs.json` and validation workflows. It is not yet release-ready or approved for the HACS default catalog. The official HACS action rejects private repositories, so its job is conditional on public visibility and is skipped during private development. When available, it temporarily skips the brands check while authorized branding is pending. Full HACS validation, branding and all permission/release gates must be resolved before public distribution. The optional frontend card will be packaged separately in a later phase.
 
 ## Development
 

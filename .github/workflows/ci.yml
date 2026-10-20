@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   quality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
@@ -28,7 +28,7 @@ jobs:
       - name: Install native Home Assistant test dependency
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends -y libturbojpeg0
+          sudo apt-get install --no-install-recommends -y libturbojpeg
       - name: Install development baseline
         run: python -m pip install -r requirements_test.txt
       - name: Ruff

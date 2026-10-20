@@ -63,5 +63,6 @@ The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target produ
 | Live race/session behavior | Unverified | Authorized active-session observation and replay fixtures |
 | Historical schemas and derived analytics | Planned | Per-endpoint source evidence and numerical tests |
 | Dashboard/card packaging | Planned | Separate frontend artifact and compatibility validation |
+| Full HACS validation | Action rejects private repositories | Validate after an explicitly approved public-distribution decision; do not change visibility merely to pass CI |
 | HACS brands requirement | Deferred | Authorized neutral branding submission; remove CI exception |
 | Production/release approval | Not granted | Explicit owner authorization after review |

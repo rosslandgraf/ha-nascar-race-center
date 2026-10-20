@@ -31,7 +31,9 @@ The independent prepared runtime smoke test passed (one test), including authent
 | Official Hassfest, Home Assistant tag `2026.10.2` | Passed; one integration, zero invalid integrations |
 | Prepared environment runtime test | Passed; one independent runtime smoke test |
 | Prepared environment `hass --script check_config` | Passed; exit zero |
-| Hosted GitHub Actions / HACS action | Configured; execution status is reported in the PR Checks tab, separately from these local results |
+| Hosted Hassfest | Passed in [GitHub Actions](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39481343580/job/118830411926) |
+| Hosted quality suite | Initial attempt failed before tests because Ubuntu 24.04 calls the native package `libturbojpeg`; corrected workflow is being rerun. Current results appear in the PR Checks tab. |
+| HACS action | Attempted; rejected the private repository before validation. Job is now conditional on public visibility and skipped during private development. |
 
 Hassfest was run from the official Home Assistant source at commit `8d7fd8b68677c2585be36ec86043308f403875b8`, fetched into the ignored `work/` directory, without installing dependencies:
 
@@ -49,7 +51,7 @@ No screenshot is included: no dashboard/custom card is delivered in this phase, 
 - **No CF endpoint was requested.** The environment destination policy excludes `cf.nascar.com`. Anonymous access, real response shapes, session freshness and current live behavior remain independently unverified. [Schema evidence](SCHEMA_EVIDENCE.md) records third-party references and the handmade fixture provenance.
 - Only global season `race_list_basic.json` and global `live-feed.json` have experimental adapters. A listed endpoint is not an implemented capability. Naive source datetimes remain unknown; real next-race times may be unavailable pending verified timezone semantics.
 - Permission, allowed polling rates, storage/redistribution rights and branding remain unresolved. The acknowledgement is a user decision, not a determination that access is permitted. Default demo and CI make no NASCAR requests.
-- HACS CI deliberately skips `brands`; this is a release blocker. HACS compatibility metadata and passing checks do not constitute catalog acceptance or permission to publish.
+- The official HACS action cannot validate private repositories; full validation remains a release gate. When available, HACS CI deliberately skips `brands`, also a release blocker. HACS compatibility metadata and passing checks do not constitute catalog acceptance or permission to publish.
 - Full weekend sessions/calendars and favorite drivers are Phase 2. Detailed timing/standings, pits/stages/points and durable automation events are Phase 3. History/analytics, responsive custom cards/dashboard and release readiness are Phases 4–6. None are claimed complete.
 - Broader HA/Python compatibility, Home Assistant OS/Supervisor installation, real HACS installation, manual frontend/browser review, active-session replay and event restart/deduplication checks remain future gates. No events are emitted in Phase 1.
 - No merge, production installation, public release, media redistribution or release/deployment workflow is included.

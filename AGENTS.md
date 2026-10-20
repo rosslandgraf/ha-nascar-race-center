@@ -50,6 +50,6 @@ mypy custom_components/nascar_race_center
 pytest -q
 ```
 
-Use the actual Home Assistant fixtures and realistic mocked structural responses. Cover UI validation, setup/unload/reload, selected-series routing, stable IDs, stale/failed feeds, malformed data, rate limiting, timezone/season boundaries, and cache behavior as relevant to the change. Add meaningful tests for changed behavior, not implementation mirrors. CI also runs Hassfest and HACS validation; the temporary HACS brands exception is documented and must be removed before release readiness. Report its presence rather than claiming full HACS approval.
+Use the actual Home Assistant fixtures and realistic mocked structural responses. Cover UI validation, setup/unload/reload, selected-series routing, stable IDs, stale/failed feeds, malformed data, rate limiting, timezone/season boundaries, and cache behavior as relevant to the change. Add meaningful tests for changed behavior, not implementation mirrors. CI runs Hassfest. The official HACS action rejects private repositories, so its job is conditional on public visibility; do not change visibility just to run validation. Its temporary brands exception must also be removed before release readiness. Report both limits rather than claiming full HACS approval.
 
 Do not expose tokens, sensitive headers, local `.storage`, or full raw provider bodies in diagnostics. Never send messages to external recipients unless the user explicitly authorized that communication.
