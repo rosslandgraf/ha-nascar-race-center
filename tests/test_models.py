@@ -65,7 +65,9 @@ def test_rescheduled_time_replaces_previous_time() -> None:
     assert before.start_time != after.start_time
 
 
-@pytest.mark.parametrize("value", ["2026-11-01T12:30:00", "not a date", "", None])
+@pytest.mark.parametrize(
+    "value", ["2026-11-01T12:30:00", "2026-11-01", "not a date", "", None]
+)
 def test_unproven_timezone_is_unknown(value: object) -> None:
     """A timezone cannot be inferred from the feed field name alone."""
     races = parse_schedule(
@@ -127,3 +129,30 @@ async def test_demo_provider_is_offline_and_series_aware() -> None:
     )
     assert (await first.async_get_schedule(2027, 3))[0].series_id == 3
     assert await first.async_get_live() is None
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("2026-11-01T12:30:00-05:00", datetime(2026, 11, 1, 17, 30, tzinfo=UTC)),
+        ("2026-11-01T12:30:00+02:00", datetime(2026, 11, 1, 10, 30, tzinfo=UTC)),
+        ("0001-01-01T00:00:00+01:00", None),
+        ("9999-12-31T23:59:59-01:00", None),
+    ],
+)
+def test_explicit_schedule_offsets_and_utc_range(value, expected) -> None:
+    """Respect supplied offsets and reject timestamps outside UTC's range."""
+    races = parse_schedule(
+        {
+            "series_1": [
+                {
+                    "race_id": 1,
+                    "series_id": 1,
+                    "race_name": "Example",
+                    "date_scheduled": value,
+                }
+            ]
+        },
+        1,
+    )
+    assert races[0].start_time == expected

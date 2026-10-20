@@ -67,7 +67,12 @@ class NascarScheduleSensor(ScheduleEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any] | None:
         """Keep only the next race identity and track, never a full schedule."""
         if self.key == "scheduled_races":
-            return None
+            return {
+                "unknown_start_times": sum(
+                    race.start_time is None
+                    for race in self.coordinator.data.races.get(self.series_id, ())
+                )
+            }
         race = self.coordinator.next_race(self.series_id)
         if race is None:
             return None

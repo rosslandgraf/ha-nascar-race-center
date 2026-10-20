@@ -45,3 +45,9 @@ The experimental CF adapter is opt-in and remains unverified against a current
 anonymous response. Default demonstration mode uses handmade examples, requires
 no credentials, and makes no network requests. The broad endpoint inventory is
 documented separately; a URL being listed does not mean an adapter exists.
+
+### Timestamp behavior verified in final Phase 1 review
+
+`date_scheduled` values with `Z` or an explicit numeric offset are converted to UTC. Date-only, timezone-free, missing, malformed, and out-of-range values become `None` without assigning a timezone. No current response or official source timezone contract has been obtained. A third-party datetime type alone cannot establish UTC or Eastern semantics.
+
+These races retain identity/name/track and contribute to the schedule count, but cannot drive next-race selection, local race-boundary timers, or race-window polling. If all dates lack offsets, next-race name/start stay unknown. In mixed schedules the next-race entities select only among timestamped races, so they can skip a race whose time is unknown. The scheduled-races sensor exposes the bounded `unknown_start_times` count, and diagnostics expose per-series `unknown_start_time_counts` plus `timestamp_policy: explicit_offset_required`. These counts include all unknown starts (including omissions and invalid values); they do not claim every omission was a timezone error. Resolving source semantics requires evidence before changing this policy.

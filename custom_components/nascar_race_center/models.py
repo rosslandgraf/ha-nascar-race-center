@@ -85,11 +85,11 @@ def _timestamp(value: object) -> datetime | None:
         return None
     try:
         result = datetime.fromisoformat(value)
-    except ValueError:
+        if result.utcoffset() is None:
+            return None
+        return result.astimezone(UTC)
+    except ValueError, OverflowError:
         return None
-    if result.utcoffset() is None:
-        return None
-    return result.astimezone(UTC)
 
 
 def parse_schedule(payload: object, series_id: int) -> tuple[Race, ...]:

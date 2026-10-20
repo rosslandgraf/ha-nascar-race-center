@@ -57,9 +57,11 @@ class ScheduleCoordinator(DataUpdateCoordinator[ScheduleData]):
         )
         self.last_error_status: int | None = None
         self._unsub_boundary: Callable[[], None] | None = None
+        self._stopped = False
 
     async def async_shutdown(self) -> None:
         """Release the local race-boundary timer along with provider polling."""
+        self._stopped = True
         if self._unsub_boundary is not None:
             self._unsub_boundary()
             self._unsub_boundary = None
@@ -78,7 +80,7 @@ class ScheduleCoordinator(DataUpdateCoordinator[ScheduleData]):
             for race in races
             if race.start_time is not None and race.start_time >= now
         ]
-        if future:
+        if future and not self._stopped:
             self._unsub_boundary = async_track_point_in_utc_time(
                 self.hass,
                 self._async_boundary_elapsed,
@@ -89,6 +91,8 @@ class ScheduleCoordinator(DataUpdateCoordinator[ScheduleData]):
     def _async_boundary_elapsed(self, now: datetime) -> None:
         """Re-evaluate the next-race entities and arm the next known boundary."""
         self._unsub_boundary = None
+        if self._stopped:
+            return
         self.async_update_listeners()
         self._schedule_next_boundary(self.data)
 
@@ -172,9 +176,11 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
         self.last_successful_update: datetime | None = None
         self.last_error_status: int | None = None
         self._unsub_source_expiry: Callable[[], None] | None = None
+        self._stopped = False
 
     async def async_shutdown(self) -> None:
         """Cancel source freshness updates as well as network polling."""
+        self._stopped = True
         if self._unsub_source_expiry is not None:
             self._unsub_source_expiry()
             self._unsub_source_expiry = None
@@ -186,7 +192,7 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
         if self._unsub_source_expiry is not None:
             self._unsub_source_expiry()
             self._unsub_source_expiry = None
-        if snapshot is None or snapshot.source_updated_at is None:
+        if self._stopped or snapshot is None or snapshot.source_updated_at is None:
             return
         now = dt_util.utcnow()
         if snapshot.source_updated_at > now + timedelta(minutes=5):
@@ -203,6 +209,8 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
     def _async_source_expired(self, now: datetime) -> None:
         """Refresh entity health and availability without fetching the feed."""
         self._unsub_source_expiry = None
+        if self._stopped:
+            return
         self.async_update_listeners()
 
     @property

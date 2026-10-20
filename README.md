@@ -34,3 +34,7 @@ The repository uses a HACS-compatible integration layout and includes `hacs.json
 ## Development
 
 Use the already prepared environment; do not repeat onboarding. See [CONTRIBUTING.md](CONTRIBUTING.md) for restoration and exact validation commands, [AGENTS.md](AGENTS.md) for permanent development rules, and [ARCHITECTURE.md](ARCHITECTURE.md) for provider, model and coordinator boundaries.
+
+## Schedule timezone limitation
+
+CF schedule dates require an explicit `Z` or numeric timezone offset. A date such as `2026-11-01T12:30:00` or `2026-11-01` has no verified timezone semantics and stays **unknown**; the integration never assumes UTC, Eastern time, the track timezone, or Home Assistant's timezone. Such races remain in the schedule count but are excluded from next-race selection and race-window polling. If every start is unknown, both next-race entities are unknown; with mixed data, they show the next race **among starts with verified offsets**, which may omit an earlier undated race. Check `unknown_start_times` on the scheduled-races sensor or `schedule.unknown_start_time_counts` and `timestamp_policy` in downloaded diagnostics. Real CF start times remain a validation limitation until source timezone semantics are evidenced; see [schema evidence](docs/SCHEMA_EVIDENCE.md).

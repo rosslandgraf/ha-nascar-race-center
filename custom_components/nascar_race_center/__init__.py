@@ -76,6 +76,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
     schedule = ScheduleCoordinator(hass, entry, provider, series)
     live = LiveCoordinator(hass, entry, provider, schedule, live_interval)
     entry.runtime_data = RuntimeData(provider=provider, schedule=schedule, live=live)
+    # DataUpdateCoordinator registers each async_shutdown override with
+    # entry.async_on_unload during construction, before either first refresh.
+    # HA awaits these callbacks on unload, reload and failed/cancelled setup.
     # Keep the same provider and its retry deadlines through startup outages.
     # A first-refresh setup failure would recreate it on HA's faster setup retry.
     await schedule.async_refresh()
@@ -91,5 +94,9 @@ async def _async_options_updated(hass: HomeAssistant, entry: NascarConfigEntry) 
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bool:
-    """Unload platforms; coordinators stop when their entity listeners detach."""
+    """Unload platforms; HA then awaits the entry-owned coordinator shutdowns.
+
+    If platform unload fails, keep the coordinators running for the loaded entry.
+    The shared aiohttp session belongs to HA and must not be closed here.
+    """
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

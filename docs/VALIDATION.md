@@ -55,3 +55,28 @@ No screenshot is included: no dashboard/custom card is delivered in this phase, 
 - Full weekend sessions/calendars and favorite drivers are Phase 2. Detailed timing/standings, pits/stages/points and durable automation events are Phase 3. History/analytics, responsive custom cards/dashboard and release readiness are Phases 4–6. None are claimed complete.
 - Broader HA/Python compatibility, Home Assistant OS/Supervisor installation, real HACS installation, manual frontend/browser review, active-session replay and event restart/deduplication checks remain future gates. No events are emitted in Phase 1.
 - No merge, production installation, public release, media redistribution or release/deployment workflow is included.
+
+## Focused final Phase 1 review (2026-10-20)
+
+The pinned HA 2026.10.2 `DataUpdateCoordinator` constructor already registers each coordinator's `async_shutdown` override with `config_entry.async_on_unload`. HA awaits these callbacks after successful platform unload, during reload, and after failed/cancelled setup. Both overrides cancel their custom timer and then the base polling/debouncer. The small integration unload function was therefore sufficient for normal cleanup; no duplicate shutdown registration or shared-session closure was added. Its ownership comments now explain this dependency on the supported HA baseline. Failed platform unload intentionally does not stop the still-loaded platforms' coordinators.
+
+A real race remained: a provider refresh started before shutdown could finish afterwards and re-arm a custom timer. Both coordinators now mark themselves stopped before shutdown and prevent timer registration/callback work after that point. Regression tests exercise both armed timers through real HA unload/reload, failed and cancelled platform forwarding, late schedule/live refresh completion, and queued refresh requests after unload. The replacement runtime is also unloaded and checked for inactivity past poll and timer deadlines. A separate unload-handler test verifies platform-unload refusal preserves timers until successful unload.
+
+Timestamp parsing already rejected timezone-free dates without assuming a zone. UTC conversion now also handles range overflow as an unknown optional timestamp. New tests cover date-only values, positive/negative explicit offsets, UTC range limits, and mixed known/unknown dates. The README and schema evidence document the effect on next-race selection and polling. The scheduled-races sensor and bounded diagnostics report unknown start counts; no raw source timestamps or payloads are exposed. This remains a real CF usability limitation pending source evidence, not an assertion of timezone semantics.
+
+The broader review checked listener ownership, options reload, failed-setup callbacks, in-flight refreshes, shared aiohttp ownership, bounded HTTP cache, retained-data availability, source expiry, and the single global live polling loop. No additional actionable lifecycle/leak/duplicate-polling defect was identified within Phase 1. No real CF request or active-session validation was performed.
+
+Final checks on the revised source:
+
+| Check | Result |
+| --- | --- |
+| `pytest -q` | **113 passed**: all 100 existing cases plus 13 new regression cases |
+| `ruff check .` | Passed |
+| `ruff format --check .` | Passed; 33 Python files |
+| `mypy custom_components/nascar_race_center` | Passed; 12 source files |
+| Official HA `2026.10.2` Hassfest | Passed; one integration, zero invalid integrations |
+| `git diff --check` | Passed |
+
+Hassfest used the same official source commit and command documented above. Before-fix verification deliberately restored the PR's original coordinator/parser files: both late-refresh timer cases and both UTC-overflow cases failed; the revised files were restored and the full suite passed. Tests mock all NASCAR access. The sandbox needed network-enabled execution for HA fixture event-loop setup; Git and source retrieval used the configured proxy normally. No environment dependency reinstall or production configuration change was needed.
+
+Hosted checks for the review commit are recorded in PR #1. HACS remains skipped while the repository is private; branding/data-use/source-schema release gates remain unchanged. Phase 2 has not started, visibility is unchanged, and no merge, deployment or release was performed.

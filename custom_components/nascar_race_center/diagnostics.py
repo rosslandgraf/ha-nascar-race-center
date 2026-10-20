@@ -32,6 +32,11 @@ async def async_get_config_entry_diagnostics(
                 str(key): value.isoformat()
                 for key, value in schedule.data.updated_at.items()
             },
+            "unknown_start_time_counts": {
+                str(key): sum(race.start_time is None for race in races)
+                for key, races in schedule.data.races.items()
+            },
+            "timestamp_policy": "explicit_offset_required",
             "last_http_status": schedule.last_error_status,
         },
         "live": {
