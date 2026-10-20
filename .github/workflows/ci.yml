@@ -1,0 +1,41 @@
+name: Tests and quality
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ec52d0af729a7c50ced4261d17a07916f43f5b8e
+        with:
+          python-version: "3.14.8"
+          cache: pip
+          cache-dependency-path: requirements_test.txt
+      - name: Install native Home Assistant test dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y libturbojpeg0
+      - name: Install development baseline
+        run: python -m pip install -r requirements_test.txt
+      - name: Ruff
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: mypy
+        run: mypy custom_components/nascar_race_center
+      - name: Mocked Home Assistant and provider tests
+        run: pytest -q

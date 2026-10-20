@@ -1,0 +1,28 @@
+{
+  "series_1": [
+    {
+      "race_id": 9001,
+      "series_id": 1,
+      "race_name": "Fictional Cup Demonstration",
+      "date_scheduled": "2026-11-01T14:30:00-05:00",
+      "track_name": "Example Speedway",
+      "ignored_future_field": "additional fields are permitted"
+    },
+    {
+      "race_id": 9002,
+      "series_id": 1,
+      "race_name": "Fictional Postponed Demonstration",
+      "date_scheduled": null
+    }
+  ],
+  "series_2": [
+    {
+      "race_id": 9101,
+      "series_id": 2,
+      "race_name": "Fictional National Demonstration",
+      "date_scheduled": "2026-11-01T19:30:00Z",
+      "track_name": "Example Speedway"
+    }
+  ],
+  "series_3": []
+}
