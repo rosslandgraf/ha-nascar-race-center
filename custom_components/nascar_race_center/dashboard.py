@@ -11,8 +11,9 @@ from homeassistant.components.websocket_api.connection import ActiveConnection
 from homeassistant.core import HomeAssistant, callback
 
 from .analytics_models import AnalyticsQuery, AnalyticsResult
-from .dashboard_pages import MAX_RESPONSE_BYTES, PageError, page, record_page
+from .dashboard_pages import MAX_RESPONSE_BYTES, PageError, record_page
 from .dashboard_schema import fields, project
+from .dashboard_snapshots import STORE_KEY, SnapshotLease, SnapshotStore, build_index
 from .dashboard_views import bootstrap, live, race_summary
 from .history_models import HistoricalRaceKey, HistoryDataset, HistoryResponse
 
@@ -40,12 +41,15 @@ def bounded(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 class DashboardRuntime:
-    """No polling, result cache or global per-user state. One owner per entry."""
+    """Entry-owned requests and subscriptions, with globally bounded snapshot slots."""
 
     def __init__(self, hass: HomeAssistant, entry: NascarConfigEntry) -> None:
         self.hass = hass
         self.entry = entry
         self.closed = False
+        if STORE_KEY not in hass.data:
+            hass.data[STORE_KEY] = SnapshotStore(hass.loop)
+        self.snapshots: SnapshotStore = hass.data[STORE_KEY]
         self.subscriptions: dict[tuple[ActiveConnection, int], Callable[[], None]] = {}
         self.requests: dict[asyncio.Task[Any], str] = {}
         self.rates: OrderedDict[str, deque[float]] = OrderedDict()
@@ -174,7 +178,7 @@ class DashboardRuntime:
     async def _request(self, connection: ActiveConnection, msg: dict[str, Any]) -> None:
         task = asyncio.current_task()
         try:
-            data = await self._data(msg)
+            data = await self._data(msg, connection)
             if not self.closed and authorized(connection):
                 # Measure and serialize bounded responses outside the event loop.
                 payload = await self._executor(bounded, self.envelope(data))
@@ -219,7 +223,9 @@ class DashboardRuntime:
             raise asyncio.CancelledError
         return result
 
-    async def _data(self, msg: dict[str, Any]) -> dict[str, Any]:
+    async def _data(
+        self, msg: dict[str, Any], connection: ActiveConnection
+    ) -> dict[str, Any]:
         runtime = self.entry.runtime_data
         command = msg["type"].rsplit("/", 1)[-1]
         offset, limit, snapshot = (
@@ -320,6 +326,31 @@ class DashboardRuntime:
                 snapshot,
                 header,
             )
+        # Bind to validated command/entry/race/datasets and all analytics options.
+        # Paging controls may vary; dataset order is part of the ordered stream.
+        selection = json.dumps(
+            {
+                k: v
+                for k, v in msg.items()
+                if k not in ("id", "offset", "limit", "snapshot")
+            },
+            sort_keys=True,
+        )
+        if snapshot is not None:
+            index = self.snapshots.get(snapshot, self, connection, selection)
+            return await self._executor(index.page, snapshot, offset, limit)
+        lease = self.snapshots.reserve(self, connection, selection)
+        try:
+            return await self._snapshot_data(msg, lease, offset, limit)
+        except BaseException:
+            self.snapshots.release(lease)
+            raise
+
+    async def _snapshot_data(
+        self, msg: dict[str, Any], lease: SnapshotLease, offset: int, limit: int
+    ) -> dict[str, Any]:
+        runtime = self.entry.runtime_data
+        command = msg["type"].rsplit("/", 1)[-1]
         key = HistoricalRaceKey(msg["season"], msg["series_id"], msg["race_id"])
         datasets = tuple(HistoryDataset(d) for d in msg["datasets"])
         result: HistoryResponse | AnalyticsResult
@@ -335,7 +366,9 @@ class DashboardRuntime:
                 msg["time_basis"],
             )
             result = await runtime.analytics.async_get(query, datasets)
-        return await self._executor(page, result, offset, limit, snapshot)
+        index = await self._executor(build_index, result)
+        self.snapshots.publish(lease, index)
+        return await self._executor(index.page, lease.token, offset, limit)
 
     async def async_close(self, _: object = None) -> None:
         """Unload/reload/shutdown closes sockets' entry work without touching peers."""
@@ -353,4 +386,5 @@ class DashboardRuntime:
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
+        self.snapshots.close(self)
         self.rates.clear()

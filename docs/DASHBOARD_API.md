@@ -185,14 +185,48 @@ the stream is exhausted **from this offset**; source coverage/status remains
 independent. `next_offset: null` ends pagination. The byte budget can return fewer
 than `limit` records. Even one oversized record fails explicitly.
 
-The snapshot hashes semantic selection, dataset states and every normalized
-record, outside HA's event loop. Delivery/retrieval metadata changing on cache
-hits does not change historical snapshots. Any changed records/context produce
-`snapshot_changed`; discard assembled pages and restart at offset zero. A token
-is an integrity/consistency marker, not an authorization credential or retained
-server result. Clients can change page size but must keep the same selection.
-No result cache or per-browser archive is added. Continuations reuse the existing
-history/analytics API and may revalidate or recalculate within its existing bounds.
+For **history and analytics**, the first request reserves a bounded snapshot slot,
+fetches only the explicitly selected datasets through the existing services, then
+projects and hashes the entire normalized stream once in HA's executor. It stores
+an index of serialized allowlisted rows, never raw provider bodies or source models.
+The opaque 64-hex token identifies this immutable content version and is bound to
+the entry runtime, authenticated user, originating WebSocket connection, command,
+race key, ordered dataset selection and every analytics option. It grants no access
+by itself: normal authentication/administrator/entry checks apply on every page.
+Only `offset` and `limit` may change. A token with offset zero rereads that snapshot;
+an offset-zero request without a token starts a new snapshot.
+
+Continuation reads only indexed rows: **zero history calls, network GETs, analytics
+recalculations or full-stream projection/hash passes**. Ordinary two-document HTTP
+cache eviction and the 60-second floor cannot alter an admitted snapshot. Source
+changes do not modify already issued snapshots; a new selection sees whatever the
+existing HTTP freshness/cache/floor rules permit. Partial/unavailable source states
+remain explicit and pinned too; snapshot completion does not assert source coverage.
+
+Snapshots expire **300 seconds after construction**, without sliding renewal, and
+are removed on disconnect, unload, reload or shutdown. Completed snapshots remain
+replayable within that lifetime. Tokens cannot move between connections, users or
+entries. Expired/released/modified/wrong-selection tokens return `snapshot_invalid`
+(or `snapshot_expired` if expiry is detected before its cleanup callback); restart
+without a token. Reopening a selection may still encounter the existing request
+floor. There is no resumability across disconnect/restart. Use pages of 200 for
+large selections and pace commands within 30 per 10 seconds; smaller pages or long
+pauses can outlast the five-minute lifecycle.
+
+There are four slots **shared across all entries/users**, including reserved slots
+under construction, and at most two per user across tabs and entries. Each slot
+allows 24 MiB of accounted serialized/index memory and 100,000 rows: at most 96 MiB
+reserved in total, in addition to existing bounded source/service/HA resources.
+The accounting includes bytes-object overhead, conservative index pointers and
+metadata allowance; construction retains its reservation through cancellation drain.
+No slot is evicted to admit another client. `snapshot_limit` fails before retrieval.
+`snapshot_too_large`, `record_too_large` or `response_too_large` fails before any token
+if the full selection cannot be indexed or any later record cannot fit a page.
+All seven datasets remain selectable. There is no new endpoint or disk archive.
+
+Schedule and live-detail commands retain their lightweight stateless content digest:
+changed source/context returns `snapshot_changed`; discard assembled pages and
+restart. Their tokens do not reserve history/analytics slots.
 
 History headers: `race`, aggregate `status`, `datasets[]`, `records`, `pagination`.
 Each dataset entry preserves status, fixed reason, classification and complete
@@ -272,7 +306,8 @@ slot until drained; late results are discarded.
 | Resource | Bound |
 | --- | --- |
 | Response result/event envelope | 256 KiB JSON plus small native HA wrapper |
-| Page | 1–200 records, further reduced to fit bytes; no completed-result cache |
+| Page | 1–200 records, further reduced to fit bytes |
+| History/analytics snapshots | 4 globally / 2 per user across entries; 24 MiB and 100,000 rows each; fixed 300 seconds; construction included |
 | Bootstrap | At most two future races per selected series and four sessions per race; selected favorites only; at most three association projections per favorite |
 | Live leaderboard | Existing maximum 100 competitors; two embedded/scoring preview records per collection, explicit detail pagination |
 | Subscriptions | 4 per connection, 64 per entry |
@@ -291,7 +326,8 @@ analytics two-computation/driver/lap/window limits remain authoritative. See
 
 Transport codes: native `invalid_format`, `unknown_command`, `unauthorized`;
 `entry_unavailable`, `invalid_selection`, `request_limit`, `subscription_limit`,
-`rate_limited`, `snapshot_required`, `snapshot_changed`, `invalid_offset`,
+`rate_limited`, `snapshot_required`, `snapshot_changed`, `snapshot_invalid`,
+`snapshot_expired`, `snapshot_limit`, `snapshot_too_large`, `invalid_offset`,
 `record_too_large`, `response_too_large`. Correct malformed selections; restart
 changed snapshots; reduce record/selection size where possible; release unused
 subscriptions; retry request-window exhaustion after 10 seconds. History/scoring

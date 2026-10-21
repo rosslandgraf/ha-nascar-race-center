@@ -412,12 +412,18 @@ entry subsequently unloads during shutdown.
 `dashboard_views.py` reads cached normalized consumer views. Explicit field
 allowlists in `dashboard_schema.py` avoid raw dictionaries and automatic model
 serialization. `dashboard_pages.py` flattens large normalized collections at row
-boundaries in the HA executor. A semantic snapshot digest detects changed source
-or selections on continuation. Pages retain at most 200 records and fit a 256 KiB
-envelope budget; no server-side completed-result cache is added. Canceled pure
-serialization keeps its bounded request slot until the executor worker drains.
-The existing history/analytics services own all retrieval, cooldown, coalescing,
-computation, provenance and cancellation behavior. No formula moves into transport.
+boundaries in the HA executor. Schedule/live-detail pages use content digests.
+History/analytics use `dashboard_snapshots.py`: one full projection/hash builds an
+immutable serialized row index; continuations decode only requested rows without
+service calls, refetches or recalculation. Opaque snapshot tokens bind content,
+entry runtime, user, socket and exact selection. Four globally reserved slots,
+two per user, 24 MiB/100,000 rows each and fixed 300-second expiry explicitly bound
+retention. Disconnect, unload/reload and stop release completed snapshots; canceled
+workers retain reservations until drained. Oversized selections fail before issuing
+a token. The HTTP cache remains two documents and the 60-second floor is unchanged.
+Pages retain at most 200 returned records and fit a 256 KiB envelope budget. Existing
+history/analytics services retain retrieval, cooldown, coalescing, computation,
+provenance and cancellation ownership. No formula moves into transport.
 
 Full leaderboards remain ephemeral dedicated views. Live embedded/scoring arrays
 have explicit two-record previews and paged detail commands. No entity IDs,

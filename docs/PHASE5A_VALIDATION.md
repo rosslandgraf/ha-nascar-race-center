@@ -1,85 +1,145 @@
-# Phase 5A — Authenticated dashboard transport validation
+# Phase 5A — Focused pagination correction validation
 
-October 21, 2026 (America/New_York). Branch `feat/phase5a-dashboard-api` starts
-from latest merged `origin/main`, Phase 4B / PR #10, squash commit
-**926e6693be9250de5a2716d7d799fba901385a11**. A successful Git fetch confirmed this
-base. The inherited 915 tests remain in the final suite. No separate untouched
-baseline test execution is claimed.
+October 21, 2026 (America/New_York). Existing branch
+`feat/phase5a-dashboard-api`, existing PR #11. Correction starts at **df9e614**;
+merged Phase 4B remains **926e669**. No new PR, Phase 5B, merge, deployment,
+publication, visibility change or NASCAR network access.
 
-The full product brief, AGENTS, roadmap, architecture, history/analytics/polling
-contracts, Phase 4A/4B validation, endpoint catalog/field reference/audit and fixture
-provenance were reviewed. Existing live/schedule/reference/scoring/event/history/
-analytics boundaries were inspected before transport implementation. Official
-[current WebSocket extension](https://contributors.home-assistant.io/frontend/extending/websocket-api/)
-and [permission](https://contributors.home-assistant.io/core/internals/permissions/)
-guidance were consulted, together with installed HA 2026.10.2 command schemas,
-authenticated connections, native subscription cleanup and backpressure behavior.
-Prepared Python **3.14.8**, HA **2026.10.2**, Ruff **0.17.1** and mypy **2.4.0** were
-reused without onboarding, dependency reinstallation or production access.
+## Concrete reproduction and root cause
 
-## Delivered behavior
+Before changing production code, `pytest -q tests/test_dashboard_pagination.py`
+ran two actual Home Assistant WebSocket cases against the original PR head.
+Both **failed**: three selected datasets and all seven selected datasets returned
+a successful first page, followed immediately by **`snapshot_changed` on page 2**.
+The intercepted CF inputs were the handmade observed-shape Phase 4A fixtures,
+requested for key `(2024, 1, 88001)` with a two-record page size. They were not
+already-constructed `HistoryResponse` mocks. The path was authenticated HA socket
+→ registered command → `DashboardRuntime` → real `HistoryService` →
+`CFHistoryProvider` → the entry's shared `NascarApiClient`/aiohttp session.
+First-page GET counts were **10** and **14**, including seven normal startup GETs.
+Every selected dataset was available on the first page.
 
-Eight namespaced commands provide cached bootstrap, retained schedule navigation,
-current live projections, native push subscriptions, paged driver/scoring details,
-on-demand history and on-demand analytics. API v1, normalized TypeScript model
-projections, all command/response/page/record schemas, errors and Phase 5B usage
-are documented in [DASHBOARD_API.md](DASHBOARD_API.md).
+The original dashboard called `history.async_get(key, datasets)` on **every page**.
+HistoryService releases normalized results after its last waiter. The HTTP cache
+retains only two historical bodies; selecting three/seven evicts earlier documents.
+Per-endpoint request deadlines survive eviction. Immediate rereads of evicted
+paths therefore raise `PollingDeferred` under the existing **60-second floor**.
+The history provider represents these as network/access failures, changing the
+semantic rows/status hashed by the page builder. Hence `snapshot_changed`, despite
+unchanged upstream fixtures. Waiting out the floor could trigger more GETs and
+still could not guarantee one consistent content version.
 
-Every command requires an authenticated active administrator, a loaded NASCAR
-entry and monitored series. This deliberately excludes non-administrators and
-entity-restricted users: HA supplies no general config-entry read ACL authorizing
-full race datasets. Permissions are checked before delivery and subscription
-emissions. Native HA owns authentication, sockets, outgoing queues, slow-reader
-disconnection and unsubscribe. The integration owns bounded per-entry/client
-listeners and request resources, without global selected-series/subscriber state.
+The original pagination tests predominantly reused preconstructed results. They
+verified serializers but did not cover this service/transport/cache interaction.
 
-Bootstrap reads cached data and explicitly reports missing reference/time data.
-Upcoming previews have at most two races per series and four sessions per race;
-unknown race instants remain null, upcoming order uses earliest known future
-activity, and canceled sessions cannot create an upcoming instant. Dedicated
-schedule pages retain all supported sessions independently of live health.
-Live timing uses existing matching fresh LiveViews and normalized models, retaining
-nullable fields, exact string IDs and source namespaces. Full ordered leaderboards
-remain outside entity state. Embedded/scoring previews explicitly identify their
-completeness and supply paged detail commands. CF's unsupported standalone scoring
-feeds remain unavailable and are never requested.
+## Exact correction and lifecycle
 
-History/analytics call only the existing entry runtime APIs. Explicit allowlists
-serialize normalized fields. Large collections become ordered parent-identified
-record pages with byte/record limits and semantic snapshot continuation checks.
-No formulas move to transport. Calculations and large page serialization/digests
-run in HA's executor. Cancelled serializers keep their request slot until the
-bounded worker drains. There is no completed-result cache, historical prefetch,
-new persistence or extra polling loop. Stop callbacks remain removable after
-firing, including when HA subsequently unloads the entry.
+`dashboard_snapshots.py` provides a bounded immutable serialized row index for
+history **and analytics**, owned by the entry runtime and budgeted through one
+HA-instance store. Admission reserves a full slot **before service retrieval**.
+The first request uses the existing history/analytics service exactly once,
+projects allowlisted normalized fields and hashes content once in HA's executor.
+Only serialized header/record bytes and their index survive construction. Raw CF
+bodies, full normalized source models and analytics calculation objects are not
+retained by the snapshot. Existing service/transport caches are unchanged.
 
-## Executed checks
+The opaque random/content-bound token identifies the entry runtime, authenticated
+user, originating socket, command, race key, ordered dataset selection, all
+analytics query options and immutable content version. All native authentication,
+active-administrator, loaded-entry and monitored-series checks still run. Offset
+and page size can change; selection cannot. Token replay at offset zero rereads
+the pinned snapshot. Offset zero without a token starts a new selection.
+
+Continuations decode only the requested indexed rows: **no history retrieval,
+network GET, analytics recalculation or complete serialization/hash pass**. Source
+changes leave an issued snapshot intact; a fresh selection sees the service's
+current result, respecting its HTTP freshness and request floor. Explicit partial
+source availability stays pinned rather than silently acquiring/dropping records.
+
+- **Four slots globally**, across all config entries/users, including construction
+  and cancellation drain; **two per user**, across entries/tabs.
+- **24 MiB per slot**, **100,000 records**, at most **96 MiB** reserved index storage.
+  Accounting includes encoded bytes/object overhead, conservative list/tuple
+  pointers and metadata allowance. This supports measured 50,000-lap and roughly
+  80,000-record analytics streams without enlarging the raw HTTP cache.
+- **300-second fixed lifetime** from completed construction; no sliding renewal.
+  Expiry removes data and its connection cleanup registration. Completed streams
+  remain replayable only for that lifetime. No admission-driven eviction.
+- Disconnect releases only that connection's snapshots. Unload/reload/shutdown
+  cancels/drains work and removes the owner's snapshots. Canceled builders retain
+  reservations and request slots until their executor worker drains.
+- `snapshot_limit` fails before retrieval. Memory/record overflow or any unpageable
+  record (including one after the first page) fails **before issuing a token**.
+- Existing **256 KiB envelope**, **1–200 rows/page**, **30 commands/10 seconds**,
+  **8 requests/entry**, **2 requests/user/entry**, subscriptions, native HA queues,
+  source/service computation budgets and cancellation behavior remain in force.
+
+The 96 MiB bound is **additional indexed storage**, not total process RSS. Existing
+bounded HTTP JSON decoding, normalized service results, analytics workers, HA
+queues and returned page objects apply additionally. At most four globally
+reserved snapshot constructions can hold their temporary service results; decoded
+pages remain bounded by existing request and response limits. Traced measurements
+below exclude source models, HTTP decoding and the Home Assistant process.
+
+Schedule/live-detail commands retain their lightweight stateless content digests.
+No endpoint, polling timer, historical prefetch, disk archive or formula was added.
+
+## Regression coverage and executed checks
+
+`tests/test_dashboard_pagination.py` adds **27 actual HA WebSocket cases**:
+
+- Retrieve **every page** with three distinct datasets and with all seven; compare
+  the concatenation against independently parsed original fixture record sequences.
+  Immediate next-page requests add zero GETs and cannot hit the request floor.
+- Full all-seven-dataset navigation with **50,028 history records** and **79,324
+  analytics records**; ordered stream digests and total counts prove no loss or
+  duplication. Every response fits the byte limit and the index fits its budget.
+- A changed intercepted CF lap time is visible in a fresh selection after ordinary
+  cache release and 61 seconds of transport-clock advance. The old token still
+  reproduces the original lap time and adds no GETs.
+- Reject modified, expired, wrong-race, wrong-dataset, other-tab, other-user,
+  other-entry and revoked-admin tokens without upstream calls. Analytics tokens
+  also bind driver IDs, windows, lap range and time basis. Page-size changes and
+  offset-zero replay work.
+- Actual socket disconnect, timer expiry, unload, reload and HA stop release
+  retained indexes. Shared global admission across entries, user admission,
+  over-budget selection and an oversized later row fail explicitly.
+
+Existing tests now target the index worker when testing cancellation drain and
+assert that only the surviving peer's snapshot remains. The Recorder test replays
+its two pinned history/analytics tokens, verifying **zero new Recorder rows** for
+20 reads plus a live subscription. Inherited tests continue covering concurrent
+service sharing, blocked-request cancellation, stop/unload/reload, authentication,
+rate limits, normal live polling, HTTP safeguards, events and Recorder behavior.
+An initial full run exposed the Recorder test's repeated creation of new sessions;
+its calls were corrected to follow the bounded token lifecycle, then rerun.
 
 | Check | Actual result |
 | --- | --- |
-| Final full `pytest -q` | **977 passed in 53.38 seconds**; inherited 915 plus 62 new cases |
-| `ruff check .` | Passed |
-| `ruff format --check .` | Passed |
-| `mypy custom_components/nascar_race_center` | Passed; 43 integration source files |
-| Official HA 2026.10.2 Hassfest | Passed; one integration, zero invalid integrations |
-| Independent prepared HA runtime smoke | 1 passed; authenticated REST/state/service checks, separate from NASCAR behavior |
-| Prepared `hass --script check_config` | Passed; exit zero |
+| Focused pagination tests | **27 passed in 7.24 s** |
+| Full pytest suite | **1,004 passed in 52.48 s**; original 977 plus 27 new WebSocket cases |
+| Ruff lint / formatting | Passed after correction |
+| Strict mypy | Passed; **44** integration source files |
+| Official HA **2026.10.2** Hassfest | Passed; **1 integration, 0 invalid** |
+| Independent prepared HA runtime smoke | **1 passed in 0.23 s**; independent REST/state/service smoke, not a NASCAR test |
+| `hass --script check_config` | Passed; exit zero |
 | `git diff --check` | Passed |
-| GitHub Actions | Hosted run/check results and links are tracked in the Phase 5A PR after push; no unexecuted hosted check is claimed here |
-| HACS | Existing private-repository conditional skip and brands exception retained; no full HACS approval |
-| NASCAR network access | Zero; tests use synthetic normalized observations or intercepted structural responses |
-| Production HA OS / physical devices / visual dashboard | Not exercised; outside Phase 5A |
+| Hosted GitHub Actions | Correction push triggers existing workflows; hosted results appended after completion |
+| HACS | Existing private-repository conditional skip/brands exception retained; no full HACS approval |
+| NASCAR / production / visual frontend | No network access, deployment or frontend work |
 
-Hassfest ran official tag **2026.10.2**, commit
+The prepared Python **3.14.8**, Home Assistant **2026.10.2**, Ruff **0.17.1** and
+mypy **2.4.0** were reused. Official Hassfest source is tag 2026.10.2,
 `8d7fd8b68677c2585be36ec86043308f403875b8`, under ignored
-`work/home-assistant-core`. Git/public-source retrieval, local test-server sockets
-and Hassfest multiprocessing used the supported network-enabled execution mode
-with inherited proxy/TLS unchanged. Initial restricted-shell attempts could not
-reach the proxy or bind local multiprocessing sockets; those interrupted attempts
-are not reported as passing checks. No denied destination was bypassed.
+`work/home-assistant-core`. GitHub retrieval and local test/multiprocessing sockets
+use the supported network-enabled execution mode with inherited proxy/TLS intact;
+CF is not allowed in the environment policy and was never requested.
+
+Reproduce:
 
 ```bash
 source /workspace/.cloud-setup/nascar-race-center/activate.sh
+pytest -q -s tests/test_dashboard_pagination.py tests/test_dashboard_performance.py
 ruff check .
 ruff format --check .
 mypy custom_components/nascar_race_center
@@ -93,103 +153,57 @@ hass --script check_config \
 git diff --check
 ```
 
-## Actual HA WebSocket and regression findings
+## Measured request, response and memory budgets
 
-- Successful authenticated bootstrap/schedule/live/history/analytics/detail reads
-  use the real HA WebSocket server. Unauthorized pre-auth messages, invalid tokens,
-  read-only users, revoked admins, foreign/missing entries, unmonitored series,
-  invalid versions/extra fields, Boolean/string IDs, duplicate/oversized selections
-  and analytics complexity violations fail without unauthorized service access.
-- Full leaderboards preserve order, favorite identity, leading-zero car numbers,
-  nullable timing, derived position difference and embedded observations across
-  practice, qualifying and race routing. Other series never inherit the global
-  feed's field. Missing/unavailable/unsupported scoring remains explicit.
-- Multiple actual clients receive initial revision 1. Unchanged observations emit
-  no event. A burst of 100 local changes coalesces to its newest lap. Race/run and
-  series transitions replace the snapshot with complete identity/health context.
-  Existing source-expiry notifications deliver stale transitions without network
-  calls, followed by offline/recovery states. Unsubscribe/disconnect remove the
-  client's listeners and pending callbacks without disturbing peers.
-- Four subscriptions per connection and the entry-wide subscription bound are
-  enforced. Thirty commands per user/entry over ten seconds are shared across
-  tabs; the next request is rejected and the window recovers. Two simultaneous
-  user requests are enforced across tabs. Cancelling a serialization worker keeps
-  that slot until its work drains, preventing cancellation-driven worker growth.
-- Concurrent history and analytics clients share one existing history provider
-  request. Disconnecting one retains the other's result. Entry unload/reload and
-  actual HA stop drain blocked requests and release subscriptions/resources.
-  Native socket shutdown may precede delivery of a terminal entry-unavailable
-  event. No test disables integration timer/task cleanup assertions.
-- Rejected-auth and actual-stop cases disable only aiohttp's native heartbeat in
-  the test harness: HA's accelerated shutdown clock otherwise leaves an upstream
-  WebSocketResponse heartbeat timer. All successful ordinary transport cases use
-  native heartbeat behavior. Authentication, real sockets, HA dispatch and
-  integration subscription/request cleanup remain exercised in every case.
-- All seven historical dataset serializers preserve observations, parent identity,
-  null versus empty, run namespaces, candidate sentinels and source provenance.
-  Concatenated one-record pages equal the complete small synthetic stream.
-  Oversized records, invalid offsets, absent continuation tokens and changed
-  snapshots fail explicitly. Large streams provide complete continuation metadata.
-- Analytics retains contract version, samples, coverage, gaps, recorded/derived
-  metric definitions, reported performance, stage namespaces and finite JSON.
-  Invalid time values retain analytics exclusions. No raw provider dictionary can
-  pass the registered-model serializer.
-- Two CF dashboard clients opening bootstrap and live subscriptions keep the
-  existing **seven GET** startup count unchanged. No per-tab, per-driver, per-series
-  refresh is introduced, including local stale notifications.
-- Twenty dashboard reads (bootstrap/live/history/analytics) plus a live subscription
-  add **zero actual Recorder state rows**. Entity registry IDs remain unchanged.
-  The complete inherited suite retains prior event baseline/replay/durable
-  deduplication/persistence-before-publication and adaptive provider-cadence,
-  caching, Retry-After, startup, selected-series and Recorder protections.
+All measurements are local/synthetic, not NASCAR latency or a service promise.
+Large WebSocket tests use intercepted CF HTTP, real parsers/services and all seven
+datasets. The synthetic client clock advances 0.35 s per continuation to model
+compliant request pacing; production rate limiting is unchanged. Expiry still uses
+the actual loop clock. No test bypasses the HTTP floor.
 
-## Synthetic measurements
+| Actual HA WebSocket stream | Records | First page including retrieval/calculation/index | Subsequent mean / max | Largest continuation JSON | Accounted index bytes | Continuation GETs |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 10 drivers × 5,000 historical laps, all seven datasets | 50,028 | 0.543 s | 0.00272 / 0.00653 s | 36,254 | 10,906,062 | **0** |
+| 8 drivers × 1,250 laps, 6 analytics windows, all seven datasets | 79,324 | 1.355 s | 0.00287 / 0.00561 s | 217,526 | 19,086,650 | **0** |
 
-Reproduce with `pytest -q -s tests/test_dashboard_performance.py`. Three untraced
-page runs followed by a separate `tracemalloc` run use preconstructed immutable
-normalized inputs. Allocations below cover page projection/hashing/output only;
-they exclude source models, analytics calculations, HTTP/JSON decoding, HA,
-network/TCP queues and whole-process memory. Source/model/computation bounds are
-unchanged from Phase 4A/4B. Pages retain only the returned rows while scanning
-all records for a stable digest; later pages repeat this bounded linear scan.
+Both large scenarios make **14 GETs total: 7 startup + 7 explicitly selected
+historical documents**, independent of page count. The smaller three-dataset
+scenario makes **10 total**. Normal live/bootstrap/subscription startup stays at
+**7**. Full navigation does not change the two-document transport cache, 2 MiB
+HTTP document cap, historical parser limits, 60-second per-endpoint floor,
+Cache-Control/validators, Retry-After or host backoff.
 
-| Scenario | Full stream records / returned | Three elapsed seconds | Page JSON bytes | Retained / peak traced bytes |
-| --- | --- | --- | --- | --- |
-| 10 drivers × 5,000 historical laps | 50,010 / 200 | 0.4302 / 0.4283 / 0.6073 | 32,108 | 129,014 / 131,121 |
-| Eight selected drivers, 1,250 laps, six windows: 60,000 projected windows | 79,316 / 200 | 1.5024 / 1.8149 / 1.0395 | 55,150 | 264,306 / 299,302 |
+Separate preconstructed-model measurements isolate projection/index cost from
+HTTP/service/calculation cost. First build and subsequent reads are timed
+separately; traced allocation is a separate build:
 
-These page times include hashing the entire synthetic record stream. They are not
-network request latency or a production service-level promise. A maximum accepted
-analytics page is deliberately chunked even though the internal analytics result
-can contain tens of thousands of samples/windows. A separate oversized-text case
-verifies byte-driven page shortening below 200 rows without silent loss.
+| Stream | Build | First indexed read / subsequent read | JSON bytes | Accounted / retained traced / peak traced bytes |
+| --- | ---: | ---: | ---: | ---: |
+| 50,010 history records | 0.364 s | 0.00052 / 0.00050 s | 32,108 | 10,749,010 / 9,947,972 / 10,393,337 |
+| 79,316 analytics records | 0.809 s | 0.00065 / 0.00080 s | 55,150 | 19,001,876 / 17,792,919 / 18,509,793 |
 
-A **100-driver** synthetic live projection measured **70,669 bytes**. Five actual
-local WebSocket update deliveries took **0.10467 / 0.10455 / 0.10479 / 0.10473 /
-0.10507 seconds**, including the configured **0.100-second coalescing delay**.
-This is local synthetic delivery behavior only. It establishes no NASCAR source
-freshness, CDN behavior, real-race latency or permitted polling cadence.
+The original PR repeatedly projected/hashed the complete stream on every page
+(previously measured roughly 0.43–0.61 s/history and 1.04–1.81 s/analytics page).
+The corrected runtime pays that cost once. Continuation work scales with returned
+rows and header size. Live 100-driver delivery/coalescing tests remain unchanged.
 
-There are at most 64 entry subscriptions, one pending callback and one previous
-projection fingerprint per subscription; fingerprints are bounded by the payload
-cap. Admission retains at most 128 user windows of 30 timestamps. At most eight
-entry dashboard requests/two per user retain returned service models or draining
-workers concurrently. Existing history/analytics/cache limits apply additionally.
-There is no private WebSocket queue access or added unbounded application queue.
+## Remaining limitations
 
-## Remaining evidence and delivery boundaries
+Administrator-only access remains intentional. A token cannot resume after socket
+loss, reload, expiry or restart. Clients should request 200 rows/page for large
+streams and finish within five minutes while respecting rate limits. Extremely
+small pages/long pauses can expire; no infinite retention is promised. At most two
+simultaneous selections per user and four globally can be pinned; wait for expiry
+or close the owning socket to release completed selections. There is no new release
+endpoint. Explicit over-budget selections must be narrowed by the consumer; all
+seven datasets remain supported within the declared budget.
 
-V1 administrator-only access is an intentional product limitation documented for
-Phase 5B. It supplies no delegated full-data permission or favorite-edit command.
-Explicit historical keys remain evidence-limited selections, not discovered
-coverage. Ambiguous source times, unverified timing units/sentinels, incomplete
-identity, source failures and provisional scoring retain their existing meanings.
-No official results, pit counts, stage completion, championship standings, rating
-formula, video/media rights or unknown historical schedule is inferred.
+Fresh selections still respect normal provider freshness/floor/backoff; snapshots
+do not repair genuinely missing/partial source data. Existing snapshot tokens
+from the uncorrected PR require starting over after this update/reload.
 
-NASCAR data-use/polling/retention/redistribution rights, current anonymous access,
-active-session validation, broad historical coverage, permitted faster CF cadence,
-HACS brands/publication and production HA OS acceptance remain open gates.
-The MIT license remains code-only. No merge, deployment, release, publication,
-visibility change, CF permission/cadence change or Phase 5B/5C visual implementation
-is part of this change.
+NASCAR rights, source units/sentinels, anonymous access, active-race validation,
+broader historical coverage, faster cadence permission, public HACS/brands and
+production HA OS acceptance remain open. MIT applies to code only. This change
+makes the existing Phase 5A interface reliable within explicit finite resources;
+it does not begin Phase 5B.

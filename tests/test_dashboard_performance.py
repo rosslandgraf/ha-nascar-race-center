@@ -12,8 +12,8 @@ from custom_components.nascar_race_center.analytics import analyze_history
 from custom_components.nascar_race_center.analytics_models import AnalyticsQuery
 from custom_components.nascar_race_center.dashboard_pages import (
     MAX_RESPONSE_BYTES,
-    page,
 )
+from custom_components.nascar_race_center.dashboard_snapshots import build_index
 from custom_components.nascar_race_center.history_models import (
     DriverLaps,
     HistoricalData,
@@ -63,22 +63,30 @@ def test_largest_synthetic_pages_have_bounded_retention_and_bytes():
         ("history_50000_laps", history),
         ("analytics_60000_projected_windows", analytics),
     ):
-        durations = []
-        for _ in range(3):
-            start = time.perf_counter()
-            output = page(result, 0, 200, None)
-            durations.append(time.perf_counter() - start)
+        start = time.perf_counter()
+        index = build_index(result)
+        first_seconds = time.perf_counter() - start
+        start = time.perf_counter()
+        output = index.page("a" * 64, 0, 200)
+        first_read_seconds = time.perf_counter() - start
+        start = time.perf_counter()
+        later = index.page("a" * 64, 200, 200)
+        next_seconds = time.perf_counter() - start
+        assert later["records"] != output["records"]
         tracemalloc.start()
-        output = page(result, 0, 200, None)
+        traced_index = build_index(result)
         retained, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()
+        assert traced_index.retained_bytes >= retained
         size = len(json.dumps(output).encode())
         assert size < MAX_RESPONSE_BYTES
         assert output["pagination"]["returned"] == 200
         assert output["pagination"]["next_offset"] == 200
-        assert not output["pagination"]["complete"]
         observations[label] = {
-            "seconds": durations,
+            "first_build_seconds": first_seconds,
+            "first_read_seconds": first_read_seconds,
+            "next_read_seconds": next_seconds,
+            "budgeted_bytes": index.retained_bytes,
             "retained_bytes": retained,
             "peak_bytes": peak,
             "response_bytes": size,

@@ -211,11 +211,15 @@ def page(
     limit: int,
     snapshot: str | None,
 ) -> dict[str, Any]:
-    """Bound memory/bytes, hash all rows to reject mixed snapshots on continuation.
+    """Stateless reference; runtime history/analytics use snapshot indexes."""
+    header, records, context = result_records(result)
+    return record_page(header, records, offset, limit, snapshot, context)
 
-    No completed-result cache: the existing history/analytics brokers own I/O,
-    coalescing and cancellation. Continuations may recalculate from cached data.
-    """
+
+def result_records(
+    result: HistoryResponse | AnalyticsResult,
+) -> tuple[dict[str, Any], Iterator[dict[str, Any]], object]:
+    """Project metadata and lazily expose the normalized source record stream."""
     if isinstance(result, HistoryResponse):
         header = {
             "race": project(result.key),
@@ -260,7 +264,7 @@ def page(
             result.reason,
             [(e.dataset, e.status, e.reason) for e in result.evidence],
         ]
-    return record_page(header, records, offset, limit, snapshot, context)
+    return header, records, context
 
 
 def record_page(

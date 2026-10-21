@@ -515,14 +515,14 @@ async def test_cancelled_serializer_keeps_its_slot_until_worker_drains(
     first, second, third = [await hass_ws_client(hass) for _ in range(3)]
     started = asyncio.Event()
     release = threading.Event()
-    original = dashboard.page
+    original = dashboard.build_index
 
     def blocked(*args):
         hass.loop.call_soon_threadsafe(started.set)
         assert release.wait(timeout=5)
         return original(*args)
 
-    monkeypatch.setattr(dashboard, "page", blocked)
+    monkeypatch.setattr(dashboard, "build_index", blocked)
     kwargs = dict(series_id=1, season=2024, race_id=88001, datasets=["laps"])
     for client in (first, second):
         await client.send_json_auto_id(message(dashboard_entry, "history", **kwargs))
@@ -536,6 +536,10 @@ async def test_cancelled_serializer_keeps_its_slot_until_worker_drains(
     assert (await second.receive_json())["success"]
     await hass.async_block_till_done()
     assert not dashboard_entry.runtime_data.dashboard.requests
+    assert len(dashboard_entry.runtime_data.dashboard.snapshots.leases) == 1
+    await second.client.close()
+    await hass.async_block_till_done()
+    assert not dashboard_entry.runtime_data.dashboard.snapshots.leases
 
 
 async def test_entry_wide_subscription_limit_and_foreign_entry(

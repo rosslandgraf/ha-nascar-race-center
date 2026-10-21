@@ -1,5 +1,9 @@
 // Dashboard API v1 normalized model declarations; documentation only.
 // No frontend assets or runtime package. Dates are ISO strings; source date labels remain unparsed.
+// History/analytics snapshot: opaque 64-hex token, fixed 300-second lifetime.
+// Bound to user, original socket, entry runtime and exact selection; offsets/limits may vary.
+// Continuations read an immutable bounded row index; source changes require a new selection.
+// Invalid/expired tokens require restarting; no resume across disconnect/reload.
 // IDs use lossless decimal strings. Requests use bounded integer IDs (see DASHBOARD_API.md).
 
 export interface Session {
