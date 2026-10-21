@@ -1,0 +1,80 @@
+{
+  "series_1": [
+    {
+      "series_id": 1,
+      "race_id": 99051,
+      "race_season": 2026,
+      "race_name": "Synthetic Series 1 Race",
+      "track_id": 99081,
+      "track_name": "Synthetic Speedway",
+      "date_scheduled": "2026-10-25T14:00:00",
+      "race_date": "2026-10-26T14:00:00",
+      "schedule": [
+        {
+          "event_name": "Synthetic Presentation",
+          "notes": "",
+          "run_type": 0,
+          "start_time_utc": "2026-10-25T17:00:00"
+        },
+        {
+          "event_name": "Synthetic Race",
+          "notes": "",
+          "run_type": 3,
+          "start_time_utc": "2026-10-25T18:00:00"
+        }
+      ]
+    }
+  ],
+  "series_2": [
+    {
+      "series_id": 2,
+      "race_id": 99052,
+      "race_season": 2026,
+      "race_name": "Synthetic Series 2 Race",
+      "track_id": 99081,
+      "track_name": "Synthetic Speedway",
+      "date_scheduled": "2026-10-25T14:00:00",
+      "race_date": "2026-10-26T14:00:00",
+      "schedule": [
+        {
+          "event_name": "Synthetic Presentation",
+          "notes": "",
+          "run_type": 0,
+          "start_time_utc": "2026-10-25T17:00:00"
+        },
+        {
+          "event_name": "Synthetic Race",
+          "notes": "",
+          "run_type": 3,
+          "start_time_utc": "2026-10-25T18:00:00"
+        }
+      ]
+    }
+  ],
+  "series_3": [
+    {
+      "series_id": 3,
+      "race_id": 99053,
+      "race_season": 2026,
+      "race_name": "Synthetic Series 3 Race",
+      "track_id": 99081,
+      "track_name": "Synthetic Speedway",
+      "date_scheduled": "2026-10-25T14:00:00",
+      "race_date": "2026-10-26T14:00:00",
+      "schedule": [
+        {
+          "event_name": "Synthetic Presentation",
+          "notes": "",
+          "run_type": 0,
+          "start_time_utc": "2026-10-25T17:00:00"
+        },
+        {
+          "event_name": "Synthetic Race",
+          "notes": "",
+          "run_type": 3,
+          "start_time_utc": "2026-10-25T18:00:00"
+        }
+      ]
+    }
+  ]
+}

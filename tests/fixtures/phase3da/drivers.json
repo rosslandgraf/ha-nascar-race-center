@@ -1,0 +1,26 @@
+{
+  "status": 200,
+  "message": "Synthetic directory",
+  "response": [
+    {
+      "Nascar_Driver_ID": 99011,
+      "Driver_ID": "88011",
+      "Full_Name": "Synthetic Driver",
+      "Driver_Series": "",
+      "Badge": "07",
+      "Team": "88021",
+      "Manufacturer": "",
+      "DOB": "",
+      "DOD": "0001-01-01T00:00:00"
+    },
+    {
+      "Nascar_Driver_ID": 99012,
+      "Driver_ID": "88012",
+      "Full_Name": "Synthetic Second Driver",
+      "Driver_Series": "unverified-series",
+      "Badge": "",
+      "Team": "Example Team",
+      "Manufacturer": ""
+    }
+  ]
+}

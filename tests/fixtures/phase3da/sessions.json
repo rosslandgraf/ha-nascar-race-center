@@ -1,0 +1,28 @@
+[
+  {
+    "series_id": 1,
+    "race_id": 99051,
+    "race_name": "Synthetic Race 99051",
+    "track_id": 99081,
+    "track_name": "Synthetic Speedway",
+    "event_name": "Synthetic Race",
+    "run_type": 3,
+    "start_time": "2026-10-25T14:00:00",
+    "end_time": "2026-10-25T17:00:00",
+    "start_time_utc": "2026-10-25T18:00:00",
+    "end_time_utc": "2026-10-25T21:00:00"
+  },
+  {
+    "series_id": 1,
+    "race_id": 99059,
+    "race_name": "Synthetic Race 99059",
+    "track_id": 99081,
+    "track_name": "Synthetic Speedway",
+    "event_name": "Synthetic Race",
+    "run_type": 3,
+    "start_time": "2026-10-25T14:00:00",
+    "end_time": "2026-10-25T17:00:00",
+    "start_time_utc": "2026-10-25T18:00:00",
+    "end_time_utc": "2026-10-25T21:00:00"
+  }
+]

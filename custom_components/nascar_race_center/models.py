@@ -55,6 +55,7 @@ class Session:
     end_time: datetime | None = None
     status: str | None = None
     notes: str | None = None
+    run_type_code: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,6 +96,8 @@ class LiveSnapshot:
     leaderboard_failed: bool = False
     stage: CurrentStage | None = None
     stage_failed: bool = False
+    run_type_code: int | None = None
+    flag_state_code: int | None = None
 
     @property
     def session_key(self) -> tuple[int, int, int | None]:
@@ -171,6 +174,7 @@ def _session(
         start_time=start,
         end_time=end,
         notes=_text(row.get("notes")) if not detailed else None,
+        run_type_code=run_type,
     )
 
 
@@ -319,6 +323,12 @@ def merge_schedule(
         if prior is None:
             races[key] = race
             continue
+        if (
+            prior.track_id is not None
+            and race.track_id is not None
+            and prior.track_id != race.track_id
+        ):
+            raise SchemaError("Schedule sources have conflicting track identities")
         notes = {session.session_id: session.notes for session in prior.sessions}
         has_race_session = any(session.kind == "race" for session in race.sessions)
         races[key] = replace(
@@ -393,4 +403,6 @@ def parse_live(payload: object) -> LiveSnapshot | None:
         leaderboard_failed=leaderboard_failed,
         stage=stage,
         stage_failed=stage_failed,
+        run_type_code=run_type,
+        flag_state_code=flag_state,
     )

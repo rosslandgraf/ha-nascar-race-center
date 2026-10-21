@@ -1,5 +1,7 @@
 """Swappable data providers; demonstration mode never makes network requests."""
 
+from collections import OrderedDict
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
@@ -37,17 +39,43 @@ class CFProvider:
     def __init__(self, session: ClientSession) -> None:
         """Use Home Assistant's managed shared session."""
         self.api = NascarApiClient(session, max_cache_entries=16)
+        self.parse_results: OrderedDict[str, str] = OrderedDict()
         self.schedule_details_failed: set[tuple[int, int]] = set()
+
+    async def _read[T](
+        self,
+        path: str,
+        ttl: int,
+        parser: Callable[[object], T],
+        *,
+        key: str | None = None,
+    ) -> T:
+        """Separate transport, JSON and domain parsing without retaining raw data."""
+        key = key or path
+        self.parse_results[key] = "not_parsed"
+        self.parse_results.move_to_end(key)
+        while len(self.parse_results) > 24:
+            self.parse_results.popitem(last=False)
+        payload = await self.api.async_get_json(path, minimum_ttl=ttl)
+        try:
+            result = parser(payload)
+        except ProviderError:
+            self.parse_results[key] = "invalid"
+            raise
+        self.parse_results[key] = "parsed"
+        return result
 
     async def async_get_schedule(self, year: int, series_id: int) -> tuple[Race, ...]:
         """Combine slow independent schedule feeds without losing usable races."""
         basic: tuple[Race, ...] | None = None
         basic_error: ProviderError | None = None
         try:
-            payload = await self.api.async_get_json(
-                schedule_path(year), minimum_ttl=3600
+            basic = await self._read(
+                schedule_path(year),
+                3600,
+                lambda payload: parse_schedule(payload, series_id, year=year),
+                key=f"basic:{year}:{series_id}",
             )
-            basic = parse_schedule(payload, series_id, year=year)
         except ProviderError as err:
             basic_error = err
         # Only the current/requested adjacent season is retained in diagnostics.
@@ -55,11 +83,16 @@ class CFProvider:
             key for key in self.schedule_details_failed if abs(key[0] - year) <= 1
         )
         try:
-            details = await self.api.async_get_json(
-                schedule_feed_path(year, series_id), minimum_ttl=21600
+            detailed = await self._read(
+                schedule_feed_path(year, series_id),
+                21600,
+                lambda payload: parse_schedule_feed(payload, series_id, year),
+                key=f"sessions:{year}:{series_id}",
             )
-            detailed = parse_schedule_feed(details, series_id, year)
+            merged = merge_schedule(basic or (), detailed)
         except ProviderError:
+            if self.parse_results.get(f"sessions:{year}:{series_id}") == "parsed":
+                self.parse_results[f"sessions:{year}:{series_id}"] = "context_conflict"
             self.schedule_details_failed.add((year, series_id))
             if basic is not None:
                 return basic
@@ -71,11 +104,11 @@ class CFProvider:
             # authoritative season is empty or conceal its access/schema error.
             assert basic_error is not None
             raise basic_error
-        return merge_schedule(basic or (), detailed)
+        return merged
 
     async def async_get_live(self) -> LiveSnapshot | None:
         """Read session context without treating archived data as active."""
-        return parse_live(await self.api.async_get_json(LIVE_FEED, minimum_ttl=60))
+        return await self._read(LIVE_FEED, 60, parse_live)
 
 
 class DemoProvider:
