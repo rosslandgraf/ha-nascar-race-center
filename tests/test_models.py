@@ -13,7 +13,7 @@ from custom_components.nascar_race_center.models import (
 )
 from custom_components.nascar_race_center.provider import DemoProvider
 
-FIXTURES = Path(__file__).parent / "fixtures"
+FIXTURES = Path(__file__).parent / "fixtures" / "nascar"
 
 
 def test_schedule_shapes_timezone_and_missing_fields() -> None:

@@ -1,0 +1,929 @@
+{
+  "provenance": "handmade_synthetic_only",
+  "schemas": {
+    "drivers.json": {
+      "$": {
+        "types": [
+          "object"
+        ],
+        "seen": 1,
+        "objects": 1,
+        "parent": null,
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"response\"]": {
+        "types": [
+          "array"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"response\"][*]": {
+        "types": [
+          "object"
+        ],
+        "seen": 4,
+        "objects": 4,
+        "parent": "$[\"response\"]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"response\"][*][\"Badge\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[\"response\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"response\"][*][\"Driver_Series\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[\"response\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"response\"][*][\"Full_Name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 4,
+        "objects": 0,
+        "parent": "$[\"response\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"response\"][*][\"Manufacturer\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"response\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"response\"][*][\"Nascar_Driver_ID\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 4,
+        "objects": 0,
+        "parent": "$[\"response\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"response\"][*][\"Team\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[\"response\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      }
+    },
+    "live.json": {
+      "$": {
+        "types": [
+          "object"
+        ],
+        "seen": 1,
+        "objects": 1,
+        "parent": null,
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"flag_state\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"lap_number\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"race_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"run_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"run_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"run_type\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"time_of_day_os\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"]": {
+        "types": [
+          "array"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      }
+    },
+    "live_timing.json": {
+      "$": {
+        "types": [
+          "object"
+        ],
+        "seen": 1,
+        "objects": 1,
+        "parent": null,
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"elapsed_time\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"flag_state\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"lap_number\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"laps_in_race\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"laps_to_go\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"race_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"run_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"run_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"run_type\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"time_of_day_os\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"]": {
+        "types": [
+          "array"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*]": {
+        "types": [
+          "object"
+        ],
+        "seen": 3,
+        "objects": 3,
+        "parent": "$[\"vehicles\"]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"average_speed\"]": {
+        "types": [
+          "number"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"best_lap_speed\"]": {
+        "types": [
+          "number"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"best_lap_time\"]": {
+        "types": [
+          "number"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"delta\"]": {
+        "types": [
+          "number"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"driver\"]": {
+        "types": [
+          "object"
+        ],
+        "seen": 3,
+        "objects": 3,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"driver\"][\"driver_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*][\"driver\"]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"driver\"][\"full_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*][\"driver\"]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"is_on_track\"]": {
+        "types": [
+          "boolean"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"laps_completed\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"laps_led\"]": {
+        "types": [
+          "array"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"laps_led\"][*]": {
+        "types": [
+          "object"
+        ],
+        "seen": 1,
+        "objects": 1,
+        "parent": "$[\"vehicles\"][*][\"laps_led\"]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"laps_led\"][*][\"end_lap\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*][\"laps_led\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"laps_led\"][*][\"start_lap\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*][\"laps_led\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"last_lap_speed\"]": {
+        "types": [
+          "number"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"last_lap_time\"]": {
+        "types": [
+          "number"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"running_position\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"starting_position\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"status\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"vehicle_manufacturer\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"vehicles\"][*][\"vehicle_number\"]": {
+        "types": [
+          "integer",
+          "string"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[\"vehicles\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      }
+    },
+    "schedule.json": {
+      "$": {
+        "types": [
+          "object"
+        ],
+        "seen": 1,
+        "objects": 1,
+        "parent": null,
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_1\"]": {
+        "types": [
+          "array"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_1\"][*]": {
+        "types": [
+          "object"
+        ],
+        "seen": 2,
+        "objects": 2,
+        "parent": "$[\"series_1\"]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_1\"][*][\"date_scheduled\"]": {
+        "types": [
+          "null",
+          "string"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"series_1\"][*]",
+        "missing_observed": false,
+        "null_observed": true
+      },
+      "$[\"series_1\"][*][\"ignored_future_field\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"series_1\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"series_1\"][*][\"race_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"series_1\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_1\"][*][\"race_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"series_1\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_1\"][*][\"series_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"series_1\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_1\"][*][\"track_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"series_1\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"series_2\"]": {
+        "types": [
+          "array"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_2\"][*]": {
+        "types": [
+          "object"
+        ],
+        "seen": 1,
+        "objects": 1,
+        "parent": "$[\"series_2\"]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_2\"][*][\"date_scheduled\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"series_2\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_2\"][*][\"race_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"series_2\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_2\"][*][\"race_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"series_2\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_2\"][*][\"series_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"series_2\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_2\"][*][\"track_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"series_2\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"series_3\"]": {
+        "types": [
+          "array"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      }
+    },
+    "session_schedule.json": {
+      "$": {
+        "types": [
+          "array"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": null,
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[*]": {
+        "types": [
+          "object"
+        ],
+        "seen": 3,
+        "objects": 3,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[*][\"end_time_utc\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[*][\"event_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[*][\"race_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[*][\"race_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[*][\"run_type\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[*][\"series_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[*][\"start_time_utc\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[*][\"track_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[*][\"track_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 3,
+        "objects": 0,
+        "parent": "$[*]",
+        "missing_observed": false,
+        "null_observed": false
+      }
+    },
+    "tracks.json": {
+      "$": {
+        "types": [
+          "object"
+        ],
+        "seen": 1,
+        "objects": 1,
+        "parent": null,
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"items\"]": {
+        "types": [
+          "array"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"items\"][*]": {
+        "types": [
+          "object"
+        ],
+        "seen": 2,
+        "objects": 2,
+        "parent": "$[\"items\"]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"items\"][*][\"city\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"items\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"items\"][*][\"length\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"items\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"items\"][*][\"state\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"items\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"items\"][*][\"track_id\"]": {
+        "types": [
+          "integer"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"items\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"items\"][*][\"track_name\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 2,
+        "objects": 0,
+        "parent": "$[\"items\"][*]",
+        "missing_observed": false,
+        "null_observed": false
+      },
+      "$[\"items\"][*][\"track_surface\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"items\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      },
+      "$[\"items\"][*][\"track_type\"]": {
+        "types": [
+          "string"
+        ],
+        "seen": 1,
+        "objects": 0,
+        "parent": "$[\"items\"][*]",
+        "missing_observed": true,
+        "null_observed": false
+      }
+    }
+  }
+}

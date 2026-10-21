@@ -21,7 +21,7 @@ from custom_components.nascar_race_center.reference_provider import (
     DemoReferenceProvider,
 )
 
-FIXTURES = Path(__file__).parent / "fixtures"
+FIXTURES = Path(__file__).parent / "fixtures" / "nascar"
 
 
 def test_driver_identity_groups_multiple_series_without_a_roster_claim() -> None:

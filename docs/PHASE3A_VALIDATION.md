@@ -1,5 +1,9 @@
 # Phase 3A delivery and validation
 
+October 21 follow-up: see the [API library audit](api/AUDIT_REPORT.md) for the
+28-endpoint attempt evidence, permanent reference materials, malformed-key fix
+and updated validation. The original Phase 3A results below remain historical.
+
 Validation date: October 20, 2026 (America/New_York). Work began from latest
 `origin/main` commit `fb88120`, containing reviewed/merged Phases 1 and 2.
 The unmodified **243-test baseline passed** before development. Feature branch:

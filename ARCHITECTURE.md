@@ -1,5 +1,11 @@
 # Architecture
 
+The October 21 [API reference audit](docs/api/AUDIT_REPORT.md) attempted all 28
+documented URLs; proxy CONNECT policy prevented all origin responses. The
+[reference library](docs/api/README.md) is a development/test resource only.
+Production continues through the providers, shared aiohttp transport and
+independent coordinators below. No saved fixture is a live fallback.
+
 NASCAR Race Center is a UI-configured Home Assistant custom integration with a replaceable provider. Phases 1 and 2 supply schedules, calendars and favorite metadata. Phase 3A adds normalized experimental live fields and compact race/favorite timing projections. Live provider operation remains experimental until anonymous access and active-session behavior are independently validated. Community schema references and structural tests support the adapters; no direct CF validation has been performed in this environment.
 
 ## Layers and ownership

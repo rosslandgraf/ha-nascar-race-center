@@ -8,7 +8,7 @@ import pytest
 
 from custom_components.nascar_race_center.models import parse_live
 
-FIXTURE = Path(__file__).parent / "fixtures" / "live_timing.json"
+FIXTURE = Path(__file__).parent / "fixtures" / "nascar" / "live_timing.json"
 
 
 def timing_payload():

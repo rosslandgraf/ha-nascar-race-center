@@ -23,6 +23,15 @@ That activation path belongs to the prepared cloud environment, not the installe
 
 ## Provider and data boundaries
 
+- Before API-related work, read [docs/api/README.md](docs/api/README.md), the
+  [endpoint catalog](docs/api/ENDPOINT_CATALOG.md), field reference, fixture
+  provenance and latest API audit. Distinguish blocked transport from origin
+  responses, synthetic contracts from observed schemas, and HTTP freshness from
+  active-race evidence. Follow the library's feature-validation workflow.
+- Manual authorized checks use `scripts/nascar_reference.py`; keep raw captures
+  in ignored `work/`, review schema differences, and never automatically replace
+  fixtures. Routine CI stays offline. Neither production nor demonstration mode
+  may silently consume bundled fixtures as live data.
 - Use only the documented `https://cf.nascar.com` endpoint catalog. Never require employee credentials, use the restricted Swagger API, guess tokens, scrape video, or infer playback rights.
 - Keep demonstration mode usable without network access. CF mode requires explicit data-use authorization in configuration; permission to develop does not establish permission to distribute or poll NASCAR data.
 - Inspect the managed environment network policy before network work. Do not bypass a denied destination or disable TLS verification.

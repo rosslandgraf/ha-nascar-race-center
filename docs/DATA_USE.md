@@ -12,6 +12,14 @@ No NASCAR-controlled logos, driver photographs, video assets or full captured fe
 
 ## Outstanding decisions
 
+The October 21 API audit authorized a bounded manual anonymous GET pass over the
+original 28 URLs. All were denied at the environment proxy CONNECT step; no
+NASCAR body was collected. This task authorization does not establish broader
+NASCAR polling, storage or redistribution rights. The new
+[reference library](api/README.md) commits metadata and handmade fixtures only.
+Eligible future raw captures stay in ignored `work/` with private file permissions
+until a separate rights/content review; excluded/no-store bodies are not saved.
+
 | Decision | Status |
 | --- | --- |
 | Project code license | Existing MIT retained |

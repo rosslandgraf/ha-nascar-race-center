@@ -4,6 +4,13 @@ A Home Assistant custom integration for NASCAR's three national series, with sea
 
 The long-term target includes race-weekend schedules, timing/scoring, favorite drivers, championship points, historical analytics, automations and an optional responsive dashboard. See the complete [specification](NASCAR_Race_Center_Codex_Brief.md) and [phased roadmap](ROADMAP.md).
 
+Development reference: [API library](docs/api/README.md),
+[all 28 endpoints](docs/api/ENDPOINT_CATALOG.md),
+[field dictionary and evidence limits](docs/api/SCHEMA_REFERENCE.md), and
+[October 21 API audit](docs/api/AUDIT_REPORT.md). All 28 fresh attempts were
+blocked at proxy CONNECT, before any NASCAR response. No current real JSON schema
+or active-session behavior was verified. Phase 3B remains paused for review.
+
 ## Available features
 
 - UI configuration and options for one integration entry, selected national series (IDs 1, 2 and 3), and multiple favorite drivers.

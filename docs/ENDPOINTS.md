@@ -1,5 +1,15 @@
 # Endpoint compatibility and evidence
 
+**Current evidence (October 21, 2026):** all 28 original URLs were attempted by
+anonymous HTTPS GET. Every request received proxy CONNECT 403, before a NASCAR
+origin response. Origin HTTP statuses and response types remain unknown; zero
+real JSON bodies were obtained. This does not establish NASCAR/Cloudflare denial
+or universal inaccessibility. See the permanent
+[endpoint catalog](api/ENDPOINT_CATALOG.md), [per-request evidence](api/probes/2026-10-21.json),
+[schema reference](api/SCHEMA_REFERENCE.md) and [audit](api/AUDIT_REPORT.md).
+The older direct-verification entries below mean origin/schema validation is
+still unverified; the new catalog records each attempted request in detail.
+
 The primary provider is `https://cf.nascar.com`. The owner's browser inventory dated **2026-10-20** reports 24 working URLs and four Error/Login results. Those reports are preserved below. They do not establish anonymous access, permission, JSON shape, freshness, or availability for another season/session.
 
 No direct CF requests were made during Phase 1, Phase 2 or Phase 3A development: the managed environment's destination policy does not include `cf.nascar.com`. Tests use synthetic structural fixtures. Third-party source references, where available, support parser hypotheses; they do not independently verify today's CF service. The owner's Phase 2 confirmation of the seven schedule/reference URLs does not alter this distinction. See [SCHEMA_EVIDENCE.md](SCHEMA_EVIDENCE.md) for parser-specific provenance and limitations.

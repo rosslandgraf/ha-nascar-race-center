@@ -1,6 +1,6 @@
 # Phase 3A structural contract
 
-`live_timing.json` is handmade, with fictional identities, times and values. It
+[`nascar/live_timing.json`](nascar/live_timing.json) is handmade, with fictional identities, times and values. It
 is not a CF capture. No NASCAR request was made: the managed destination policy
 excludes `cf.nascar.com`. Replays in tests revise this structure for all three
 series, runs, races, omissions and stale timestamps; they are not real races.

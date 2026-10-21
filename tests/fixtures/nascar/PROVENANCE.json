@@ -1,0 +1,52 @@
+{
+  "fixtures": [
+    {
+      "file": "drivers.json",
+      "provenance": "handmade_synthetic",
+      "nascar_capture": false,
+      "value_policy": "fictional existing regression data; unchanged during reorganization",
+      "evidence": "docs/SCHEMA_EVIDENCE.md",
+      "sha256": "3e8ed3c78271b01620d185abf5a402437499bd3d6c726a9cbbcca8a39a9ef602"
+    },
+    {
+      "file": "live.json",
+      "provenance": "handmade_synthetic",
+      "nascar_capture": false,
+      "value_policy": "fictional existing regression data; unchanged during reorganization",
+      "evidence": "docs/SCHEMA_EVIDENCE.md",
+      "sha256": "7a5ed2342df8362b2678c5a3fec3837bb79da07d46ec3dfc489df2e4916ad802"
+    },
+    {
+      "file": "live_timing.json",
+      "provenance": "handmade_synthetic",
+      "nascar_capture": false,
+      "value_policy": "fictional existing regression data; unchanged during reorganization",
+      "evidence": "docs/SCHEMA_EVIDENCE.md",
+      "sha256": "af318aa9c2a5a763223fba18cc5d62862e1b690d92fb07966f38341fc474ae2e"
+    },
+    {
+      "file": "schedule.json",
+      "provenance": "handmade_synthetic",
+      "nascar_capture": false,
+      "value_policy": "fictional existing regression data; unchanged during reorganization",
+      "evidence": "docs/SCHEMA_EVIDENCE.md",
+      "sha256": "fb7e3ffe6fb363f66bc82bdc5b44efd438ecb6c953f60d165c844af62a581901"
+    },
+    {
+      "file": "session_schedule.json",
+      "provenance": "handmade_synthetic",
+      "nascar_capture": false,
+      "value_policy": "fictional existing regression data; unchanged during reorganization",
+      "evidence": "docs/SCHEMA_EVIDENCE.md",
+      "sha256": "3d3daa5e56f96b63631069e38ae47f61fba65dc0a3b0617830fb11fcb415c395"
+    },
+    {
+      "file": "tracks.json",
+      "provenance": "handmade_synthetic",
+      "nascar_capture": false,
+      "value_policy": "fictional existing regression data; unchanged during reorganization",
+      "evidence": "docs/SCHEMA_EVIDENCE.md",
+      "sha256": "e960bad10092c56102249ddc12b9892253ce6b0b19eb83df9c16e6bcb9ccc765"
+    }
+  ]
+}

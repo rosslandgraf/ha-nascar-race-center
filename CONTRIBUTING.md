@@ -26,6 +26,23 @@ pytest -q
 
 Tests run against actual Home Assistant test fixtures with mocked providers/HTTP, without NASCAR access. Keep fixtures minimal and synthetic until redistribution permission is established. Document response-shape evidence and include meaningful error, time, cache and lifecycle cases for changed behavior. Do not commit local HA configuration, `.storage`, databases, logs, secrets, or environment files.
 
+## API reference workflow
+
+Before implementing a feed-dependent feature, read the
+[API library](docs/api/README.md), [endpoint catalog](docs/api/ENDPOINT_CATALOG.md),
+[field dictionary](docs/api/SCHEMA_REFERENCE.md) and
+[latest API audit](docs/api/AUDIT_REPORT.md). Fixtures now live in
+`tests/fixtures/nascar/`, with individual provenance and unchanged fictional data.
+Consult current real responses when authorized/practical and record exact
+URL/time/IDs and evidence limits. The developer-only
+`python scripts/nascar_reference.py --authorized --endpoint live_feed` command
+stores eligible raw JSON locally under ignored `work/`; `--baseline` reports
+schema differences. Review them before editing documentation or authoring a
+minimal synthetic regression. It never updates reviewed fixtures automatically.
+Keep live checks separate from ordinary CI and leave production on its actual
+network adapters/polling architecture. See the library for network and data-use
+boundaries; an inaccessible response is not permission to invent its schema.
+
 ## Restored-runtime verification
 
 The prepared environment also contains an independent runtime smoke test. It validates the environment's authenticated HA API and service dispatch; it is separate from integration tests:
