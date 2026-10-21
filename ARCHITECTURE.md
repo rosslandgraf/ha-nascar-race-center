@@ -18,6 +18,13 @@ flowchart TD
     Entry --> Live[Live coordinator]
     Entry --> History[On-demand history service]
     Entry --> Analytics[On-demand analytics service]
+    Entry --> Dashboard[Entry-owned dashboard resources]
+    HAWS[Authenticated native HA WebSocket API] --> Dashboard
+    Dashboard --> Live
+    Dashboard --> Schedule
+    Dashboard --> Reference
+    Dashboard --> History
+    Dashboard --> Analytics
     Analytics --> History
     Analytics --> Calculations[Pure validation and calculations in HA executor]
     Calculations --> AnalyticsModels[Immutable analytics result contract v1]
@@ -383,3 +390,44 @@ race-scoped. Formula, field, unit, availability, sample and retention contracts
 are documented in [ANALYTICS.md](docs/ANALYTICS.md), with executed checks in
 [Phase 4B validation](docs/PHASE4B_VALIDATION.md). Phase 5 owns future authenticated
 transport, visualization and client-specific presentation.
+
+## Phase 5A authenticated dashboard boundary
+
+`websocket.py` registers dashboard API v1 through supported Home Assistant
+WebSocket extensions. Every command checks active administrator status, the
+loaded NASCAR config entry and selected series. HA has no general config-entry
+read ACL for full datasets, so v1 fails closed for all non-administrators rather
+than treating visibility of a compact entity as permission to read race history.
+Authorization is checked again before async delivery and subscription emissions.
+
+`RuntimeData.dashboard` owns client listeners, a single pending 100 ms coalescing
+callback per subscription, request admission and cancellation/drain. It listens
+to existing coordinators (including local content expiry); it creates no NASCAR
+poll or refresh trigger. Native HA owns authentication, queues, unsubscribe and
+socket backpressure. No per-user state is shared outside its entry. Reload,
+unload, failed setup and stop drain work and release listeners. Stop listeners
+remain removable after firing, avoiding duplicate once-listener removal when an
+entry subsequently unloads during shutdown.
+
+`dashboard_views.py` reads cached normalized consumer views. Explicit field
+allowlists in `dashboard_schema.py` avoid raw dictionaries and automatic model
+serialization. `dashboard_pages.py` flattens large normalized collections at row
+boundaries in the HA executor. Schedule/live-detail pages use content digests.
+History/analytics use `dashboard_snapshots.py`: one full projection/hash builds an
+immutable serialized row index; continuations decode only requested rows without
+service calls, refetches or recalculation. Opaque snapshot tokens bind content,
+entry runtime, user, socket and exact selection. Four globally reserved slots,
+two per user, 24 MiB/100,000 rows each and fixed 300-second expiry explicitly bound
+retention. Disconnect, unload/reload and stop release completed snapshots; canceled
+workers retain reservations until drained. Oversized selections fail before issuing
+a token. The HTTP cache remains two documents and the 60-second floor is unchanged.
+Pages retain at most 200 returned records and fit a 256 KiB envelope budget. Existing
+history/analytics services retain retrieval, cooldown, coalescing, computation,
+provenance and cancellation ownership. No formula moves into transport.
+
+Full leaderboards remain ephemeral dedicated views. Live embedded/scoring arrays
+have explicit two-record previews and paged detail commands. No entity IDs,
+Recorder attributes, event semantics, live cadence permissions or startup GET
+budgets change. The [full contract](docs/DASHBOARD_API.md) defines Phase 5B's
+consumption boundary; its model declarations are documentation only. No frontend
+assets, card/resource registration, production installation or release is included.
