@@ -16,6 +16,10 @@ flowchart TD
     Entry --> Schedule[Schedule coordinator]
     Entry --> Reference[Reference coordinator / favorites registry]
     Entry --> Live[Live coordinator]
+    Entry --> History[On-demand history service]
+    History --> HistoryProvider[Independent historical provider]
+    HistoryProvider --> HTTP
+    History --> HistoryModels[Immutable reported historical models]
     Schedule --> Provider[Provider protocol]
     Live --> Provider
     Reference --> Provider
@@ -38,7 +42,7 @@ flowchart TD
 | HTTP transport | Shared session, cancellation, timeouts, cache validators, errors and bounded backoff | No domain interpretation or entity creation |
 | Provider | Parse supported field shapes and return typed models | Swap provider without changing entities |
 | Models | Stable IDs, timezone-aware times, explicit optional values | Add documented facts without exposing raw JSON |
-| Coordinators | Deduplicate polling, select seasons, manage freshness and failures | Separate schedules, driver/track references, live sessions, and future on-demand history |
+| Coordinators | Deduplicate polling, select seasons, manage freshness and failures | Separate schedules, driver/track references and live sessions; history has an independent on-demand broker |
 | Entities | Render compact state and availability | No direct HTTP calls or full leaderboard attributes |
 | Config entry | Selected series, source, authorization and options lifecycle | Version/migrate persisted configuration as needed |
 | Optional frontend, later | Accessible interactive views | Dedicated package and HACS dashboard distribution |
@@ -87,7 +91,7 @@ The timestamp of a successful HTTP request is transport freshness. It cannot pro
 
 - Phase 2 supplies session-aware calendars and favorite-driver metadata behind evidence-limited schedule/reference adapters. Remaining direct schema, timestamp/status and data-use gates are recorded in the evidence documents. Schedule/reference caches remain separate from live timing.
 - Phase 3A supplies evidence-limited timing and session progress. Later Phase 3 assignments own pits, stages, points and automation events. A persistent event ledger and baseline/restart/replay suppression are required before events are enabled.
-- Phase 4 adds bounded historical caches and on-demand requests keyed by season/series/race/driver. Derived statistics carry formulas, source availability and provenance; they never overwrite reported facts.
+- Phase 4A supplies bounded on-demand history keyed by season/series/race/dataset. Phase 4B will add derived statistics with formulas, source availability and provenance; they never overwrite reported facts.
 - Phase 5 adds an authenticated Home Assistant data view for larger leaderboards/history and a separate optional card package. It must avoid huge entity attributes and unnecessary Recorder writes.
 - Phase 6 closes compatibility, translation, diagnostics, data-use, branding, replay and release gates. Dashboard and integration releases have distinct artifacts and compatibility checks.
 
@@ -314,3 +318,32 @@ live data can stay unavailable until eligible. A storage error blocks live I/O.
 Existing event-ledger ownership, durable publication barriers, standalone scoring
 eligibility, schedules/references and shared HA session ownership are preserved.
 See [Phase 3D-B validation](docs/PHASE3DB_VALIDATION.md).
+
+
+## Phase 4A on-demand history boundary
+
+`history_models.py` defines immutable reported history, complete `HistoricalRaceKey`,
+strict dataset/status enums and compact request/validation/cache provenance.
+`history_parser.py` implements only observed profiles 13–19, preserving namespaces,
+nulls, unknown codes, source field distinctions and candidate sentinels. Archived
+pit/stage parsing reuses Phase 3B without changing its live association rules.
+`history_provider.py` supplies independent CF and offline fictional adapters.
+`history.py` exposes `entry.runtime_data.history.async_get(key, datasets)` for future
+Phase 4B/5 consumers. No coordinator, startup detail refresh or live timer owns it.
+
+The broker deduplicates identical concurrent selections, bounds unique in-flight
+keys to eight and cancels upstream work after the last consumer cancels. The shared
+HTTP client supplies the existing lock, timeout, size, validator and host-backoff
+controls with a separate two-document historical LRU. Its current 16-entry
+live/schedule/reference cache remains independent. Historical raw bodies and
+validators are ephemeral and are cleared on failed/cancelled setup, unload/reload
+and HA stop; no historical state goes to HA Store, Recorder or entity attributes.
+Existing compact host-wide throttling and event state retain their prior semantics.
+
+Datasets remain independently available and are never implicitly joined. Requested
+path context is distinguished from reported source identity; matching numeric run
+IDs across namespaces, car numbers and names do not authorize joins. No source
+field establishes official finality or publication state. All three series and
+multiple years are exercised synthetically; actual cross-context CF coverage
+remains unverified. Read [HISTORY.md](docs/HISTORY.md) for the exact fields, status
+contract, resource/retention/request budgets, lifecycle and remaining limitations.

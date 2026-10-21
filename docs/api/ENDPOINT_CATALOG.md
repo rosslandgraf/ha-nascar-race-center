@@ -434,3 +434,17 @@ success would still not prove a currently active session.
 - **Integration dependencies:** Reference only; no production consumer.
 - **Fixture:** none (no invented real sample). Real capture: **none**.
 - **Limitations/validation:** owner report `error_login`; no current origin/schema/session observation. Experimental parser support, where present, is community-supported and synthetically tested; data permissions and allowed cadence remain unresolved.
+
+
+## Phase 4A historical implementation
+
+The seven explicit historical endpoint patterns, supported field models, distinct
+availability/provenance states and request/retention limits are documented in
+[the historical contract](../HISTORY.md). Production implements weekend-feed,
+lap-times, lap-notes, loopstats/prod, lap-averages, archived live-pit-data and
+archived live-stage-points through an independent on-demand provider. These are
+observed examples, not verified coverage across years/series/races. There are zero
+historical startup or ordinary scheduled detail requests. No alternate/legacy,
+SnappyTV, recap or Drive historical request is added. No NASCAR network call was
+performed in Phase 4A; original probe and imported snapshot evidence is unchanged.
+See [Phase 4A validation](../PHASE4A_VALIDATION.md) for actual checks and unresolved gates.
