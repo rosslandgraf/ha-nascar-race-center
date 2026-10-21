@@ -11,6 +11,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
+from .analytics_runtime import AnalyticsService
 from .const import (
     CONF_APPROACHING_INTERVAL,
     CONF_DATA_USE_AUTHORIZED,
@@ -62,6 +63,7 @@ class RuntimeData:
     scoring: ScoringCoordinator
     events: EventRuntime
     history: HistoryService
+    analytics: AnalyticsService
 
 
 type NascarConfigEntry = ConfigEntry[RuntimeData]
@@ -165,6 +167,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
     entry.async_on_unload(
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, history.async_close)
     )
+    analytics = AnalyticsService(hass, history)
+    entry.async_on_unload(analytics.async_close)
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, analytics.async_close)
+    )
     entry.runtime_data = RuntimeData(
         provider=provider,
         schedule=schedule,
@@ -174,6 +181,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
         scoring=scoring,
         events=events,
         history=history,
+        analytics=analytics,
     )
     # DataUpdateCoordinator registers each async_shutdown override with
     # entry.async_on_unload during construction, before either first refresh.
