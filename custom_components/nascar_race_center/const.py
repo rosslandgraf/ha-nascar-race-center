@@ -31,3 +31,13 @@ LIVE_STALE_AFTER = timedelta(minutes=15)
 SCHEDULE_STALE_AFTER = timedelta(days=1)
 REFERENCE_INTERVAL = timedelta(days=1)
 REFERENCE_STALE_AFTER = timedelta(days=7)
+
+# Only position is enabled by default; users opt into additional timing history.
+FAVORITE_LIVE_METRICS = (
+    "position",
+    "last_lap",
+    "best_lap",
+    "gap",
+    "running_status",
+    "position_change",
+)

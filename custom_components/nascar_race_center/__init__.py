@@ -18,6 +18,7 @@ from .const import (
     DEFAULT_LIVE_INTERVAL,
     DEFAULT_SERIES,
     DOMAIN,
+    FAVORITE_LIVE_METRICS,
     MAX_LIVE_INTERVAL,
     MIN_LIVE_INTERVAL,
     PLATFORMS,
@@ -121,19 +122,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
 def _remove_deselected_favorite_entities(
     hass: HomeAssistant, entry: NascarConfigEntry
 ) -> None:
-    """Remove only this entry's metadata sensors for explicitly removed IDs."""
+    """Remove only recognized favorite metrics for explicitly removed IDs."""
     registry = er.async_get(hass)
     selected = {
         f"{entry.entry_id}_driver_{driver_id}_metadata"
         for driver_id in entry.runtime_data.favorites.ids
     }
+    selected.update(
+        f"{entry.entry_id}_driver_{driver_id}_live_{key}"
+        for driver_id in entry.runtime_data.favorites.ids
+        for key in FAVORITE_LIVE_METRICS
+    )
+    suffixes = ("_metadata", *(f"_live_{key}" for key in FAVORITE_LIVE_METRICS))
     prefix = f"{entry.entry_id}_driver_"
     for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
         if (
             entity.platform == DOMAIN
             and entity.domain == "sensor"
             and entity.unique_id.startswith(prefix)
-            and entity.unique_id.endswith("_metadata")
+            and entity.unique_id.endswith(suffixes)
             and entity.unique_id not in selected
         ):
             registry.async_remove(entity.entity_id)
