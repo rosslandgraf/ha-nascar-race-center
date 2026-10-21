@@ -1,0 +1,620 @@
+{
+  "lap_number": 0,
+  "elapsed_time": 0,
+  "flag_state": 0,
+  "race_id": 0,
+  "laps_in_race": 0,
+  "laps_to_go": 0,
+  "vehicles": [
+    {
+      "average_restart_speed": 0.0,
+      "average_running_position": 0.0,
+      "average_speed": 0.0,
+      "best_lap": 0,
+      "best_lap_speed": 0.0,
+      "best_lap_time": 0.0,
+      "vehicle_manufacturer": "<redacted>",
+      "vehicle_number": "<redacted>",
+      "driver": {
+        "driver_id": 0,
+        "full_name": "<redacted>",
+        "first_name": "<redacted>",
+        "last_name": "<redacted>",
+        "is_in_chase": false
+      },
+      "vehicle_elapsed_time": 0.0,
+      "fastest_laps_run": 0,
+      "laps_position_improved": 0,
+      "laps_completed": 0,
+      "laps_led": [
+        {
+          "start_lap": 0,
+          "end_lap": 0
+        }
+      ],
+      "last_lap_speed": 0.0,
+      "last_lap_time": 0.0,
+      "passes_made": 0,
+      "passing_differential": 0,
+      "position_differential_last_10_percent": 0,
+      "pit_stops": [
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0.0
+        }
+      ],
+      "qualifying_status": 0,
+      "running_position": 0,
+      "status": 0,
+      "delta": 0,
+      "sponsor_name": "<redacted>",
+      "starting_position": 0,
+      "times_passed": 0,
+      "quality_passes": 0,
+      "is_on_track": false,
+      "is_on_dvp": false
+    },
+    {
+      "average_restart_speed": 0.0,
+      "average_running_position": 0.0,
+      "average_speed": 0.0,
+      "best_lap": 0,
+      "best_lap_speed": 0.0,
+      "best_lap_time": 0.0,
+      "vehicle_manufacturer": "<redacted>",
+      "vehicle_number": "<redacted>",
+      "driver": {
+        "driver_id": 0,
+        "full_name": "<redacted>",
+        "first_name": "<redacted>",
+        "last_name": "<redacted>",
+        "is_in_chase": false
+      },
+      "vehicle_elapsed_time": 0.0,
+      "fastest_laps_run": 0,
+      "laps_position_improved": 0,
+      "laps_completed": 0,
+      "laps_led": [
+        {
+          "start_lap": 0,
+          "end_lap": 0
+        }
+      ],
+      "last_lap_speed": 0.0,
+      "last_lap_time": 0.0,
+      "passes_made": 0,
+      "passing_differential": 0,
+      "position_differential_last_10_percent": 0,
+      "pit_stops": [
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0.0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        }
+      ],
+      "qualifying_status": 0,
+      "running_position": 0,
+      "status": 0,
+      "delta": 0.0,
+      "sponsor_name": "<redacted>",
+      "starting_position": 0,
+      "times_passed": 0,
+      "quality_passes": 0,
+      "is_on_track": false,
+      "is_on_dvp": false
+    },
+    {
+      "average_restart_speed": 0.0,
+      "average_running_position": 0.0,
+      "average_speed": 0.0,
+      "best_lap": 0,
+      "best_lap_speed": 0.0,
+      "best_lap_time": 0.0,
+      "vehicle_manufacturer": "<redacted>",
+      "vehicle_number": "<redacted>",
+      "driver": {
+        "driver_id": 0,
+        "full_name": "<redacted>",
+        "first_name": "<redacted>",
+        "last_name": "<redacted>",
+        "is_in_chase": false
+      },
+      "vehicle_elapsed_time": 0.0,
+      "fastest_laps_run": 0,
+      "laps_position_improved": 0,
+      "laps_completed": 0,
+      "laps_led": [],
+      "last_lap_speed": 0.0,
+      "last_lap_time": 0.0,
+      "passes_made": 0,
+      "passing_differential": 0,
+      "position_differential_last_10_percent": 0,
+      "pit_stops": [
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0.0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        }
+      ],
+      "qualifying_status": 0,
+      "running_position": 0,
+      "status": 0,
+      "delta": 0.0,
+      "sponsor_name": "<redacted>",
+      "starting_position": 0,
+      "times_passed": 0,
+      "quality_passes": 0,
+      "is_on_track": false,
+      "is_on_dvp": false
+    },
+    {
+      "average_restart_speed": 0.0,
+      "average_running_position": 0.0,
+      "average_speed": 0.0,
+      "best_lap": 0,
+      "best_lap_speed": 0.0,
+      "best_lap_time": 0.0,
+      "vehicle_manufacturer": "<redacted>",
+      "vehicle_number": "<redacted>",
+      "driver": {
+        "driver_id": 0,
+        "full_name": "<redacted>",
+        "first_name": "<redacted>",
+        "last_name": "<redacted>",
+        "is_in_chase": false
+      },
+      "vehicle_elapsed_time": 0.0,
+      "fastest_laps_run": 0,
+      "laps_position_improved": 0,
+      "laps_completed": 0,
+      "laps_led": [],
+      "last_lap_speed": 0.0,
+      "last_lap_time": 0.0,
+      "passes_made": 0,
+      "passing_differential": 0,
+      "position_differential_last_10_percent": 0,
+      "pit_stops": [
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0.0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0.0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        }
+      ],
+      "qualifying_status": 0,
+      "running_position": 0,
+      "status": 0,
+      "delta": 0.0,
+      "sponsor_name": "<redacted>",
+      "starting_position": 0,
+      "times_passed": 0,
+      "quality_passes": 0,
+      "is_on_track": false,
+      "is_on_dvp": false
+    },
+    {
+      "average_restart_speed": 0.0,
+      "average_running_position": 0.0,
+      "average_speed": 0.0,
+      "best_lap": 0,
+      "best_lap_speed": 0.0,
+      "best_lap_time": 0.0,
+      "vehicle_manufacturer": "<redacted>",
+      "vehicle_number": "<redacted>",
+      "driver": {
+        "driver_id": 0,
+        "full_name": "<redacted>",
+        "first_name": "<redacted>",
+        "last_name": "<redacted>",
+        "is_in_chase": false
+      },
+      "vehicle_elapsed_time": 0.0,
+      "fastest_laps_run": 0,
+      "laps_position_improved": 0,
+      "laps_completed": 0,
+      "laps_led": [
+        {
+          "start_lap": 0,
+          "end_lap": 0
+        }
+      ],
+      "last_lap_speed": 0.0,
+      "last_lap_time": 0.0,
+      "passes_made": 0,
+      "passing_differential": 0,
+      "position_differential_last_10_percent": 0,
+      "pit_stops": [
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0.0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        }
+      ],
+      "qualifying_status": 0,
+      "running_position": 0,
+      "status": 0,
+      "delta": 0,
+      "sponsor_name": "<redacted>",
+      "starting_position": 0,
+      "times_passed": 0,
+      "quality_passes": 0,
+      "is_on_track": false,
+      "is_on_dvp": false
+    },
+    {
+      "average_restart_speed": 0.0,
+      "average_running_position": 0.0,
+      "average_speed": 0.0,
+      "best_lap": 0,
+      "best_lap_speed": 0.0,
+      "best_lap_time": 0.0,
+      "vehicle_manufacturer": "<redacted>",
+      "vehicle_number": "<redacted>",
+      "driver": {
+        "driver_id": 0,
+        "full_name": "<redacted>",
+        "first_name": "<redacted>",
+        "last_name": "<redacted>",
+        "is_in_chase": false
+      },
+      "vehicle_elapsed_time": 0.0,
+      "fastest_laps_run": 0,
+      "laps_position_improved": 0,
+      "laps_completed": 0,
+      "laps_led": [],
+      "last_lap_speed": 0.0,
+      "last_lap_time": 0.0,
+      "passes_made": 0,
+      "passing_differential": 0,
+      "position_differential_last_10_percent": 0,
+      "pit_stops": [
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0.0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        }
+      ],
+      "qualifying_status": 0,
+      "running_position": 0,
+      "status": 0,
+      "delta": 0,
+      "sponsor_name": "<redacted>",
+      "starting_position": 0,
+      "times_passed": 0,
+      "quality_passes": 0,
+      "is_on_track": false,
+      "is_on_dvp": false
+    },
+    {
+      "average_restart_speed": 0.0,
+      "average_running_position": 0.0,
+      "average_speed": 0.0,
+      "best_lap": 0,
+      "best_lap_speed": 0.0,
+      "best_lap_time": 0.0,
+      "vehicle_manufacturer": "<redacted>",
+      "vehicle_number": "<redacted>",
+      "driver": {
+        "driver_id": 0,
+        "full_name": "<redacted>",
+        "first_name": "<redacted>",
+        "last_name": "<redacted>",
+        "is_in_chase": false
+      },
+      "vehicle_elapsed_time": 0.0,
+      "fastest_laps_run": 0,
+      "laps_position_improved": 0,
+      "laps_completed": 0,
+      "laps_led": [],
+      "last_lap_speed": 0.0,
+      "last_lap_time": 0.0,
+      "passes_made": 0,
+      "passing_differential": 0,
+      "position_differential_last_10_percent": 0,
+      "pit_stops": [
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0.0
+        }
+      ],
+      "qualifying_status": 0,
+      "running_position": 0,
+      "status": 0,
+      "delta": 0,
+      "sponsor_name": "<redacted>",
+      "starting_position": 0,
+      "times_passed": 0,
+      "quality_passes": 0,
+      "is_on_track": false,
+      "is_on_dvp": false
+    },
+    {
+      "average_restart_speed": 0.0,
+      "average_running_position": 0.0,
+      "average_speed": 0.0,
+      "best_lap": 0,
+      "best_lap_speed": 0.0,
+      "best_lap_time": 0.0,
+      "vehicle_manufacturer": "<redacted>",
+      "vehicle_number": "<redacted>",
+      "driver": {
+        "driver_id": 0,
+        "full_name": "<redacted>",
+        "first_name": "<redacted>",
+        "last_name": "<redacted>",
+        "is_in_chase": false
+      },
+      "vehicle_elapsed_time": 0.0,
+      "fastest_laps_run": 0,
+      "laps_position_improved": 0,
+      "laps_completed": 0,
+      "laps_led": [],
+      "last_lap_speed": 0.0,
+      "last_lap_time": 0.0,
+      "passes_made": 0,
+      "passing_differential": 0,
+      "position_differential_last_10_percent": 0,
+      "pit_stops": [
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        }
+      ],
+      "qualifying_status": 0,
+      "running_position": 0,
+      "status": 0,
+      "delta": 0,
+      "sponsor_name": "<redacted>",
+      "starting_position": 0,
+      "times_passed": 0,
+      "quality_passes": 0,
+      "is_on_track": false,
+      "is_on_dvp": false
+    },
+    {
+      "average_restart_speed": 0.0,
+      "average_running_position": 0.0,
+      "average_speed": 0.0,
+      "best_lap": 0,
+      "best_lap_speed": 0.0,
+      "best_lap_time": 0.0,
+      "vehicle_manufacturer": "<redacted>",
+      "vehicle_number": "<redacted>",
+      "driver": {
+        "driver_id": 0,
+        "full_name": "<redacted>",
+        "first_name": "<redacted>",
+        "last_name": "<redacted>",
+        "is_in_chase": false
+      },
+      "vehicle_elapsed_time": 0.0,
+      "fastest_laps_run": 0,
+      "laps_position_improved": 0,
+      "laps_completed": 0,
+      "laps_led": [],
+      "last_lap_speed": 0.0,
+      "last_lap_time": 0.0,
+      "passes_made": 0,
+      "passing_differential": 0,
+      "position_differential_last_10_percent": 0,
+      "pit_stops": [
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0.0
+        },
+        {
+          "positions_gained_lossed": 0,
+          "pit_in_elapsed_time": 0.0,
+          "pit_in_lap_count": 0,
+          "pit_in_leader_lap": 0,
+          "pit_out_elapsed_time": 0.0,
+          "pit_stop_type": "<redacted>",
+          "pit_stop_duration": 0
+        }
+      ],
+      "qualifying_status": 0,
+      "running_position": 0,
+      "status": 0,
+      "delta": 0,
+      "sponsor_name": "<redacted>",
+      "starting_position": 0,
+      "times_passed": 0,
+      "quality_passes": 0,
+      "is_on_track": false,
+      "is_on_dvp": false
+    }
+  ],
+  "run_id": 0,
+  "run_name": "<redacted>",
+  "series_id": 0,
+  "time_of_day": 0,
+  "time_of_day_os": "<redacted>",
+  "track_id": 0,
+  "track_length": 0,
+  "track_name": "<redacted>",
+  "run_type": 0,
+  "number_of_caution_segments": 0,
+  "number_of_caution_laps": 0,
+  "number_of_lead_changes": 0,
+  "number_of_leaders": 0,
+  "avg_diff_1to3": 0,
+  "stage": {
+    "stage_num": 0,
+    "finish_at_lap": 0,
+    "laps_in_stage": 0
+  }
+}

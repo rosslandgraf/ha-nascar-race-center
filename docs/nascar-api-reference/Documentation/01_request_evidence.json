@@ -1,0 +1,24 @@
+{
+  "id": "01",
+  "url": "https://cf.nascar.com/live/feeds/live-feed.json",
+  "retrieved_at": "2026-10-21T11:04:40.840243+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 94832,
+  "sha256": "645351f54c19d52a54656cbedc6126ecb9876b3663a2c374f1806aa005e4ed1c",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "dict",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:04:43 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 94832",
+    "date: Wed, 21 Oct 2026 11:04:35 GMT",
+    "last-modified: Wed, 21 Oct 2026 11:04:27 GMT",
+    "etag: \"2d7a93ce094701a965a1bb78069c7400\"",
+    "age: 9"
+  ]
+}

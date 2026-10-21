@@ -1,0 +1,23 @@
+{
+  "id": "24",
+  "url": "https://cf.nascar.com/cacher/2019/2/4817/lapAvg_nxs_practice_1.json",
+  "retrieved_at": "2026-10-21T11:05:10.450270+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 12262,
+  "sha256": "b417095e6dedd0be43159c33907e70b36a07c4959050e38ac071a37e49f6d642",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "list",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:12 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 12262",
+    "date: Wed, 21 Oct 2026 11:05:13 GMT",
+    "last-modified: Thu, 08 Aug 2019 14:57:50 GMT",
+    "etag: \"ce65faed523272f8cd4998b84cad7bf0\""
+  ]
+}

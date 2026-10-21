@@ -1,0 +1,23 @@
+{
+  "id": "25",
+  "url": "https://cf.nascar.com/cacher/2024/1/5392/driver-recap.json",
+  "retrieved_at": "2026-10-21T11:05:12.601320+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 97,
+  "sha256": "6271138dac06e05028df88fc599cbf6071fd2751058cea8771f21d6eafd1bcf5",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "dict",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:14 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 97",
+    "date: Wed, 21 Oct 2026 11:05:15 GMT",
+    "last-modified: Wed, 27 Mar 2024 15:25:34 GMT",
+    "etag: \"3dfa7cc93fa6366a3e9cd58eb89b4d8f\""
+  ]
+}

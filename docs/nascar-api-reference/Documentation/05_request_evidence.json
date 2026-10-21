@@ -1,0 +1,23 @@
+{
+  "id": "05",
+  "url": "https://cf.nascar.com/live/feeds/live-stage-points.json",
+  "retrieved_at": "2026-10-21T11:04:46.822138+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 8950,
+  "sha256": "cebda57be28c0df0557a0cf70ea389cc6a7c5eb6dea0e3592dcfd80e8e3a2e1d",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "list",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:04:49 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 8950",
+    "date: Wed, 21 Oct 2026 11:04:49 GMT",
+    "last-modified: Mon, 25 Jul 2022 13:52:25 GMT",
+    "etag: \"0ec1e09a6e579d3837188c8c0a1f174d\""
+  ]
+}

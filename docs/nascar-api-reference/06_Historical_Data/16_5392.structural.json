@@ -1,0 +1,31 @@
+[
+  {
+    "race_id": 0,
+    "race_name": "<redacted>",
+    "series_id": 0,
+    "sch_laps": 0,
+    "act_laps": 0,
+    "drivers": [
+      {
+        "driver_id": 0,
+        "start_ps": 0,
+        "mid_ps": 0,
+        "ps": 0,
+        "closing_ps": 0,
+        "closing_laps_diff": 0,
+        "best_ps": 0,
+        "worst_ps": 0,
+        "avg_ps": 0.0,
+        "passes_gf": 0,
+        "passing_diff": 0,
+        "passed_gf": 0,
+        "quality_passes": 0,
+        "fast_laps": 0,
+        "top15_laps": 0,
+        "lead_laps": 0,
+        "laps": 0,
+        "rating": 0.0
+      }
+    ]
+  }
+]

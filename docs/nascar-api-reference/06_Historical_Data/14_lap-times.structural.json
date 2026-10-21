@@ -1,0 +1,58 @@
+{
+  "laps": [
+    {
+      "Number": "<redacted>",
+      "FullName": "<redacted>",
+      "Manufacturer": "<redacted>",
+      "RunningPos": 0,
+      "NASCARDriverID": 0,
+      "Laps": [
+        {
+          "Lap": 0,
+          "LapTime": null,
+          "LapSpeed": null,
+          "RunningPos": 0
+        },
+        {
+          "Lap": 0,
+          "LapTime": 0.0,
+          "LapSpeed": "<redacted>",
+          "RunningPos": 0
+        }
+      ]
+    },
+    {
+      "Number": "<redacted>",
+      "FullName": "<redacted>",
+      "Manufacturer": "<redacted>",
+      "RunningPos": 0,
+      "NASCARDriverID": 0,
+      "Laps": [
+        {
+          "Lap": 0,
+          "LapTime": null,
+          "LapSpeed": null,
+          "RunningPos": 0
+        },
+        {
+          "Lap": 0,
+          "LapTime": 0.0,
+          "LapSpeed": "<redacted>",
+          "RunningPos": 0
+        },
+        {
+          "Lap": 0,
+          "LapTime": 0,
+          "LapSpeed": "<redacted>",
+          "RunningPos": 0
+        }
+      ]
+    }
+  ],
+  "flags": [
+    {
+      "LapsCompleted": 0,
+      "FlagState": 0
+    }
+  ]
+}

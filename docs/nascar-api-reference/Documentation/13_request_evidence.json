@@ -1,0 +1,23 @@
+{
+  "id": "13",
+  "url": "https://cf.nascar.com/cacher/2024/1/5392/weekend-feed.json",
+  "retrieved_at": "2026-10-21T11:04:56.618180+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 63624,
+  "sha256": "fc1834fb545b553cf2c2d5364ac2067bbb8632c48be693a962dd49330c0d81bf",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "dict",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:00 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 63624",
+    "last-modified: Thu, 28 Mar 2024 15:25:18 GMT",
+    "date: Wed, 21 Oct 2026 11:05:01 GMT",
+    "etag: \"1f80fcd915b647848fae8e0f820caf05\""
+  ]
+}

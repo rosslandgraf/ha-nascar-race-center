@@ -1,0 +1,21 @@
+{
+  "id": "28",
+  "url": "https://cf.nascar.com/drive/3/configs-ng.json",
+  "retrieved_at": "2026-10-21T11:05:14.694553+00:00",
+  "http_status": 403,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 146,
+  "sha256": "95769eb326e23b8cd1b7a9b82d884a713a9724f49b2794ac5b967d8cd706de83",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": false,
+  "parse_error": "Expecting value: line 1 column 1 (char 0)",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:16 GMT",
+    "HTTP/2 403 ",
+    "date: Wed, 21 Oct 2026 11:05:16 GMT",
+    "content-type: text/xml",
+    "content-length: 146"
+  ]
+}

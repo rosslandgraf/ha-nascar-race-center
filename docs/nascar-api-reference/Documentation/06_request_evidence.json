@@ -1,0 +1,23 @@
+{
+  "id": "06",
+  "url": "https://cf.nascar.com/cacher/2026/race_list_basic.json",
+  "retrieved_at": "2026-10-21T11:04:46.904987+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 267292,
+  "sha256": "d9948ed73a8382ff0e3000e5e67cd44093efe9c3f54461b60cedcef3a271955f",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "dict",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:04:49 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 267292",
+    "last-modified: Wed, 21 Oct 2026 10:46:08 GMT",
+    "date: Wed, 21 Oct 2026 11:04:50 GMT",
+    "etag: \"551b597f46af761e1be33d687eaa88d3\""
+  ]
+}

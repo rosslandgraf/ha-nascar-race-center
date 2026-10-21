@@ -1,0 +1,1 @@
+Files ending .structural.json are value-redacted structural representations of observed responses, NOT original JSON payloads. Scalar placeholder values must never be used as race facts or runtime fallback. See Documentation/manifest.json for provenance and endpoint IDs. Empty arrays remain empty; heterogeneous object shapes are preserved after value redaction.

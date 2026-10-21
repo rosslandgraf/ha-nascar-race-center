@@ -1,0 +1,23 @@
+{
+  "id": "14",
+  "url": "https://cf.nascar.com/cacher/2024/1/5392/lap-times.json",
+  "retrieved_at": "2026-10-21T11:04:56.626063+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 1171730,
+  "sha256": "4755677df220375c562986f02b9084061375c84f5ef49af7902efd99e8e6327a",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "dict",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:00 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 1171730",
+    "date: Wed, 21 Oct 2026 11:05:01 GMT",
+    "last-modified: Sun, 17 Mar 2024 23:11:26 GMT",
+    "etag: \"c096b18cd91ac80a59c4e304eac69262\""
+  ]
+}

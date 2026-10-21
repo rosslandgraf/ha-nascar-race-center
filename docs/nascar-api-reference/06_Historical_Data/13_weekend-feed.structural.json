@@ -1,0 +1,186 @@
+{
+  "weekend_race": [
+    {
+      "race_id": 0,
+      "series_id": 0,
+      "race_season": 0,
+      "race_name": "<redacted>",
+      "race_type_id": 0,
+      "restrictor_plate": false,
+      "track_id": 0,
+      "track_name": "<redacted>",
+      "date_scheduled": "<redacted>",
+      "race_date": "<redacted>",
+      "qualifying_date": "<redacted>",
+      "tunein_date": "<redacted>",
+      "scheduled_distance": 0.0,
+      "actual_distance": 0.0,
+      "scheduled_laps": 0,
+      "actual_laps": 0,
+      "stage_1_laps": 0,
+      "stage_2_laps": 0,
+      "stage_3_laps": 0,
+      "stage_4_laps": 0,
+      "number_of_cars_in_field": 0,
+      "pole_winner_driver_id": 0,
+      "pole_winner_speed": 0.0,
+      "number_of_lead_changes": 0,
+      "number_of_leaders": 0,
+      "number_of_cautions": 0,
+      "number_of_caution_laps": 0,
+      "average_speed": 0.0,
+      "total_race_time": "<redacted>",
+      "margin_of_victory": "<redacted>",
+      "race_purse": 0,
+      "race_comments": "<redacted>",
+      "attendance": 0,
+      "results": [
+        {
+          "result_id": 0,
+          "finishing_position": 0,
+          "starting_position": 0,
+          "car_number": "<redacted>",
+          "driver_fullname": "<redacted>",
+          "driver_id": 0,
+          "driver_hometown": "<redacted>",
+          "hometown_city": "<redacted>",
+          "hometown_state": "<redacted>",
+          "hometown_country": "<redacted>",
+          "team_id": 0,
+          "team_name": "<redacted>",
+          "qualifying_order": 0,
+          "qualifying_position": 0,
+          "qualifying_speed": 0.0,
+          "laps_led": 0,
+          "times_led": 0,
+          "car_make": "<redacted>",
+          "car_model": "<redacted>",
+          "sponsor": "<redacted>",
+          "points_earned": 0,
+          "playoff_points_earned": 0,
+          "laps_completed": 0,
+          "finishing_status": "<redacted>",
+          "winnings": 0,
+          "series_id": 0,
+          "race_season": 0,
+          "race_id": 0,
+          "owner_fullname": "<redacted>",
+          "crew_chief_id": 0,
+          "crew_chief_fullname": "<redacted>",
+          "points_position": 0,
+          "points_delta": 0,
+          "owner_id": 0,
+          "official_car_number": "<redacted>",
+          "disqualified": false,
+          "diff_laps": 0,
+          "diff_time": 0,
+          "pit_box": 0
+        }
+      ],
+      "caution_segments": [
+        {
+          "race_id": 0,
+          "start_lap": 0,
+          "end_lap": 0,
+          "reason": "<redacted>",
+          "comment": "<redacted>",
+          "beneficiary_car_number": null,
+          "flag_state": 0
+        },
+        {
+          "race_id": 0,
+          "start_lap": 0,
+          "end_lap": 0,
+          "reason": "<redacted>",
+          "comment": "<redacted>",
+          "beneficiary_car_number": "<redacted>",
+          "flag_state": 0
+        }
+      ],
+      "race_leaders": [
+        {
+          "start_lap": 0,
+          "end_lap": 0,
+          "car_number": "<redacted>",
+          "race_id": 0
+        }
+      ],
+      "infractions": [],
+      "schedule": [
+        {
+          "event_name": "<redacted>",
+          "notes": "<redacted>",
+          "start_time_utc": "<redacted>",
+          "run_type": 0
+        }
+      ],
+      "stage_results": [
+        {
+          "stage_number": 0,
+          "results": [
+            {
+              "driver_fullname": "<redacted>",
+              "driver_id": 0,
+              "car_number": "<redacted>",
+              "finishing_position": 0,
+              "stage_points": 0
+            }
+          ]
+        }
+      ],
+      "pit_reports": [],
+      "radio_broadcaster": "<redacted>",
+      "television_broadcaster": "<redacted>",
+      "satellite_radio_broadcaster": "<redacted>",
+      "master_race_id": 0,
+      "timing_run_id": 0,
+      "inspection_complete": false,
+      "playoff_round": 0
+    }
+  ],
+  "weekend_runs": [
+    {
+      "weekend_run_id": 0,
+      "race_id": 0,
+      "timing_run_id": 0,
+      "run_type": 0,
+      "run_name": "<redacted>",
+      "run_date": "<redacted>",
+      "run_date_utc": "<redacted>",
+      "results": [
+        {
+          "run_id": 0,
+          "car_number": "<redacted>",
+          "vehicle_number": "<redacted>",
+          "manufacturer": "<redacted>",
+          "driver_id": 0,
+          "driver_name": "<redacted>",
+          "finishing_position": 0,
+          "best_lap_time": 0.0,
+          "best_lap_speed": 0.0,
+          "best_lap_number": 0,
+          "laps_completed": 0,
+          "comment": "<redacted>",
+          "delta_leader": 0,
+          "disqualified": false
+        },
+        {
+          "run_id": 0,
+          "car_number": "<redacted>",
+          "vehicle_number": "<redacted>",
+          "manufacturer": "<redacted>",
+          "driver_id": 0,
+          "driver_name": "<redacted>",
+          "finishing_position": 0,
+          "best_lap_time": 0.0,
+          "best_lap_speed": 0.0,
+          "best_lap_number": 0,
+          "laps_completed": 0,
+          "comment": "<redacted>",
+          "delta_leader": 0.0,
+          "disqualified": false
+        }
+      ]
+    }
+  ]
+}

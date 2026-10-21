@@ -1,0 +1,23 @@
+{
+  "id": "08",
+  "url": "https://cf.nascar.com/cacher/tracks.json",
+  "retrieved_at": "2026-10-21T11:04:49.312995+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 54726,
+  "sha256": "c870227bbc8fd812c3f77cb404089402660df7f581d4ef5d5482ec3a82811224",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "dict",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:04:51 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 54726",
+    "date: Wed, 21 Oct 2026 11:04:52 GMT",
+    "last-modified: Wed, 21 Oct 2026 11:01:13 GMT",
+    "etag: \"d52948a50eccad89f847cb62f7fee219\""
+  ]
+}
