@@ -1,6 +1,6 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 4A are reviewed and merged into `main`, including PR #9 (`907e5bb`) and the observed API reference package. Phase 4B starts from that merge and preserves its 810-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 4B are reviewed and merged into `main`, including PR #10 (`926e669`) and the observed API reference package. Phase 5A starts from that merge and preserves its 915-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
 
@@ -142,7 +142,7 @@ remain open. No NASCAR requests, persistent raw archive, dashboard or analytics.
 
 ## Phase 4B — Historical analytics and comparisons
 
-**Status:** implemented and synthetically validated for review from merged PR #9.
+**Status:** reviewed and squash-merged in PR #10, `926e6693be9250de5a2716d7d799fba901385a11`.
 See the [internal API/formulas](docs/ANALYTICS.md) and
 [actual validation](docs/PHASE4B_VALIDATION.md).
 
@@ -157,7 +157,25 @@ extra Recorder rows, frontend or authenticated transport is introduced.
 **Gates:** source units, conditions, sentinel meanings, official classification,
 cross-context historical coverage and NASCAR data-use remain unverified. No tire
 strategy, pit-driver join, rating formula, invented score or championship standings.
-Phase 5 remains deferred until separately assigned.
+Phase 5A is assigned below; frontend phases remain deferred.
+
+## Phase 5A — Authenticated dashboard data interface
+
+**Status:** implemented for review from merged Phase 4B / PR #10. See the
+[dashboard API v1](docs/DASHBOARD_API.md), its documented TypeScript model
+projections and [executed validation](docs/PHASE5A_VALIDATION.md).
+
+**Delivered:** native authenticated administrator-only HA WebSocket commands for
+cached bootstrap, retained schedule navigation, live projections/subscriptions,
+paged embedded/scoring details and on-demand history/analytics. Entry/user/client
+resource limits, source freshness notifications, coalescing/deduplication,
+snapshot-checked continuation, finite explicit serializers and lifecycle cleanup
+preserve existing upstream, events, entity IDs and Recorder boundaries.
+
+**Remaining:** real NASCAR latency/source/data-use gates, broader permission
+policy if separately authorized, and the visual frontend. Phase 5B implements a
+separate frontend against API v1; Phase 5C owns polish/accessibility. Neither
+frontend phase begins in this change. No deployment or release is authorized.
 
 ## Phase 5 — Premium Dashboard and dedicated data interface
 
@@ -182,7 +200,7 @@ Phase 5 remains deferred until separately assigned.
 | Data rights and polling limits | Unresolved | Owner review and documented permission where required |
 | Anonymous endpoint and active-session access | Supplied single-snapshot observations; this environment blocked | Authorized current-session observation with identity/time provenance |
 | Live race/session behavior | Unverified | Authorized active-session observation and replay fixtures |
-| Historical source coverage and analytics | Phase 4A merged; Phase 4B numerical analytics validated for review, cross-context coverage unverified | Authorized per-context source/units/conditions evidence; retain formula/sample/provenance limits |
+| Historical source coverage and analytics | Phase 4A merged; Phase 4B merged numerical analytics, cross-context coverage unverified | Authorized per-context source/units/conditions evidence; retain formula/sample/provenance limits |
 | Dashboard/card packaging | Planned | Separate frontend artifact and compatibility validation |
 | Full HACS validation | Action rejects private repositories | Validate after an explicitly approved public-distribution decision; do not change visibility merely to pass CI |
 | HACS brands requirement | Deferred | Authorized neutral branding submission; remove CI exception |
@@ -207,8 +225,9 @@ source/live/data-use and release gates above still apply.
 - [ ] Independently verify permitted CF cadence and real active-session latency before faster CF activation.
 - [ ] Validate active-session event semantics and physical-device automation behavior.
 - [x] On-demand historical results/laps/notes/loop/average/pit/stage foundation with bounded memory and provenance (Phase 4A, merged PR #9).
-- [x] Defensible derived analytics/comparisons and bounded internal consumer API (Phase 4B, for review).
+- [x] Defensible derived analytics/comparisons and bounded internal consumer API (Phase 4B, merged PR #10).
 - [ ] Historical cross-context coverage, source units/conditions and semantic acceptance.
-- [ ] Premium Dashboard: dedicated data interface, responsive accessible views and separate frontend package (Phase 5).
+- [x] Authenticated dedicated dashboard transport v1 (Phase 5A, for review).
+- [ ] Premium Dashboard: responsive accessible views and separate frontend package (Phases 5B/5C).
 - [ ] Beta & Release Readiness: compatibility matrix, beta feedback, translations, diagnostics and release workflows (Phase 6).
 - [ ] HACS-ready distribution: permission/asset review, branding, no validation exceptions, distinct integration/card artifacts and explicit release authorization (Phase 6).
