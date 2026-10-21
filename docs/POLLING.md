@@ -86,9 +86,11 @@ still updates availability locally without an HTTP request. Unload and failed or
 cancelled setup remove the listener and timers.
 
 The transport enforces one network attempt per eligible slot, even for concurrent
-refreshes and no-cache/no-store responses. A reusable body can be returned during
-the local request floor without changing its source time. Without a reusable
-body, the read is explicitly deferred. No-store bodies/validators are not cached.
+refreshes and no-cache/no-store responses. A body whose internal fallback expired can be reused during the local request
+floor without changing its source time. An expired explicit upstream freshness
+lifetime or a no-cache revalidation requirement instead defers the read until
+both revalidation and the request floor can be satisfied. Without a reusable
+body, the read is also explicitly deferred. No-store bodies/validators are not cached.
 Only an authorized shorter provider minimum can reduce the fallback TTL below
 60; explicit upstream freshness always wins. ETag/Last-Modified, 304,
 Cache-Control, Expires, Date and Age are respected. A 304 merges response metadata

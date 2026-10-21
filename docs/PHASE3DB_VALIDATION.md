@@ -36,7 +36,7 @@ the inherited proxy and TLS policy intact. No NASCAR destination was attempted.
 | Check | Actual result |
 | --- | --- |
 | Untouched main pytest baseline | **546 passed** |
-| Complete revised `pytest -q` | **614 passed**: all baseline cases plus 68 new cases |
+| Complete revised `pytest -q` | **615 passed**: all baseline cases plus 69 new cases |
 | `ruff check .` | Passed |
 | `ruff format --check .` | Passed |
 | `mypy custom_components/nascar_race_center` | Passed; 29 integration source files |
@@ -89,7 +89,9 @@ Transport cases measure ten-second fallback expiry, validator/304 reuse, explici
 120-second freshness, a **172800-second** upstream lifetime (no early one-day
 request), Date/Expires age accounting, and replacement of old Age on 304.
 Concurrent batches of twenty reads produce **one** network request per slot for
-both no-cache and no-store; no-store waiters defer without retaining a body.
+both no-cache and no-store; all nineteen waiting readers defer. Expired explicit
+upstream freshness also defers until conditional revalidation is eligible; a local
+request floor never waives must-revalidate. No-store retains no body.
 200/304/403/429/503 Retry-After hints prevent early requests. Existing repeated
 failure/backoff reset, malformed/oversize body, denial, timeout, host-wide 429,
 validator, cache-bound and cancellation regressions also pass.

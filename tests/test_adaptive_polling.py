@@ -415,10 +415,7 @@ async def test_one_request_per_eligible_slot_under_concurrency(headers, monkeypa
         return_exceptions=True,
     )
     assert session.get.call_count == 1
-    if "no-store" in headers["Cache-Control"]:
-        assert sum(isinstance(x, PollingDeferred) for x in results) == 19
-    else:
-        assert all(x == {"series_1": []} for x in results)
+    assert sum(isinstance(x, PollingDeferred) for x in results) == 19
 
 
 @pytest.mark.parametrize("status", [200, 304, 403, 429, 503])
@@ -597,3 +594,26 @@ async def test_304_without_age_does_not_reuse_previous_response_age(monkeypatch)
     clock[0] += 1
     await client.async_get_json(LIVE_FEED)
     assert session.get.call_count == 3
+
+
+async def test_expired_upstream_freshness_defers_before_local_request_floor(
+    monkeypatch,
+):
+    clock = [1000.0]
+    monkeypatch.setattr(api, "_monotonic", lambda: clock[0])
+    client, session = client_with(
+        Response(
+            headers={"Cache-Control": "max-age=5, must-revalidate", "ETag": '"one"'}
+        ),
+        Response(304),
+    )
+    await client.async_get_json(LIVE_FEED, minimum_interval=10)
+    clock[0] += 6
+    with pytest.raises(PollingDeferred):
+        await client.async_get_json(LIVE_FEED, minimum_interval=10)
+    assert client.diagnostics()[LIVE_FEED]["delivery"] == "cooldown"
+    assert session.get.call_count == 1
+    clock[0] += 4
+    await client.async_get_json(LIVE_FEED, minimum_interval=10)
+    assert session.get.call_count == 2
+    assert session.get.call_args.kwargs["headers"]["If-None-Match"] == '"one"'

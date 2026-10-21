@@ -271,14 +271,21 @@ class NascarApiClient:
                 else 0,
             )
             if remaining > 0:
+                # A local request floor cannot waive upstream revalidation.
+                # Only an expired *internal fallback* may reuse its observation;
+                # explicit server freshness/revalidation must defer instead.
+                reusable = cached is not None and not any(
+                    name in cached.cache_headers
+                    for name in ("Cache-Control", "Expires")
+                )
                 self._record(
                     path,
                     replace(
                         self._diagnostics.get(path, _RequestDiagnostic()),
-                        delivery="cache" if cached else "cooldown",
+                        delivery="cache" if reusable else "cooldown",
                     ),
                 )
-                if cached is not None:
+                if cached is not None and reusable:
                     return cached.payload
                 raise PollingDeferred(
                     "Live request interval is reserved", retry_after=remaining
