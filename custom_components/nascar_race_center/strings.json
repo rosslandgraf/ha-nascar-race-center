@@ -9,11 +9,20 @@
           "provider": "Data source",
           "series": "Series to monitor",
           "data_use_authorized": "I have confirmed permission to access and poll NASCAR CF data",
-          "live_interval": "Minimum live polling interval (seconds; 300\u20133600)",
-          "favorite_drivers": "Favorite drivers (NASCAR IDs)"
+          "live_interval": "Minimum live polling interval (seconds; 300–3600)",
+          "favorite_drivers": "Favorite drivers (NASCAR IDs)",
+          "racing_events": "Enable racing events",
+          "event_types": "Race events",
+          "favorite_event_types": "Favorite-driver events",
+          "event_top_n": "Favorite top position threshold (1–40)",
+          "reminder_minutes": "Remind before scheduled race start (minutes)"
         },
         "data_description": {
-          "favorite_drivers": "Optional numeric NASCAR driver IDs. Choose favorites by name in options after the directory loads. Use NASCAR IDs, not car numbers; demonstration driver IDs are fictional."
+          "favorite_drivers": "Optional numeric NASCAR driver IDs. Choose favorites by name in options after the directory loads. Use NASCAR IDs, not car numbers; demonstration driver IDs are fictional.",
+          "racing_events": "Off by default. Events only reach Home Assistant’s event bus. Enable an automation blueprint separately for notifications or lights.",
+          "event_types": "Choose each event you want. A checkered flag means observed completion, not official final results. Starts require an observed lap-zero to green transition.",
+          "favorite_event_types": "Applies to the saved favorite NASCAR driver IDs. Missing drivers never count as top-position changes. Pit observations require embedded lap and entry-clock evidence.",
+          "reminder_minutes": "Only known offset-aware scheduled starts qualify. Setup inside a reminder window and recovered outages do not send catch-up reminders."
         }
       }
     },
@@ -22,7 +31,8 @@
       "invalid_series": "Select at least one of series 1, 2 or 3.",
       "invalid_provider": "Select a supported data source.",
       "invalid_interval": "Enter a whole number from 300 to 3600 seconds.",
-      "invalid_favorite_drivers": "Select up to 50 drivers or enter positive numeric NASCAR driver IDs."
+      "invalid_favorite_drivers": "Select up to 50 drivers or enter positive numeric NASCAR driver IDs.",
+      "invalid_events": "Choose supported events and whole numbers: top position 1–40, reminder 1–1440 minutes."
     },
     "abort": {
       "already_configured": "NASCAR Race Center is already configured. Use its options to change your selections."
@@ -37,11 +47,20 @@
           "provider": "Data source",
           "series": "Series to monitor",
           "data_use_authorized": "I have confirmed permission to access and poll NASCAR CF data",
-          "live_interval": "Minimum live polling interval (seconds; 300\u20133600)",
-          "favorite_drivers": "Favorite drivers (NASCAR IDs)"
+          "live_interval": "Minimum live polling interval (seconds; 300–3600)",
+          "favorite_drivers": "Favorite drivers (NASCAR IDs)",
+          "racing_events": "Enable racing events",
+          "event_types": "Race events",
+          "favorite_event_types": "Favorite-driver events",
+          "event_top_n": "Favorite top position threshold (1–40)",
+          "reminder_minutes": "Remind before scheduled race start (minutes)"
         },
         "data_description": {
-          "favorite_drivers": "Names and metadata are cached reference data. CF setup makes no request while this form is open; its searchable directory becomes available in options after setup. Use NASCAR driver IDs, not car numbers. Demo-prefixed choices use fictional IDs; changing sources preserves your selected IDs for review."
+          "favorite_drivers": "Names and metadata are cached reference data. CF setup makes no request while this form is open; its searchable directory becomes available in options after setup. Use NASCAR driver IDs, not car numbers. Demo-prefixed choices use fictional IDs; changing sources preserves your selected IDs for review.",
+          "racing_events": "Off by default. Events only reach Home Assistant’s event bus. Enable an automation blueprint separately for notifications or lights.",
+          "event_types": "Choose each event you want. A checkered flag means observed completion, not official final results. Starts require an observed lap-zero to green transition.",
+          "favorite_event_types": "Applies to the saved favorite NASCAR driver IDs. Missing drivers never count as top-position changes. Pit observations require embedded lap and entry-clock evidence.",
+          "reminder_minutes": "Only known offset-aware scheduled starts qualify. Setup inside a reminder window and recovered outages do not send catch-up reminders."
         }
       }
     },
@@ -50,7 +69,8 @@
       "invalid_series": "Select at least one of series 1, 2 or 3.",
       "invalid_provider": "Select a supported data source.",
       "invalid_interval": "Enter a whole number from 300 to 3600 seconds.",
-      "invalid_favorite_drivers": "Select up to 50 drivers or enter positive numeric NASCAR driver IDs."
+      "invalid_favorite_drivers": "Select up to 50 drivers or enter positive numeric NASCAR driver IDs.",
+      "invalid_events": "Choose supported events and whole numbers: top position 1–40, reminder 1–1440 minutes."
     }
   },
   "entity": {
@@ -151,6 +171,20 @@
     "calendar": {
       "schedule": {
         "name": "Schedule"
+      }
+    }
+  },
+  "selector": {
+    "racing_event_types": {
+      "options": {
+        "upcoming_race": "Upcoming race reminder",
+        "session_started": "Verified session start",
+        "flag_changed": "Flag changes (including observed checkered completion)",
+        "lead_changed": "Lead changes",
+        "favorite_lead": "Favorite takes the lead",
+        "favorite_top_n_entered": "Favorite enters top positions",
+        "favorite_top_n_left": "Favorite leaves top positions",
+        "favorite_pit_observed": "Favorite pit observation"
       }
     }
   }

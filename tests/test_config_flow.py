@@ -155,3 +155,57 @@ async def test_cf_authorization_must_be_boolean_true(
     )
     assert result["type"] is FlowResultType.FORM
     assert result["errors"][CONF_DATA_USE_AUTHORIZED] == "authorization_required"
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"racing_events": "yes"},
+        {"event_types": ["official_results"]},
+        {"favorite_event_types": ["stage_finish"]},
+        {"event_types": ["favorite_lead"]},
+        {"favorite_event_types": ["lead_changed"]},
+        {"event_types": None},
+        {"event_top_n": 0},
+        {"event_top_n": 41},
+        {"event_top_n": True},
+        {"event_top_n": 3.5},
+        {"reminder_minutes": 0},
+        {"reminder_minutes": 1441},
+        {"reminder_minutes": False},
+    ],
+)
+async def test_event_option_validation(hass, overrides):
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_USER},
+        data=user_input(**overrides),
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "invalid_events"}
+
+
+async def test_events_can_be_selected_then_cleared_without_changing_existing_ids(hass):
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=DOMAIN,
+        data=user_input(
+            racing_events=True,
+            event_types=["flag_changed"],
+            favorite_event_types=["favorite_lead"],
+        ),
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input=user_input(
+            racing_events=True, event_top_n=5.0, reminder_minutes=15.0
+        ),
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options["event_types"] == []
+    assert entry.options["favorite_event_types"] == []
+    assert type(entry.options["event_top_n"]) is int
+    assert entry.options["reminder_minutes"] == 15
+    assert entry.unique_id == DOMAIN

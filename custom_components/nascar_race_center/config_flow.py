@@ -28,6 +28,7 @@ from .const import (
     PROVIDER_DEMO,
     SERIES_NAMES,
 )
+from .events import FAVORITE_EVENTS, GENERAL_EVENTS, EventPreferences
 from .favorites import normalize_favorite_driver_ids
 from .reference import Driver, demo_drivers
 
@@ -137,6 +138,49 @@ def _schema(
                     mode=selector.SelectSelectorMode.DROPDOWN,
                 )
             ),
+            probatio.Required(
+                "racing_events", default=values.get("racing_events", False)
+            ): selector.BooleanSelector(),
+            probatio.Optional(
+                "event_types",
+                description={"suggested_value": values.get("event_types", [])},
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[kind.value for kind in GENERAL_EVENTS],
+                    multiple=True,
+                    translation_key="racing_event_types",
+                )
+            ),
+            probatio.Optional(
+                "favorite_event_types",
+                description={"suggested_value": values.get("favorite_event_types", [])},
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[kind.value for kind in FAVORITE_EVENTS],
+                    multiple=True,
+                    translation_key="racing_event_types",
+                )
+            ),
+            probatio.Required(
+                "event_top_n", default=values.get("event_top_n", 10)
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=1,
+                    max=40,
+                    step=1,
+                    mode=selector.NumberSelectorMode.BOX,
+                )
+            ),
+            probatio.Required(
+                "reminder_minutes", default=values.get("reminder_minutes", 30)
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=1,
+                    max=1440,
+                    step=1,
+                    mode=selector.NumberSelectorMode.BOX,
+                )
+            ),
         }
     )
 
@@ -176,11 +220,20 @@ def _validate(values: dict[str, Any]) -> dict[str, str]:
         normalize_favorite_driver_ids(favorites)
     except ValueError:
         return {CONF_FAVORITE_DRIVERS: "invalid_favorite_drivers"}
+    try:
+        EventPreferences.from_options(values, ())
+    except ValueError:
+        return {"base": "invalid_events"}
     return {}
 
 
 def _normalized_input(values: dict[str, Any]) -> dict[str, Any]:
     """Store canonical IDs only when favorites were supplied by this form."""
+    values = dict(values)
+    # Number selectors return floats for whole numbers; persist canonical ints.
+    for key in ("event_top_n", "reminder_minutes"):
+        if type(values.get(key)) is float and values[key].is_integer():
+            values[key] = int(values[key])
     if CONF_FAVORITE_DRIVERS not in values:
         return values
     return {
@@ -190,6 +243,16 @@ def _normalized_input(values: dict[str, Any]) -> dict[str, Any]:
             for value in normalize_favorite_driver_ids(values[CONF_FAVORITE_DRIVERS])
         ],
     }
+
+
+def _event_numbers(values: dict[str, Any]) -> dict[str, Any]:
+    """Canonicalize whole selector numbers without truncating fractional input."""
+    values = dict(values)
+    for key in ("event_top_n", "reminder_minutes"):
+        value = values.get(key)
+        if type(value) is float and value.is_integer():
+            values[key] = int(value)
+    return values
 
 
 class NascarRaceCenterConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -203,6 +266,8 @@ class NascarRaceCenterConfigFlow(ConfigFlow, domain=DOMAIN):
         """Configure offline demonstration or explicitly authorized CF access."""
         await self.async_set_unique_id(DOMAIN)
         self._abort_if_unique_id_configured()
+        if user_input is not None:
+            user_input = _event_numbers(user_input)
         errors = _validate(user_input) if user_input is not None else {}
         if user_input is not None and not errors:
             return self.async_create_entry(
@@ -238,7 +303,10 @@ class NascarRaceCenterOptionsFlow(OptionsFlow):
             user_input = {
                 **user_input,
                 CONF_FAVORITE_DRIVERS: user_input.get(CONF_FAVORITE_DRIVERS, []),
+                "event_types": user_input.get("event_types", []),
+                "favorite_event_types": user_input.get("favorite_event_types", []),
             }
+            user_input = _event_numbers(user_input)
         errors = _validate(user_input) if user_input is not None else {}
         if user_input is not None and not errors:
             return self.async_create_entry(title="", data=_normalized_input(user_input))
