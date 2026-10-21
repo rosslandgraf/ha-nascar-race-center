@@ -30,16 +30,20 @@ def timed_provider() -> Mock:
 
 async def assert_quiet(hass: HomeAssistant, runtime: RuntimeData) -> None:
     """Old coordinators cannot notify entities, poll, or re-arm local timers."""
-    schedule, live = runtime.schedule, runtime.live
+    schedule, live, reference = runtime.schedule, runtime.live, runtime.reference
     assert schedule._unsub_boundary is None
     assert live._unsub_source_expiry is None
     with (
         patch.object(schedule, "async_update_listeners") as schedule_update,
         patch.object(live, "async_update_listeners") as live_update,
+        patch.object(reference, "async_update_listeners") as reference_update,
+        patch.object(reference.provider, "async_get_drivers") as get_drivers,
+        patch.object(reference.provider, "async_get_tracks") as get_tracks,
     ):
         # Also exercise queued refresh requests after shutdown.
         await schedule.async_request_refresh()
         await live.async_request_refresh()
+        await reference.async_request_refresh()
         future = dt_util.utcnow() + timedelta(hours=7)
         with patch(
             "custom_components.nascar_race_center.coordinator.dt_util.utcnow",
@@ -49,6 +53,9 @@ async def assert_quiet(hass: HomeAssistant, runtime: RuntimeData) -> None:
             await hass.async_block_till_done()
         schedule_update.assert_not_called()
         live_update.assert_not_called()
+        reference_update.assert_not_called()
+        get_drivers.assert_not_called()
+        get_tracks.assert_not_called()
     assert schedule._unsub_boundary is None
     assert live._unsub_source_expiry is None
 
@@ -117,7 +124,7 @@ async def test_failed_setup_cancels_both_armed_timers(
     provider.async_get_live.assert_not_awaited()
 
 
-@pytest.mark.parametrize("kind", ["schedule", "live"])
+@pytest.mark.parametrize("kind", ["schedule", "live", "reference"])
 async def test_inflight_refresh_cannot_rearm_timer_after_unload(
     hass: HomeAssistant, kind: str
 ) -> None:
@@ -132,9 +139,15 @@ async def test_inflight_refresh_cannot_rearm_timer_after_unload(
         await hass.async_block_till_done()
     runtime = entry.runtime_data
     started, release = asyncio.Event(), asyncio.Event()
-    method = (
-        provider.async_get_schedule if kind == "schedule" else provider.async_get_live
-    )
+    if kind == "reference":
+        method = AsyncMock(return_value=())
+        runtime.reference.provider.async_get_drivers = method
+    else:
+        method = (
+            provider.async_get_schedule
+            if kind == "schedule"
+            else provider.async_get_live
+        )
     result = method.return_value
 
     async def blocked(*args: object) -> object:
@@ -143,7 +156,7 @@ async def test_inflight_refresh_cannot_rearm_timer_after_unload(
         return result
 
     method.side_effect = blocked
-    coordinator = runtime.schedule if kind == "schedule" else runtime.live
+    coordinator = getattr(runtime, kind)
     task = asyncio.create_task(coordinator.async_refresh())
     try:
         await started.wait()

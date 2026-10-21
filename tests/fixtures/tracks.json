@@ -1,0 +1,6 @@
+{
+  "items": [
+    {"track_id": 99001, "track_name": "Example Speedway", "city": "Example City", "state": "Example State", "length": "1.5", "track_type": "Intermediate", "track_surface": "Asphalt"},
+    {"track_id": 99002, "track_name": "Example Venue With Missing Metadata"}
+  ]
+}

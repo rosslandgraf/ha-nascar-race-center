@@ -6,6 +6,7 @@ from homeassistant.core import HomeAssistant
 
 from . import NascarConfigEntry
 from .const import CONF_PROVIDER, PROVIDER_DEMO
+from .provider import CFProvider
 
 
 async def async_get_config_entry_diagnostics(
@@ -14,6 +15,7 @@ async def async_get_config_entry_diagnostics(
     """Report normalized availability while excluding URLs, headers and raw data."""
     schedule = entry.runtime_data.schedule
     live = entry.runtime_data.live
+    reference = entry.runtime_data.reference
     snapshot = live.data
     return {
         "provider": entry.options.get(
@@ -25,6 +27,11 @@ async def async_get_config_entry_diagnostics(
             "failed_series": sorted(schedule.data.failed_series)
             if schedule.last_update_success
             else list(schedule.series),
+            "failed_seasons": {
+                str(key): sorted(years)
+                for key, years in schedule.data.failed_seasons.items()
+                if years
+            },
             "race_counts": {
                 str(key): len(value) for key, value in schedule.data.races.items()
             },
@@ -37,7 +44,42 @@ async def async_get_config_entry_diagnostics(
                 for key, races in schedule.data.races.items()
             },
             "timestamp_policy": "explicit_offset_required",
+            "session_detail_failures": [
+                {"season": year, "series_id": series_id}
+                for year, series_id in sorted(
+                    entry.runtime_data.provider.schedule_details_failed
+                )
+            ]
+            if isinstance(entry.runtime_data.provider, CFProvider)
+            else [],
+            "invalid_session_list_counts": {
+                str(key): sum(race.sessions_failed for race in races)
+                for key, races in schedule.data.races.items()
+            },
             "last_http_status": schedule.last_error_status,
+            "session_counts": {
+                str(key): sum(len(race.sessions) for race in races)
+                for key, races in schedule.data.races.items()
+            },
+            "unknown_session_start_counts": {
+                str(key): sum(
+                    session.start_time is None
+                    for race in races
+                    for session in race.sessions
+                )
+                for key, races in schedule.data.races.items()
+            },
+        },
+        "reference": {
+            "failed_feeds": sorted(reference.data.failed_feeds),
+            "driver_count": len(reference.data.drivers),
+            "track_count": len(reference.data.tracks),
+            "last_successful_updates": {
+                key: value.isoformat()
+                for key, value in reference.data.updated_at.items()
+            },
+            "last_http_status": reference.last_error_status,
+            "favorite_count": len(entry.runtime_data.favorites.ids),
         },
         "live": {
             "last_update_success": live.last_update_success,

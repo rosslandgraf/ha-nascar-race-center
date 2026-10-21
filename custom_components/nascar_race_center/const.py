@@ -6,12 +6,13 @@ from homeassistant.const import Platform
 
 DOMAIN = "nascar_race_center"
 NAME = "NASCAR Race Center"
-PLATFORMS = (Platform.SENSOR, Platform.BINARY_SENSOR)
+PLATFORMS = (Platform.SENSOR, Platform.BINARY_SENSOR, Platform.CALENDAR)
 
 CONF_PROVIDER = "provider"
 CONF_SERIES = "series"
 CONF_DATA_USE_AUTHORIZED = "data_use_authorized"
 CONF_LIVE_INTERVAL = "live_interval"
+CONF_FAVORITE_DRIVERS = "favorite_drivers"
 PROVIDER_DEMO = "demo"
 PROVIDER_CF = "nascar_cf"
 DEFAULT_LIVE_INTERVAL = 300
@@ -28,3 +29,5 @@ LIVE_IDLE_INTERVAL = timedelta(hours=1)
 LIVE_OFF_SEASON_INTERVAL = timedelta(hours=6)
 LIVE_STALE_AFTER = timedelta(minutes=15)
 SCHEDULE_STALE_AFTER = timedelta(days=1)
+REFERENCE_INTERVAL = timedelta(days=1)
+REFERENCE_STALE_AFTER = timedelta(days=7)
