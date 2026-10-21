@@ -1,6 +1,6 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1, 2, 3A and 3B are reviewed and squash-merged into `main`, including the observed API reference package. Phase 3C starts from `219ac5f` and preserves its 429-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 3C are reviewed and merged into `main`, including the observed API reference package. Phase 3D-A starts from `5e4445a` (PR #6) and preserves its 508-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
 
@@ -75,8 +75,8 @@ code review does not mean those data gates are satisfied.
 
 ## Phase 3C — Racing events, notifications and automations
 
-**Status:** implemented on `phase3c-race-events`, ready for review after the
-[validation checks](docs/PHASE3C_VALIDATION.md). Phases 1–3B remain merged.
+**Status:** reviewed and squash-merged in PR #6. See the
+[validation checks](docs/PHASE3C_VALIDATION.md); live-session gates remain open.
 
 **Delivered:** opt-in typed event engine over existing normalized live/schedule
 models; silent setup/restart/reconnect/switch baselines; bounded durable
@@ -91,6 +91,24 @@ movement events; no new endpoints or faster polling. Active-session semantics an
 physical-device testing remain unverified. Event publication never directly
 notifies users or controls devices. History acquisition remains Phase 4.
 See [event behavior and blueprint setup](docs/EVENTS.md).
+
+## Phase 3D-A — NASCAR CF provider compatibility
+
+**Status:** in progress; implementation and offline validation prepared for review.
+See [corrections/evidence/checks](docs/PHASE3DA_VALIDATION.md) and the future
+[authorized HA OS validation procedure](docs/CF_LIVE_VALIDATION.md).
+
+**Scope:** compare production parsers to observed structures; preserve unknown
+codes and numeric team values without assigning meanings; reject contradictory
+schedule enrichment; distinguish transport, JSON, parsing and usable HA data;
+add synthetic structural and real HA regressions. Preserve polling, demo,
+Phase 1–3C behavior and unresolved permission/live-session gates.
+
+## Phase 3D-B — Polling review
+
+**Status:** not started; requires a separate assignment and provider cadence
+permission/evidence. Phase 3D-A changes no polling interval, cache TTL or retry
+policy. Do not begin automatically after the compatibility PR.
 
 ## Phase 4 — History and analytical views
 
@@ -141,7 +159,9 @@ source/live/data-use and release gates above still apply.
 - [x] Live NASCAR timing, normalized leaderboard and provisional session progress (Phase 3A, merged).
 - [x] Embedded pits/current stage and evidence-gated pit/stage/points models/sensors (Phase 3B, merged).
 - [ ] Validate standalone live pit/stage/points association, completed stops/stages and official results against reliable evidence.
-- [x] Opt-in reliable racing events and notification/lighting blueprint implementation (Phase 3C review branch).
+- [x] Opt-in reliable racing events and notification/lighting blueprint implementation (Phase 3C, merged).
+- [ ] CF provider compatibility and authorized HA OS end-to-end acceptance (Phase 3D-A in progress; offline checks pass, live gates open).
+- [ ] Polling review (Phase 3D-B, not started).
 - [ ] Validate active-session event semantics and physical-device automation behavior.
 - [ ] History & Analytics: on-demand historical results/laps/loop stats, bounded storage and defensible derived metrics (Phase 4).
 - [ ] Premium Dashboard: dedicated data interface, responsive accessible views and separate frontend package (Phase 5).

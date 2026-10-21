@@ -1,6 +1,6 @@
 # NASCAR Race Center
 
-A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phase 3C remains private development, with live source validation and release gates outstanding.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
+A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phases 1–3C are merged; Phase 3D-A compatibility remains private development, with live source validation and release gates outstanding.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
 
 The long-term target includes race-weekend schedules, timing/scoring, favorite drivers, championship points, historical analytics, automations and an optional responsive dashboard. See the complete [specification](NASCAR_Race_Center_Codex_Brief.md) and [phased roadmap](ROADMAP.md).
 
@@ -11,6 +11,9 @@ Development reference: [API library](docs/api/README.md),
 blocked at proxy CONNECT, before any NASCAR response. The separately supplied [observed package](docs/nascar-api-reference/START_HERE.md)
 corroborates structures but exposes conflicting contexts; active-session behavior
 and permission remain unverified. See [Phase 3B evidence](docs/PHASE3B_EVIDENCE.md).
+
+Latest review: [Phase 3D-A compatibility and validation](docs/PHASE3DA_VALIDATION.md),
+with a future [authorized HA OS CF test procedure](docs/CF_LIVE_VALIDATION.md).
 
 ## Available features
 

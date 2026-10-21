@@ -5,7 +5,7 @@ Read the complete [project brief](NASCAR_Race_Center_Codex_Brief.md) before maki
 ## Scope and delivery
 
 - Work on a feature branch and open a reviewable pull request. Do not merge to `main`, deploy to the owner's production Home Assistant, or publish a release without explicit authorization.
-- Phases 1, 2, 3A and 3B are reviewed and merged. Phase 3C adds opt-in reliable events and user-enabled automation blueprints; do not begin Phase 4 history without a new assignment. Preserve event baseline suppression and persistence-before-publication. The roadmap distinguishes delivered features from future design.
+- Phases 1 through 3C are reviewed and merged. Phase 3D-A covers CF compatibility and diagnostics; do not change polling for Phase 3D-B or begin Phase 4 history without a new assignment. Preserve event baseline suppression and persistence-before-publication. The roadmap distinguishes delivered features from future design.
 - Preserve the existing MIT code license. NASCAR data, trademarks, imagery, and video have separate, unresolved rights. Do not imply that the code license grants data-use permission.
 - Record completed features, actual checks, known gaps, endpoint evidence, and data-use assumptions in every PR. Never report an unexecuted check as passing.
 

@@ -266,3 +266,22 @@ next effect; rapid events cannot cancel restoration. Standard scenes/lights are
 brand-independent. Physical device/HA shutdown limitations and the exact stable
 namespace/payload/retention contract are documented in [EVENTS.md](docs/EVENTS.md).
 The Phase 5 dashboard and its dedicated data interface remain future work.
+
+
+## Phase 3D-A compatibility and diagnostics
+
+The [compatibility review](docs/PHASE3DA_VALIDATION.md) corroborates production
+field shapes against the imported observed profiles, separately from live
+acceptance. Session/live models retain numeric run/flag codes alongside existing
+normalized meanings; numeric directory Team values stay in bounded
+`DriverAssociation.team_raw` and do not become display names or join keys.
+Optional schedule enrichment with contradictory track IDs fails independently
+while valid basic races survive. Offset-free clocks remain unknown.
+
+Transport retains at most 24 fixed diagnostic outcomes, independent of its
+unchanged response cache/cooldowns. The CF adapter separately retains at most
+24 parser outcomes, with season/series-specific schedule keys. Diagnostics join
+these outcomes to existing coordinator health and per-series usable-timing
+projections without exporting provider bodies, headers, names or secrets. Cache
+reuse cannot advance response time or source freshness. Existing polling,
+configuration/entity identity, demo and Phase 3C event ownership are unchanged.
