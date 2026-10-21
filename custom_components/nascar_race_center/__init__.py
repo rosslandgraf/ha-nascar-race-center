@@ -8,6 +8,7 @@ from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.storage import Store
 
 from .const import (
     CONF_DATA_USE_AUTHORIZED,
@@ -27,6 +28,8 @@ from .const import (
     PROVIDER_DEMO,
 )
 from .coordinator import LiveCoordinator, ScheduleCoordinator
+from .event_runtime import EventRuntime
+from .events import EventPreferences
 from .favorites import FavoriteDriverRegistry
 from .provider import CFProvider, DemoProvider, RaceProvider
 from .reference_coordinator import ReferenceCoordinator
@@ -49,6 +52,7 @@ class RuntimeData:
     reference: ReferenceCoordinator
     favorites: FavoriteDriverRegistry
     scoring: ScoringCoordinator
+    events: EventRuntime
 
 
 type NascarConfigEntry = ConfigEntry[RuntimeData]
@@ -90,6 +94,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
         favorites = FavoriteDriverRegistry(options.get(CONF_FAVORITE_DRIVERS, []))
     except ValueError as err:
         raise ConfigEntryError("Select valid NASCAR driver IDs") from err
+    try:
+        event_preferences = EventPreferences.from_options(options, favorites.ids)
+    except ValueError as err:
+        raise ConfigEntryError("Select valid racing event settings") from err
     provider: RaceProvider
     reference_provider: ReferenceProvider
     scoring_provider: ScoringProvider
@@ -106,6 +114,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
     live = LiveCoordinator(hass, entry, provider, schedule, live_interval)
     reference = ReferenceCoordinator(hass, entry, reference_provider)
     scoring = ScoringCoordinator(hass, entry, scoring_provider, live)
+    events = EventRuntime(hass, entry, live, schedule, event_preferences, provider_name)
     entry.runtime_data = RuntimeData(
         provider=provider,
         schedule=schedule,
@@ -113,6 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
         reference=reference,
         favorites=favorites,
         scoring=scoring,
+        events=events,
     )
     # DataUpdateCoordinator registers each async_shutdown override with
     # entry.async_on_unload during construction, before either first refresh.
@@ -125,6 +135,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
     await scoring.async_refresh()
     _remove_deselected_favorite_entities(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    await events.async_start()
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
 
@@ -192,3 +203,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> b
     The shared aiohttp session belongs to HA and must not be closed here.
     """
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> None:
+    """Removing the installation removes its compact event ledger too."""
+    await Store(hass, 1, f"{DOMAIN}.{entry.entry_id}.events").async_remove()

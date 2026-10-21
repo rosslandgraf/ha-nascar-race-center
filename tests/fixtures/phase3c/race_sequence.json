@@ -1,0 +1,10 @@
+[
+  {"second": 0, "lap": 0, "flag": "cold_track", "favorite_position": 12},
+  {"second": 30, "lap": 1, "flag": "green", "favorite_position": 12},
+  {"second": 60, "lap": 2, "flag": "yellow", "favorite_position": 9},
+  {"second": 90, "lap": 3, "flag": "green", "favorite_position": 1},
+  {"second": 120, "lap": 4, "flag": "red", "favorite_position": 11, "pit_lap": 4},
+  {"second": 150, "lap": 4, "flag": "green", "favorite_position": 11, "pit_lap": 4},
+  {"second": 180, "lap": 5, "flag": "white", "favorite_position": 11, "pit_lap": 4},
+  {"second": 210, "lap": 6, "flag": "checkered", "favorite_position": 11, "pit_lap": 4}
+]

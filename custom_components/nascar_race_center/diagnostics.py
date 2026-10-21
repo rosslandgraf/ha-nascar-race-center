@@ -22,6 +22,10 @@ async def async_get_config_entry_diagnostics(
             CONF_PROVIDER, entry.data.get(CONF_PROVIDER, PROVIDER_DEMO)
         ),
         "selected_series": list(schedule.series),
+        "events": {
+            "status": entry.runtime_data.events.status,
+            "enabled_types": sorted(entry.runtime_data.events.engine.preferences.types),
+        },
         "schedule": {
             "last_update_success": schedule.last_update_success,
             "failed_series": sorted(schedule.data.failed_series)
