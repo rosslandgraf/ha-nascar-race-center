@@ -1,0 +1,105 @@
+{
+  "weekend_race": [
+    {
+      "race_id": 88001,
+      "series_id": 1,
+      "race_season": 2024,
+      "race_name": "Fictional Archive Example",
+      "track_id": 99001,
+      "track_name": "Example Oval",
+      "timing_run_id": 10,
+      "scheduled_laps": 5,
+      "actual_laps": 5,
+      "scheduled_distance": 7.5,
+      "actual_distance": 7.5,
+      "date_scheduled": "2024-03-01T12:00:00",
+      "race_date": "2024-03-01T12:00:00",
+      "inspection_complete": true,
+      "results": [
+        {
+          "race_id": 88001,
+          "series_id": 1,
+          "race_season": 2024,
+          "result_id": 70001,
+          "driver_id": 99002,
+          "driver_fullname": "Fictional Archive Driver",
+          "car_number": "007",
+          "official_car_number": "7",
+          "finishing_position": 1,
+          "starting_position": 2,
+          "laps_completed": 5,
+          "laps_led": 3,
+          "points_earned": 40,
+          "playoff_points_earned": 0,
+          "finishing_status": "Unverified source label",
+          "disqualified": false
+        }
+      ],
+      "caution_segments": [
+        {
+          "race_id": 88001,
+          "start_lap": 2,
+          "end_lap": 3,
+          "flag_state": 91,
+          "reason": "Fictional caution",
+          "comment": null,
+          "beneficiary_car_number": null
+        }
+      ],
+      "race_leaders": [
+        {
+          "race_id": 88001,
+          "start_lap": 1,
+          "end_lap": 5,
+          "car_number": "007"
+        }
+      ],
+      "stage_results": [
+        {
+          "stage_number": 1,
+          "results": [
+            {
+              "driver_id": 99002,
+              "car_number": "007",
+              "finishing_position": 1,
+              "stage_points": 10
+            }
+          ]
+        }
+      ],
+      "schedule": [
+        {
+          "event_name": "Fictional Practice",
+          "run_type": 71,
+          "start_time_utc": "2024-03-01T12:00:00",
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "weekend_runs": [
+    {
+      "weekend_run_id": 77001,
+      "race_id": 88001,
+      "timing_run_id": 6,
+      "run_type": 71,
+      "run_name": "Fictional Practice",
+      "run_date": "2024-03-01T12:00:00",
+      "run_date_utc": "2024-03-01T12:00:00",
+      "results": [
+        {
+          "run_id": 77001,
+          "driver_id": 99002,
+          "driver_name": "Fictional Archive Driver",
+          "car_number": "007",
+          "vehicle_number": "07",
+          "finishing_position": 1,
+          "best_lap_time": 30.25,
+          "best_lap_speed": 140.5,
+          "laps_completed": 2,
+          "disqualified": false
+        }
+      ]
+    }
+  ]
+}

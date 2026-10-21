@@ -23,6 +23,7 @@ from .endpoints import (
     LIVE_POINTS,
     LIVE_STAGES,
     TRACKS,
+    is_historical_path,
 )
 from .models import (
     AccessDeniedError,
@@ -161,6 +162,8 @@ class NascarApiClient:
             raise ValueError("Cache size must be between 1 and 24 endpoints")
         self._max_cache_entries = max_cache_entries
         self._cache: OrderedDict[str, _CacheEntry] = OrderedDict()
+        # Isolated two-document LRU: history cannot evict live/schedule data.
+        self._history_cache: OrderedDict[str, _CacheEntry] = OrderedDict()
         self._request_lock = asyncio.Lock()
         self._diagnostics: OrderedDict[str, _RequestDiagnostic] = OrderedDict()
         self._retry_at = 0.0
@@ -171,7 +174,8 @@ class NascarApiClient:
 
     def request_delay(self, path: str) -> float:
         """Earliest eligible network read, including cache and all throttle layers."""
-        cached = self._cache.get(path)
+        cache = self._history_cache if is_historical_path(path) else self._cache
+        cached = cache.get(path)
         return max(
             0,
             (cached.expires_at if cached else 0) - _monotonic(),
@@ -192,6 +196,14 @@ class NascarApiClient:
     def diagnostics(self) -> dict[str, dict[str, object]]:
         """Return only allowlisted paths and fixed outcome metadata, never bodies."""
         return {path: asdict(result) for path, result in self._diagnostics.items()}
+
+    def clear_history(self) -> None:
+        """Release only ephemeral historical bodies/validators on entry shutdown."""
+        self._history_cache.clear()
+
+    def discard_history(self, path: str) -> None:
+        """Do not retain bodies which failed historical domain validation."""
+        self._history_cache.pop(path, None)
 
     def _failure(
         self, path: str, message: str, status: int | None, hint: float = 0
@@ -222,12 +234,15 @@ class NascarApiClient:
             not in {LIVE_FEED, DRIVERS, TRACKS, LIVE_PITS, LIVE_STAGES, LIVE_POINTS}
             and _SCHEDULE_PATH.fullmatch(path) is None
             and _SESSION_PATH.fullmatch(path) is None
+            and not is_historical_path(path)
         ):
             raise ValueError("Endpoint is not in the approved catalog")
         async with self._request_lock:
-            cached = self._cache.get(path)
+            historical = is_historical_path(path)
+            cache = self._history_cache if historical else self._cache
+            cached = cache.get(path)
             if cached is not None and cached.expires_at > _monotonic():
-                self._cache.move_to_end(path)
+                cache.move_to_end(path)
                 self._record(
                     path,
                     replace(
@@ -341,7 +356,7 @@ class NascarApiClient:
                             "Last-Modified", cached.last_modified
                         )
                         if not store:
-                            del self._cache[path]
+                            del cache[path]
                         self._failures.pop(path, None)
                         self._cooldowns.pop(path, None)
                         result = replace(
@@ -407,7 +422,7 @@ class NascarApiClient:
                     self._record(path, result)
                     store, ttl = _cache_policy(response.headers, minimum_ttl)
                     if store:
-                        self._cache[path] = _CacheEntry(
+                        cache[path] = _CacheEntry(
                             payload,
                             _monotonic() + ttl,
                             response.headers.get("ETag"),
@@ -418,11 +433,13 @@ class NascarApiClient:
                                 if name in response.headers
                             },
                         )
-                        self._cache.move_to_end(path)
-                        while len(self._cache) > self._max_cache_entries:
-                            self._cache.popitem(last=False)
+                        cache.move_to_end(path)
+                        while len(cache) > (
+                            2 if historical else self._max_cache_entries
+                        ):
+                            cache.popitem(last=False)
                     else:
-                        self._cache.pop(path, None)
+                        cache.pop(path, None)
                     self._failures.pop(path, None)
                     self._cooldowns.pop(path, None)
                     await self._async_response_guard(path, ttl, response.headers)

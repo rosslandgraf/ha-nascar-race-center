@@ -1,0 +1,31 @@
+[
+  {
+    "race_id": 88001,
+    "series_id": 1,
+    "race_name": "Fictional Archive Example",
+    "sch_laps": 5,
+    "act_laps": 5,
+    "drivers": [
+      {
+        "driver_id": 99002,
+        "start_ps": 2,
+        "mid_ps": 1,
+        "ps": 1,
+        "closing_ps": 1,
+        "closing_laps_diff": -1,
+        "best_ps": 1,
+        "worst_ps": 2,
+        "avg_ps": 1.2,
+        "passes_gf": 3,
+        "passing_diff": -2,
+        "passed_gf": 5,
+        "quality_passes": 1,
+        "fast_laps": 2,
+        "top15_laps": 5,
+        "lead_laps": 3,
+        "laps": 5,
+        "rating": 99.5
+      }
+    ]
+  }
+]
