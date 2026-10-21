@@ -21,10 +21,10 @@ type FeedHealth = Literal[
 class LiveView:
     """Separate reported facts, transport health and evidence-limited progress.
 
-    A matching source with unknown freshness may expose reported values, but
-    cannot establish active/completed progress. A checkered observation denotes
+    Current scoring and active/completed progress require established source
+    freshness. A checkered observation denotes
     session completion only, not official classification or finalized results.
-    Failed/stale sources retain context for diagnostics, never current scoring.
+    Failed/stale/unknown-freshness sources retain diagnostic context only.
     """
 
     snapshot: LiveSnapshot | None
@@ -32,8 +32,8 @@ class LiveView:
 
     @property
     def available(self) -> bool:
-        """Only a successfully read, matching, non-stale source supplies facts."""
-        return self.health in {"ok", "freshness_unknown"}
+        """Only a successful, matching source with known freshness supplies scoring."""
+        return self.health == "ok"
 
     @property
     def session_status(self) -> str | None:

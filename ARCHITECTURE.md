@@ -125,7 +125,12 @@ frontend API or persistent historical/event store.
 
 Source freshness remains separate from transport success. The view exposes
 `ok`, `freshness_unknown`, `stale`, `offline`, `denied`, `not_reported` and
-`no_active_session`. Fresh recognized racing flags plus a positive lap support
+`no_active_session`. Only `ok` makes the view available for scoring, including
+its leaderboard and favorite lookup. Phase 3A race scoring entities use the
+same gate; unknown freshness retains models for diagnostics without exposing
+current positions or timing. Phase 1 session-type, flag and current-lap behavior
+remains compatible, with feed status identifying unknown freshness.
+Fresh recognized racing flags plus a positive lap support
 an experimental `active` observation; a fresh checkered flag supports
 `completed`, without final-result semantics. Unknown timestamps/flags do not
 establish progress. Live failures do not disable calendars or references.

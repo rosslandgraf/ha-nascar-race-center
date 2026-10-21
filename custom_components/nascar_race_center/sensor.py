@@ -151,6 +151,9 @@ class NascarLiveSensor(LiveEntity, SensorEntity):
             return True
         if self.key in {"race_status", "session_status"}:
             return super().available
+        if self.key in {"leader", "field_size", "total_laps", "laps_remaining"}:
+            if not self.coordinator.view(self.series_id).available:
+                return False
         snapshot = self.coordinator.data
         if self.key in {"leader", "field_size"} and snapshot is not None:
             if snapshot.leaderboard_failed:

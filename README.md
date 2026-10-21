@@ -121,10 +121,14 @@ cannot establish activity. Other states include `stale`, `not_reported`,
 A successful HTTP response/304 cannot prove fresh scoring. Explicit-offset
 source time is evaluated separately, with the existing five-minute future-clock
 tolerance and 15-minute stale threshold. Unknown source freshness is reported
-as `freshness_unknown`: reported values can be shown, but active/completed
-progress stays unknown. Stale or failed scoring is unavailable; last-good models
-remain diagnostic context. Reported lap totals and remaining laps are never
-calculated from each other; practice sentinel totals are not race distances.
+as `freshness_unknown`: the leaderboard, leader, field size, reported lap totals,
+remaining laps and all favorite live metrics are unavailable until source
+freshness is established. Active/completed progress stays unknown. The existing
+Phase 1 session-type, flag and current-lap entities retain their reported-value
+behavior; consult feed status for their freshness. Stale or failed scoring is
+also unavailable; retained models remain diagnostic context. Reported lap totals
+and remaining laps are never calculated from each other; practice sentinel
+totals are not race distances.
 
 No CF endpoints or polling loops were added. The existing conservative
 300–3600-second minimum, schedule windows, cache validators and backoff remain.

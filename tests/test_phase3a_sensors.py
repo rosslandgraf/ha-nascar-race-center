@@ -63,7 +63,9 @@ async def live_setup(hass: HomeAssistant, freezer):
     provider.async_get_live = AsyncMock(return_value=parse_live(timing_payload()))
     entries = []
 
-    async def setup(*, favorites=("99002",), series=("1", "2", "3")):
+    async def setup(*, favorites=("99002",), series=("1", "2", "3"), payload=None):
+        if payload is not None:
+            provider.async_get_live.return_value = parse_live(payload)
         entry = MockConfigEntry(
             domain=DOMAIN,
             data={
@@ -154,6 +156,67 @@ async def test_optional_timing_sensors_enabled_through_registry(hass, live_setup
     )
 
 
+@pytest.mark.parametrize(
+    "timestamp",
+    [None, "bad", "2026-10-20T20:00:00", "2026-10-21T20:00:00Z"],
+    ids=["missing", "malformed", "offset_free", "future"],
+)
+async def test_unknown_freshness_gates_scoring_at_setup_refresh_and_reload(
+    hass, live_setup, timestamp
+):
+    payload = {**timing_payload(), "time_of_day_os": timestamp}
+    entry, provider = await live_setup(payload=payload)
+    saved_id = entity_id(hass, entry, "driver_99002_live_position")
+    assert hass.states.get(saved_id).state == STATE_UNAVAILABLE
+    registry = er.async_get(hass)
+    registry.async_update_entity(
+        entity_id(hass, entry, "1_field_size"), disabled_by=None
+    )
+    await enable_metrics(hass, entry)  # Also reloads with unknown source freshness.
+
+    for recovering in (False, True, False, True):
+        await refresh(
+            hass, entry, provider, timing_payload() if recovering else payload
+        )
+        view = entry.runtime_data.live.view(1)
+        assert view.health == ("ok" if recovering else "freshness_unknown")
+        assert view.available is recovering
+        assert (view.leaderboard is not None) is recovering
+        assert (view.driver(99002) is not None) is recovering
+        for key, expected in (
+            ("leader", "99001"),
+            ("total_laps", "100"),
+            ("laps_remaining", "58"),
+            ("field_size", "3"),
+        ):
+            assert state(hass, entry, f"1_{key}").state == (
+                expected if recovering else STATE_UNAVAILABLE
+            )
+        for key, expected in (
+            ("position", "2"),
+            ("last_lap", "31.25"),
+            ("best_lap", "30.5"),
+            ("gap", "0.75"),
+            ("running_status", "running"),
+            ("position_change", "3"),
+        ):
+            assert state(hass, entry, f"driver_99002_live_{key}").state == (
+                expected if recovering else STATE_UNAVAILABLE
+            )
+        assert entity_id(hass, entry, "driver_99002_live_position") == saved_id
+        # Keep diagnostic context and Phase 1/2 behavior independent of scoring.
+        assert entry.runtime_data.live.data.leaderboard.by_driver[99002].position == 2
+        assert state(hass, entry, "1_feed_status").state == view.health
+        assert state(hass, entry, "1_session_status").state == (
+            "active" if recovering else STATE_UNKNOWN
+        )
+        assert state(hass, entry, "1_flag").state == "green"
+        assert state(hass, entry, "1_current_lap").state == "42"
+        assert state(hass, entry, "1_scheduled_races").state == "0"
+        assert state(hass, entry, "driver_99002_metadata").state != STATE_UNAVAILABLE
+        assert entry.runtime_data.live.view(2).leaderboard is None
+
+
 async def test_replay_positions_lead_runs_races_series_and_unreported_driver(
     hass, live_setup
 ):
@@ -199,12 +262,17 @@ async def test_replay_positions_lead_runs_races_series_and_unreported_driver(
         ({"flag_state": 99}, STATE_UNKNOWN, "ok", "99001"),
         ({"flag_state": 9}, STATE_UNKNOWN, "ok", "99001"),
         ({"lap_number": 0}, STATE_UNKNOWN, "ok", "99001"),
-        ({"time_of_day_os": None}, STATE_UNKNOWN, "freshness_unknown", "99001"),
+        (
+            {"time_of_day_os": None},
+            STATE_UNKNOWN,
+            "freshness_unknown",
+            STATE_UNAVAILABLE,
+        ),
         (
             {"time_of_day_os": "2026-10-21T20:00:00Z"},
             STATE_UNKNOWN,
             "freshness_unknown",
-            "99001",
+            STATE_UNAVAILABLE,
         ),
         (
             {"time_of_day_os": "2026-10-19T20:00:00Z"},

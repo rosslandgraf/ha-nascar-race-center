@@ -1,5 +1,45 @@
 # Phase 3A delivery and validation
 
+## Final freshness review — October 21, 2026
+
+The shared `LiveView` now supplies scoring only when health is `ok`.
+`freshness_unknown` makes its leaderboard and driver lookup unavailable.
+The leader, field-size, total-lap and remaining-lap entities use the same gate;
+all six favorite live metrics inherit it through the shared driver lookup.
+Retained snapshots remain available for diagnostics, and session progress
+remains unknown until freshness is established. Source-clock representation and
+live-session semantics remain experimental; this does not verify NASCAR data.
+
+Four focused regressions cover missing, malformed, offset-free and implausibly
+future source timestamps through initial setup, reload, refresh, loss of
+freshness and repeated recovery. All four failed against the previous source:
+the enabled favorite live-position sensor incorrectly reported `2` instead of
+`unavailable`. Revised tests also cover all opt-in favorite metrics, race scoring,
+stable entity IDs, retained diagnostic context and selected-series isolation.
+Existing Phase 1 session-type/flag/current-lap and feed-health behavior, Phase 2
+schedule/calendar/reference behavior, config/options and polling are preserved.
+
+Executed using the existing Python 3.14.8 / HA 2026.10.2 environment:
+
+| Check | Final review result |
+| --- | --- |
+| `pytest -q` | **330 passed**: 326 existing + four new cases; all NASCAR requests mocked |
+| `ruff check .` | Passed |
+| `ruff format --check .` | Passed; 61 Python files |
+| `mypy custom_components/nascar_race_center` | Passed; 21 source files |
+| Official HA 2026.10.2 Hassfest | Passed; one integration, zero invalid integrations |
+| `git diff --check` | Passed |
+
+Hassfest used the same official source commit and command documented below.
+The full suite includes the existing Recorder, cache/304, lifecycle, schedule,
+calendar and favorites regressions. HACS remains conditional on public visibility
+with the temporary brands exception; full HACS approval is still pending.
+Hosted results are recorded in PR #3. No NASCAR network audit was repeated,
+endpoint evidence or data-use assumptions changed, or independent prepared-runtime
+smoke/config check repeated. No merge, deployment, release or Phase 3B work occurred.
+
+## Earlier Phase 3A validation
+
 October 21 follow-up: see the [API library audit](api/AUDIT_REPORT.md) for the
 28-endpoint attempt evidence, permanent reference materials, malformed-key fix
 and updated validation. The original Phase 3A results below remain historical.
@@ -144,8 +184,10 @@ Unverified source-time semantics, current anonymous access, permitted cadence,
 status-code meanings beyond running, gap units/negative values, laps-led interval
 inclusivity, media/branding and storage/redistribution rights remain explicit
 gates. Optional omission is not a zero, retirement, empty official entry list,
-final result or concurrent series session. Unknown freshness can show reported
-facts but cannot establish active/completed progress. Practice sentinel lap
+final result or concurrent series session. Unknown freshness cannot supply
+Phase 3A scoring or establish active/completed progress; legacy Phase 1
+session-type, flag and current-lap entities retain reported-value behavior with
+separate feed health. Practice sentinel lap
 totals are preserved as reported, without derived race-distance percentages.
 
 The leaderboard is a reusable internal normalized model, not a frontend or
