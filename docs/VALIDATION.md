@@ -122,6 +122,73 @@ points, session lifecycle and durable deduplicated automation events. This chang
 does not start that work, install on production, merge itself, change visibility
 or publish a release. Hosted CI is reported separately in the pull request.
 
+## Focused final Phase 2 review (2026-10-20)
+
+Reviewed PR #2 at `a56ee4d2f76637ef2bc57ee1c1de4f292e7c1b50`. Its existing
+234 tests passed before changes. Two defects were reproduced before fixing:
+
+- Clearing the optional favorites selector could restore saved favorites. The
+  form's validation default reinserted the previous IDs before the options step,
+  and the options step also restored omitted IDs. Saved IDs now prefill through
+  `suggested_value`; an omitted/empty submission persists `favorite_drivers: []`
+  to override entry data. Four real-HA flow cases cover both submission forms
+  with favorites stored in data or options, removal of all favorite sensors and
+  unused devices, unchanged other entity/device identities, reopened forms and
+  reload persistence. A separate case preserves a favorite device still used by
+  another entity. Existing source-switch/outage tests now explicitly submit the
+  retained IDs, as the prefilled form does; omission means clear.
+- An empty optional detailed-session feed masked a failed basic schedule request
+  or invalid basic envelope. It now propagates the original failure, allowing
+  coordinator last-good retention and unavailable states. Two regressions failed
+  before the fix. Nonempty details still work independently during a basic outage,
+  and a valid empty basic season remains supported.
+
+Additional review coverage exercises truly overlapping timed sessions: a shorter
+qualifying session takes over during practice, practice resumes at its end, and
+the weekend marker follows at the practice end, without HTTP requests. Reference
+coordinator assertions now join schedule/live assertions across unload/reload,
+failed/cancelled setup, queued refreshes and late in-flight completion. Existing
+cases cover missing durations, postponed/TBD starts, session removal/revisions,
+DST, exclusive month/year boundaries and January restart discovery. No additional
+calendar/lifecycle implementation defect was confirmed.
+
+Phase 1 config version/defaults and existing sensor/binary-sensor identifiers are
+unchanged; no migration is needed for absent favorites. All coordinators register
+shutdown with the entry on construction. Entity listeners and calendar alarms
+are removed through HA unload; entry runtime data is released by HA after a
+successful unload. The transport owns bounded in-memory caches and no independent
+polling tasks; a reload constructs a fresh provider/cache while the old
+coordinators are stopped. The shared aiohttp session remains HA-owned and open.
+Platform-unload refusal intentionally keeps the loaded integration operational.
+
+Final review checks in the prepared Python 3.14.8 / HA 2026.10.2 runtime:
+
+| Check | Result |
+| --- | --- |
+| Complete `pytest -q` | **243 passed** (nine additional regression cases) |
+| `ruff check .` | Passed |
+| `ruff format --check .` | Passed; 47 files |
+| `mypy custom_components/nascar_race_center` | Passed; 18 source files |
+| Official HA 2026.10.2 Hassfest | Passed; one integration, zero invalid integrations |
+| `git diff --check` | Passed |
+
+Hassfest uses the same official source commit and invocation documented above.
+Only its scripts and translation helpers were retrieved into ignored `work/`;
+no dependencies were reinstalled. Commands requiring fixture/multiprocessing
+sockets and Git used supported network-enabled execution with inherited proxy
+and TLS intact. No CF host request, policy bypass, manual frontend test or live
+session observation occurred. Earlier runtime smoke/config results above are
+historical and were not rerun for this focused review. Hosted CI is separate.
+
+The detailed [contract review](SCHEMA_EVIDENCE.md#focused-final-phase-2-contract-review-2026-10-20)
+identifies concrete real-data population risks, especially the referenced
+consumer's offset-free timestamps, strict response envelopes, unknown series
+slugs and missing optional durations. Timestamp timezone semantics and CF
+cancellation status remain unverified. These checks establish mocked behavior
+and supported-HA compatibility, not current NASCAR service compatibility.
+Phase 3, merge, production deployment, release and visibility changes remain
+outside this review; HACS/private/brands and data-use release gates remain open.
+
 # Historical Phase 1 delivery and validation
 
 Validation date: 2026-10-20. This report describes the foundation PR only. The complete product remains the target in [ROADMAP.md](../ROADMAP.md); Phase 2 waits for Phase 1 review.

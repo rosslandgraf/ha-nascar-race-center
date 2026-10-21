@@ -39,6 +39,13 @@ In the table, **owner: working** and **owner: Error/Login** are owner reports, n
 
 ## Interpretation and future verification
 
+The focused final Phase 2 review reread pinned community schemas through GitHub;
+it made no NASCAR requests and left every direct-verification status above
+unchanged. In particular, the referenced schedule consumer accepts offset-free
+UTC-named times that this integration deliberately leaves unknown. See the
+final contract review in [SCHEMA_EVIDENCE.md](SCHEMA_EVIDENCE.md) for population
+risks, mandatory envelopes and optional-field behavior.
+
 Only URL patterns backed by parser evidence and fixtures may enter the provider catalog. Generalizing an owner-tested 2026/series-1 URL to another year/series remains a compatibility hypothesis until verified; unsupported responses must fail safely. Tests of mocked response parsing are not endpoint compatibility tests.
 
 The CF provider uses the global season schedule `/cacher/{year}/race_list_basic.json`, optional `/cacher/{year}/{series}/schedule-feed.json` enrichment, independent `/cacher/drivers.json` and `/cacher/tracks.json` references, and the existing `/live/feeds/live-feed.json`. It does not enable the other listed endpoints. The basic schedule envelope is filtered by selected series in memory and cached across calls, avoiding a global-list request per series. Session feeds are fetched only for selected series/seasons. The next season remains optional until published. January also checks the prior season to discover cross-year weekends after a restart, retaining only events with known remaining times and continuing their refresh while needed.

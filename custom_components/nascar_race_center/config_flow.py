@@ -126,7 +126,9 @@ def _schema(
             ),
             probatio.Optional(
                 CONF_FAVORITE_DRIVERS,
-                default=values.get(CONF_FAVORITE_DRIVERS, []),
+                # A validation default would reinsert the old IDs when the
+                # frontend omits this optional field after clearing it.
+                description={"suggested_value": values.get(CONF_FAVORITE_DRIVERS, [])},
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=_driver_options(values, drivers),
@@ -230,13 +232,13 @@ class NascarRaceCenterOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the configured provider and selected series."""
-        if user_input is not None and CONF_FAVORITE_DRIVERS not in user_input:
-            previous = {**self.config_entry.data, **self.config_entry.options}
-            if CONF_FAVORITE_DRIVERS in previous:
-                user_input = {
-                    **user_input,
-                    CONF_FAVORITE_DRIVERS: previous[CONF_FAVORITE_DRIVERS],
-                }
+        if user_input is not None:
+            # HA's frontend can omit an emptied optional selector. Persist an
+            # explicit empty override so entry.data cannot restore old favorites.
+            user_input = {
+                **user_input,
+                CONF_FAVORITE_DRIVERS: user_input.get(CONF_FAVORITE_DRIVERS, []),
+            }
         errors = _validate(user_input) if user_input is not None else {}
         if user_input is not None and not errors:
             return self.async_create_entry(title="", data=_normalized_input(user_input))

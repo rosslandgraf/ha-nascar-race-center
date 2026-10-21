@@ -116,7 +116,11 @@ async def test_source_switch_keeps_ids_without_demo_names_in_cf_options(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input=form_values(
-            **{CONF_PROVIDER: PROVIDER_CF, CONF_DATA_USE_AUTHORIZED: True}
+            **{
+                CONF_PROVIDER: PROVIDER_CF,
+                CONF_DATA_USE_AUTHORIZED: True,
+                CONF_FAVORITE_DRIVERS: ["99001"],
+            }
         ),
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
@@ -194,6 +198,7 @@ async def test_unavailable_directory_options_preserve_favorites_and_series_chang
                 CONF_PROVIDER: PROVIDER_CF,
                 CONF_DATA_USE_AUTHORIZED: True,
                 CONF_SERIES: ["3"],
+                CONF_FAVORITE_DRIVERS: ["123", "456"],
             }
         ),
     )
@@ -298,6 +303,84 @@ async def test_metadata_entities_keep_ids_across_reference_changes_and_outages(
     assert await hass.config_entries.async_unload(entry.entry_id)
 
 
+@pytest.mark.parametrize("omitted", [False, True])
+@pytest.mark.parametrize("stored_in_options", [False, True])
+async def test_options_clear_all_favorites_persists_and_preserves_other_entities(
+    hass: HomeAssistant, omitted: bool, stored_in_options: bool
+) -> None:
+    """An empty UI selection overrides saved data and removes only favorites."""
+    entry = await setup_favorites(
+        hass,
+        ["99001", "99002"],
+        (Driver(99001, "Synthetic A"), Driver(99002, "Synthetic B")),
+    )
+    if stored_in_options:
+        hass.config_entries.async_update_entry(
+            entry, options={CONF_FAVORITE_DRIVERS: ["99001", "99002"]}
+        )
+        await hass.async_block_till_done()
+    registry = er.async_get(hass)
+    devices = dr.async_get(hass)
+    removed = [favorite_entity_id(hass, entry, value) for value in (99001, 99002)]
+    removed_devices = [registry.async_get(value).device_id for value in removed]
+    unrelated = registry.async_get_or_create(
+        "sensor", "other_integration", "unrelated", config_entry=entry
+    )
+    hass.states.async_set(unrelated.entity_id, "unchanged")
+    retained = {
+        entity.unique_id: (entity.entity_id, entity.device_id)
+        for entity in er.async_entries_for_config_entry(registry, entry.entry_id)
+        if entity.entity_id not in removed
+    }
+    enabled = {
+        entity_id for entity_id, _ in retained.values() if hass.states.get(entity_id)
+    }
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    submitted = form_values()
+    marker = next(
+        key
+        for key in result["data_schema"].schema
+        if key.schema == CONF_FAVORITE_DRIVERS
+    )
+    assert marker.description["suggested_value"] == ["99001", "99002"]
+    if not omitted:
+        submitted[CONF_FAVORITE_DRIVERS] = []
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input=submitted
+    )
+    await hass.async_block_till_done()
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options[CONF_FAVORITE_DRIVERS] == []
+    assert entry.runtime_data.favorites.ids == ()
+    for entity_id, device_id in zip(removed, removed_devices, strict=True):
+        assert registry.async_get(entity_id) is None
+        assert hass.states.get(entity_id) is None
+        assert device_id is not None
+        assert devices.async_get(device_id) is None
+    assert {
+        entity.unique_id: (entity.entity_id, entity.device_id)
+        for entity in er.async_entries_for_config_entry(registry, entry.entry_id)
+    } == retained
+    assert hass.states.get(unrelated.entity_id).state == "unchanged"
+    for entity_id in enabled:
+        assert hass.states.get(entity_id) is not None
+    for _, device_id in retained.values():
+        if device_id is not None:
+            assert devices.async_get(device_id) is not None
+    # Reopening the UI and reloading must not revive favorites from entry.data.
+    form = await hass.config_entries.options.async_init(entry.entry_id)
+    marker = next(
+        key for key in form["data_schema"].schema if key.schema == CONF_FAVORITE_DRIVERS
+    )
+    assert marker.description["suggested_value"] == []
+    assert await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.options[CONF_FAVORITE_DRIVERS] == []
+    assert entry.runtime_data.favorites.ids == ()
+    assert all(registry.async_get(value) is None for value in removed)
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+
 async def test_favorites_options_remove_add_and_reload_without_duplicates(
     hass: HomeAssistant,
 ) -> None:
@@ -346,4 +429,33 @@ async def test_favorites_options_remove_add_and_reload_without_duplicates(
     )
     assert entry.runtime_data.favorites.ids == (123, 789)
     assert entry.runtime_data.reference is not previous_reference
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_clearing_favorite_keeps_device_used_by_another_entity(
+    hass: HomeAssistant,
+) -> None:
+    """Favorite cleanup never deletes a device that still has another entity."""
+    entry = await setup_favorites(hass, ["99001"], (Driver(99001, "Synthetic"),))
+    registry = er.async_get(hass)
+    favorite = favorite_entity_id(hass, entry, 99001)
+    device_id = registry.async_get(favorite).device_id
+    assert device_id is not None
+    other = registry.async_get_or_create(
+        "sensor",
+        "other_integration",
+        "shared_device",
+        config_entry=entry,
+        device_id=device_id,
+    )
+    hass.states.async_set(other.entity_id, "unchanged")
+    form = await hass.config_entries.options.async_init(entry.entry_id)
+    await hass.config_entries.options.async_configure(
+        form["flow_id"], user_input=form_values(**{CONF_FAVORITE_DRIVERS: []})
+    )
+    await hass.async_block_till_done()
+    assert registry.async_get(favorite) is None
+    assert registry.async_get(other.entity_id).device_id == device_id
+    assert hass.states.get(other.entity_id).state == "unchanged"
+    assert dr.async_get(hass).async_get(device_id) is not None
     assert await hass.config_entries.async_unload(entry.entry_id)

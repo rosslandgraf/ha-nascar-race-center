@@ -146,3 +146,30 @@ empty directory. Reference rows are bounded at 10,000 drivers and 1,000 tracks;
 optional text/number validation also bounds malformed metadata. These are
 defensive implementation limits. Synthetic `drivers.json` and `tracks.json`
 fixtures validate the contract without claiming current provider compatibility.
+
+## Focused final Phase 2 contract review (2026-10-20)
+
+The pinned TannerYohe basic-race model, NascarPicks schedule model/consumer and
+ooohfascinating reference document were reread through GitHub. No CF endpoint
+was requested. These community references document parsing hypotheses; there
+is still no verified official/current NASCAR response schema in this project.
+
+| Boundary | Assumption and effect on real data |
+| --- | --- |
+| Basic season | Requires an object with the selected `series_N` array and valid `race_id`, `series_id`, `race_name` per row. A bare list, absent series, duplicate ID or contradictory season fails explicitly. Missing optional track/time/session data preserves race identity. |
+| Weekend sessions | Reads embedded `schedule` and the per-series `schedule-feed.json` array; it does not fetch the separate historical `weekend-feed.json`. Detailed rows require race identity and `event_name`; malformed/ambiguous detail fails enrichment while usable basic races survive. Empty details cannot establish an empty season when the basic request failed. |
+| Time | The pinned NascarPicks consumer parses `start_time_utc` using `%Y-%m-%dT%H:%M:%S`, and its model explicitly assigns UTC to naive input. This is concrete evidence that a community consumer expects offset-free values, but does not establish current NASCAR timezone semantics. Our explicit-offset policy rejects those values. A structurally accepted feed can therefore populate race counts/names yet provide no usable calendar or next-race times. No timezone inference was added. |
+| Duration/status/identity | Embedded sessions have no supported end field. Missing/invalid detailed ends produce date notices, not timed sessions. No referenced authoritative session ID or cancellation/postponement status contract is implemented. Renames can change derived session IDs; indistinguishable kind/name duplicates fail enrichment. Timing revisions are supported, explicit CF cancellation detection is unverified. |
+| Drivers | Requires a `response` array and `Nascar_Driver_ID` plus `Full_Name` for usable rows. It never substitutes secondary ID or car number. Unknown `Driver_Series` slugs preserve names/IDs/labels but cannot populate numeric series associations. Missing optional facts and manufacturer image URLs remain unknown. Conflicting names for one ID fail the directory. |
+| Tracks | Requires an `items` array and `track_id` plus `track_name`. Missing locality/length/type/surface does not invalidate a venue. Schedule track names remain usable if the directory fails. No track timezone is inferred. |
+
+A known start with unknown duration creates a date notice in the configured HA
+timezone. Native calendar automations for that all-day notice follow local date
+boundaries, not its known session start. Consumers needing exact session timing
+must distinguish notices from timed events. Overlap queries return all sessions;
+the calendar's single current-event state prefers a timed active session with the
+earliest end, then a date notice/weekend, and updates locally at boundaries.
+
+Future-season envelope/slug changes, publication timing, removal semantics and
+cross-year source revisions remain live compatibility hypotheses. Passing
+handmade fixtures does not close these gates or authorize provider access.

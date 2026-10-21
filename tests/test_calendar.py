@@ -486,3 +486,34 @@ async def test_session_start_and_end_update_locally_and_unload_cleans_alarms(
     async_fire_time_changed(hass, dt_util.utcnow())
     await hass.async_block_till_done()
     provider.async_get_schedule.assert_not_awaited()
+
+
+async def test_overlapping_sessions_advance_when_shorter_session_starts_and_ends(
+    hass: HomeAssistant, freezer
+) -> None:
+    """A shorter session can take priority during an already active session."""
+    freezer.move_to("2026-10-20T12:00:00Z")
+    race = Race(
+        1,
+        10,
+        "Overlapping sessions",
+        sessions=(
+            session("practice", "2026-10-20T12:01Z", "2026-10-20T12:05Z"),
+            session("qualifying", "2026-10-20T12:02Z", "2026-10-20T12:03Z"),
+        ),
+    )
+    entry, provider, calendars = await setup_calendar(hass, (race,))
+    calendar = calendars[1]
+    provider.async_get_schedule.reset_mock()
+    for when, expected in (
+        ("2026-10-20T12:01:01Z", "Practice"),
+        ("2026-10-20T12:02:01Z", "Qualifying"),
+        ("2026-10-20T12:03:01Z", "Practice"),
+        ("2026-10-20T12:05:01Z", "Race weekend"),
+    ):
+        freezer.move_to(when)
+        async_fire_time_changed(hass, dt_util.utcnow())
+        await hass.async_block_till_done()
+        assert expected in hass.states.get(calendar.entity_id).attributes["message"]
+    provider.async_get_schedule.assert_not_awaited()
+    assert await hass.config_entries.async_unload(entry.entry_id)

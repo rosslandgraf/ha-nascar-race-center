@@ -66,6 +66,11 @@ class CFProvider:
             assert basic_error is not None
             raise basic_error from None
         self.schedule_details_failed.discard((year, series_id))
+        if basic is None and not detailed:
+            # An optional feed with no enrichment cannot establish that the
+            # authoritative season is empty or conceal its access/schema error.
+            assert basic_error is not None
+            raise basic_error
         return merge_schedule(basic or (), detailed)
 
     async def async_get_live(self) -> LiveSnapshot | None:

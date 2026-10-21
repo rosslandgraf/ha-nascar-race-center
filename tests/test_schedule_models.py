@@ -29,6 +29,17 @@ def _rows() -> list[dict[str, object]]:
     )
 
 
+@pytest.mark.parametrize("failure", [ProviderError("Unavailable", status=503), {}])
+async def test_empty_optional_details_cannot_mask_basic_schedule_failure(
+    failure: object,
+) -> None:
+    """No enrichment is not evidence of an empty authoritative season list."""
+    provider = CFProvider(MagicMock())
+    provider.api.async_get_json = AsyncMock(side_effect=[failure, []])
+    with pytest.raises(ProviderError):
+        await provider.async_get_schedule(2026, 1)
+
+
 @pytest.mark.parametrize("series_id", [1, 2, 3])
 def test_series_sessions_span_year_boundary(series_id: int) -> None:
     """Sessions retain the requested season even when dates cross the year."""
