@@ -414,7 +414,9 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
             if delay > seconds:
                 seconds = delay
                 self.interval_constraint = "cache_or_cooldown"
-        return timedelta(seconds=seconds)
+        # Cache and transport retain their full deadline. Bound HA's timer
+        # arithmetic; an earlier local wake only reads that still-fresh cache.
+        return timedelta(seconds=min(seconds, 366 * 86400))
 
     def polling_diagnostics(self) -> dict[str, object]:
         """Small current decisions only; no timeline or source payload retention."""

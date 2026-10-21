@@ -139,6 +139,8 @@ def adaptive_decision(
                 )
             elif start <= now < discovery_end:
                 candidates.append(PollDecision(300, "scheduled_window"))
+            elif end is None and start <= now < start + timedelta(hours=8):
+                candidates.append(PollDecision(3600, "conservative_fallback"))
         if known and future:
             first = min(start for start, _ in known)
             if first <= now and min(future) - now <= timedelta(hours=6):

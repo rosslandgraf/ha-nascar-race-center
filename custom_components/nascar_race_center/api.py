@@ -121,6 +121,7 @@ def _cache_policy(headers: Mapping[str, str], minimum_ttl: float) -> tuple[bool,
     if "no-cache" in directives:
         return True, 0
     lifetime = max(0, minimum_ttl)
+    response_date = _http_date(headers.get("Date"))
     if "max-age" in directives:
         try:
             lifetime = float(directives["max-age"].strip('"'))
@@ -128,14 +129,16 @@ def _cache_policy(headers: Mapping[str, str], minimum_ttl: float) -> tuple[bool,
         except ValueError:
             lifetime = 0
     elif expires := _http_date(headers.get("Expires")):
-        lifetime = max(0, (expires - datetime.now(UTC)).total_seconds())
+        lifetime = max(
+            0, (expires - (response_date or datetime.now(UTC))).total_seconds()
+        )
     try:
         age = float(headers.get("Age", "0"))
         age = max(0, age) if math.isfinite(age) else 0
     except ValueError:
         age = 0
-    if date := _http_date(headers.get("Date")):
-        age = max(age, (datetime.now(UTC) - date).total_seconds())
+    if response_date is not None:
+        age = max(age, (datetime.now(UTC) - response_date).total_seconds())
     # Never shorten an upstream freshness lifetime to an internal cache cap.
     return True, max(0, lifetime - age)
 
@@ -175,6 +178,7 @@ class NascarApiClient:
             self._request_deadlines.get(path, 0) - _monotonic(),
             self._cooldowns.get(path, (0, None))[0] - _monotonic(),
             self._retry_at - _monotonic(),
+            self.live_guard.host_remaining if self.live_guard else 0,
             self.live_guard.remaining if path == LIVE_FEED and self.live_guard else 0,
         )
 
@@ -237,6 +241,8 @@ class NascarApiClient:
             if self._retry_at >= retry_at:
                 retry_at, status = self._retry_at, 429
             remaining = retry_at - _monotonic()
+            if self.live_guard and self.live_guard.host_remaining > remaining:
+                remaining, status = self.live_guard.host_remaining, 429
             if remaining > 0:
                 self._record(
                     path,
@@ -431,7 +437,9 @@ class NascarApiClient:
 
     async def _async_failure_guard(self, path: str, error: ProviderError) -> None:
         if self.live_guard is not None and (path == LIVE_FEED or error.status == 429):
-            await self.live_guard.async_reserve(max(0, error.retry_after or 0))
+            await self.live_guard.async_reserve(
+                max(0, error.retry_after or 0), hostwide=error.status == 429
+            )
 
     async def _async_response_guard(
         self, path: str, ttl: float, headers: Mapping[str, str]

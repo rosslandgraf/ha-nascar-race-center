@@ -156,7 +156,11 @@ def _schema(
                 default=values.get(
                     CONF_APPROACHING_INTERVAL, DEFAULT_APPROACHING_INTERVAL
                 ),
-            ): probatio.All(probatio.Coerce(int), probatio.Range(min=30, max=60)),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=30, max=60, step=1, mode=selector.NumberSelectorMode.BOX
+                )
+            ),
             probatio.Required(
                 "racing_events", default=values.get("racing_events", False)
             ): selector.BooleanSelector(),
@@ -258,7 +262,7 @@ def _normalized_input(values: dict[str, Any]) -> dict[str, Any]:
     """Store canonical IDs only when favorites were supplied by this form."""
     values = dict(values)
     # Number selectors return floats for whole numbers; persist canonical ints.
-    for key in ("event_top_n", "reminder_minutes"):
+    for key in ("event_top_n", "reminder_minutes", CONF_APPROACHING_INTERVAL):
         if type(values.get(key)) is float and values[key].is_integer():
             values[key] = int(values[key])
     if CONF_FAVORITE_DRIVERS not in values:
@@ -275,7 +279,7 @@ def _normalized_input(values: dict[str, Any]) -> dict[str, Any]:
 def _event_numbers(values: dict[str, Any]) -> dict[str, Any]:
     """Canonicalize whole selector numbers without truncating fractional input."""
     values = dict(values)
-    for key in ("event_top_n", "reminder_minutes"):
+    for key in ("event_top_n", "reminder_minutes", CONF_APPROACHING_INTERVAL):
         value = values.get(key)
         if type(value) is float and value.is_integer():
             values[key] = int(value)

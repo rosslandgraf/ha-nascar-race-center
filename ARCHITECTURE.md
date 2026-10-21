@@ -75,7 +75,7 @@ The favorite registry stores selected driver IDs independently of reference avai
 
 ## Refresh and failure policy
 
-Schedules change slowly and receive their own cache and refresh cadence. Reference metadata has a separate slow refresh and per-feed freshness state. Live refresh may become moderately more frequent only near a known race or when an active session is observed; idle/off-season cadence stays low. CF polling is conditional on authorization and must stay within any established provider limits. Intervals and their bounds are defined in integration constants and covered by tests; no allowed NASCAR polling rate has been independently established.
+Schedules change slowly and receive their own cache and refresh cadence. Reference metadata has a separate slow refresh and per-feed freshness state. The live coordinator selects adaptive targets only within a reviewed provider policy; the current CF policy retains legacy conservative cadence. The full state/evidence, cache and restart rules are documented in [POLLING.md](docs/POLLING.md). CF polling is conditional on authorization and must stay within any established provider limits. Intervals and their bounds are defined in integration constants and covered by tests; no allowed NASCAR polling rate has been independently established.
 
 Conditional requests honor ETag/Last-Modified where supplied. A 304 reuses a successfully cached body; it cannot create data without an existing cache. Timeouts, invalid JSON, schema drift, access denial, missing endpoints and server failures become explicit provider errors. Rate limits and service-unavailable responses honor Retry-After and bounded delayed retries; cancellation propagates. Failure of one optional feed does not disable unrelated data. Last successful models can be retained for diagnostics, but entity availability and staleness must reflect their age and failed refreshes.
 
@@ -285,3 +285,32 @@ these outcomes to existing coordinator health and per-series usable-timing
 projections without exporting provider bodies, headers, names or secrets. Cache
 reuse cannot advance response time or source freshness. Existing polling,
 configuration/entity identity, demo and Phase 3C event ownership are unchanged.
+
+
+## Phase 3D-B polling boundary
+
+`polling.py` makes pure decisions over existing immutable observations and fresh
+selected-series schedules. `PollingLimits` belongs to the provider, independent
+of user options. CF's unverified-cadence record disables adaptive activation;
+offline synthetic providers can exercise ten-second targets. Practice and
+qualifying use fresh complete run identity and reported on-track activity without
+race-lap/flag prerequisites. These decisions do not change event or sensor status
+meanings. The live coordinator applies provider, clock-stall, error and transport
+limits, and a schedule listener re-arms that same HA scheduler after revisions.
+There is no new independent live timer/loop or extra consumer-originated request.
+
+The transport coordinates eligible request slots even when cache policy requires
+revalidation or no-store. Its fallback lifetime can follow a reviewed shorter
+provider limit; explicit upstream cache lifetimes remain authoritative. 304 Age
+and Date handling, long upstream lifetimes and Retry-After on success/denial are
+covered synthetically. Attempt and successful-response times remain distinct
+from source time. Source expiry and unchanged-value Recorder suppression remain.
+
+One bounded CF client is retained per entry in `hass.data` through reloads; entry
+removal releases it. The only new persistent state is `polling_storage.py`'s
+verified-before-I/O live request reservation and optional host-wide 429 deadline.
+A real restart restores those deadlines without source bodies or validators;
+live data can stay unavailable until eligible. A storage error blocks live I/O.
+Existing event-ledger ownership, durable publication barriers, standalone scoring
+eligibility, schedules/references and shared HA session ownership are preserved.
+See [Phase 3D-B validation](docs/PHASE3DB_VALIDATION.md).

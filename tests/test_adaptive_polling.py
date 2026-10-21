@@ -134,8 +134,8 @@ def test_session_kind_alone_cannot_establish_practice(on_track):
         (Race(1, 1, "Just scheduled", BASE), 300, "scheduled_window"),
         (
             Race(1, 1, "Missed unknown duration", BASE - timedelta(hours=1)),
-            21600,
-            "off_season",
+            3600,
+            "conservative_fallback",
         ),
     ],
 )
@@ -182,6 +182,7 @@ class SyntheticProvider(DemoProvider):
         self.fail = None
         self.frozen = False
         self.races = ()
+        self.position = 12
 
     async def async_get_schedule(self, year, series_id):
         return tuple(race for race in self.races if race.series_id == series_id)
@@ -192,7 +193,12 @@ class SyntheticProvider(DemoProvider):
         if self.fail:
             raise self.fail
         second = 0 if self.frozen else int((now - BASE).total_seconds())
-        snapshot = sample(second, flag="yellow" if second >= 30 else "green", lap=10)
+        snapshot = sample(
+            second,
+            position=self.position,
+            flag="yellow" if second >= 30 else "green",
+            lap=10,
+        )
         if self.kind != "race":
             snapshot = replace(
                 snapshot,
@@ -484,13 +490,18 @@ async def test_persisted_reservation_restart_server_cooldown_and_no_payload(
     with pytest.raises(ProviderError):
         await client.async_get_json(LIVE_FEED, minimum_interval=300)
     data = await guard.store.async_load()
-    assert data == {"not_before": (BASE + timedelta(seconds=900)).isoformat()}
+    assert data == {
+        "not_before": (BASE + timedelta(seconds=900)).isoformat(),
+        "host_not_before": (BASE + timedelta(seconds=900)).isoformat(),
+    }
     restored = LiveRequestGuard(hass, "synthetic-entry")
     await restored.async_load()
     fresh, new_session = client_with(Response())
     fresh.live_guard = restored
-    with pytest.raises(PollingDeferred):
+    with pytest.raises(ProviderError):
         await fresh.async_get_json(LIVE_FEED, minimum_interval=300)
+    with pytest.raises(ProviderError):
+        await fresh.async_get_json("/cacher/2026/race_list_basic.json")
     new_session.get.assert_not_called()
     freezer.tick(900)
     await fresh.async_get_json(LIVE_FEED, minimum_interval=300)
@@ -521,3 +532,68 @@ async def test_guard_write_failure_blocks_live_io(hass, freezer):
             await client.async_get_json(LIVE_FEED, minimum_interval=300)
     session.get.assert_not_called()
     assert guard.failed
+
+
+async def test_invalid_persisted_host_clock_fails_closed_without_breaking_schedule(
+    hass, freezer
+):
+    freezer.move_to(BASE)
+    guard = LiveRequestGuard(hass, "malformed-entry")
+    await guard.store.async_save(
+        {"not_before": BASE.isoformat(), "host_not_before": "2026-10-21T16:00:00"}
+    )
+    await guard.async_load()
+    assert guard.failed
+    client, session = client_with(Response())
+    client.live_guard = guard
+    with pytest.raises(ProviderError):
+        await client.async_get_json(LIVE_FEED, minimum_interval=300)
+    assert await client.async_get_json("/cacher/2026/race_list_basic.json") == {
+        "series_1": []
+    }
+    assert session.get.call_count == 1
+
+
+async def test_expires_and_date_do_not_double_subtract_response_age(
+    freezer, monkeypatch
+):
+    from email.utils import format_datetime
+
+    freezer.move_to(BASE)
+    clock = [1000.0]
+    monkeypatch.setattr(api, "_monotonic", lambda: clock[0])
+    client, session = client_with(
+        Response(
+            headers={
+                "Date": format_datetime(BASE - timedelta(seconds=60)),
+                "Expires": format_datetime(BASE + timedelta(seconds=60)),
+            }
+        ),
+        Response(),
+    )
+    await client.async_get_json(LIVE_FEED, minimum_ttl=10)
+    clock[0] += 59
+    await client.async_get_json(LIVE_FEED, minimum_ttl=10)
+    assert session.get.call_count == 1
+    clock[0] += 1
+    await client.async_get_json(LIVE_FEED, minimum_ttl=10)
+    assert session.get.call_count == 2
+
+
+async def test_304_without_age_does_not_reuse_previous_response_age(monkeypatch):
+    clock = [1000.0]
+    monkeypatch.setattr(api, "_monotonic", lambda: clock[0])
+    client, session = client_with(
+        Response(headers={"Cache-Control": "max-age=120", "Age": "110"}),
+        Response(304),
+        Response(),
+    )
+    await client.async_get_json(LIVE_FEED)
+    clock[0] += 10
+    await client.async_get_json(LIVE_FEED)
+    clock[0] += 119
+    await client.async_get_json(LIVE_FEED)
+    assert session.get.call_count == 2
+    clock[0] += 1
+    await client.async_get_json(LIVE_FEED)
+    assert session.get.call_count == 3

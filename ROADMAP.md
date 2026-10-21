@@ -1,6 +1,6 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 3C are reviewed and merged into `main`, including the observed API reference package. Phase 3D-A starts from `5e4445a` (PR #6) and preserves its 508-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 3D-A are reviewed and merged into `main`, including the observed API reference package. Phase 3D-B starts from `b1f1468` (PR #7) and preserves its 546-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
 
@@ -94,7 +94,7 @@ See [event behavior and blueprint setup](docs/EVENTS.md).
 
 ## Phase 3D-A — NASCAR CF provider compatibility
 
-**Status:** in progress; implementation and offline validation prepared for review.
+**Status:** reviewed and squash-merged in PR #7; offline validation passed. Live acceptance gates remain open.
 See [corrections/evidence/checks](docs/PHASE3DA_VALIDATION.md) and the future
 [authorized HA OS validation procedure](docs/CF_LIVE_VALIDATION.md).
 
@@ -104,11 +104,25 @@ schedule enrichment; distinguish transport, JSON, parsing and usable HA data;
 add synthetic structural and real HA regressions. Preserve polling, demo,
 Phase 1–3C behavior and unresolved permission/live-session gates.
 
-## Phase 3D-B — Polling review
+## Phase 3D-B — Adaptive near-real-time polling
 
-**Status:** not started; requires a separate assignment and provider cadence
-permission/evidence. Phase 3D-A changes no polling interval, cache TTL or retry
-policy. Do not begin automatically after the compatibility PR.
+**Status:** implemented and synthetically validated for review. See
+[polling and permission policy](docs/POLLING.md) and
+[actual validation/budgets](docs/PHASE3DB_VALIDATION.md).
+
+**Delivered:** provider-gated 10-second race/practice/qualifying capability;
+30–60-second approach discovery, five-minute session gaps, hourly idle/overnight
+and six-hour off-season targets; source-clock/failure backoff; shared request
+slots, server caching/304/Retry-After safeguards; compact persisted CF restart
+reservations; translated options and bounded diagnostics. Existing sensors,
+event meanings, entity IDs and configuration version remain compatible.
+
+**Permission boundary:** CF defaults and legacy discovery budgets remain guarded
+at 300 seconds or slower. Adaptive options and data-use acknowledgements cannot
+enable fast CF access. The offline demo remains empty unless a test explicitly
+supplies synthetic activity. Measured synthetic performance establishes capability,
+not authorized NASCAR cadence or real-world latency. No new NASCAR probes,
+standalone scoring requests, history or dashboard work.
 
 ## Phase 4 — History and analytical views
 
@@ -160,8 +174,10 @@ source/live/data-use and release gates above still apply.
 - [x] Embedded pits/current stage and evidence-gated pit/stage/points models/sensors (Phase 3B, merged).
 - [ ] Validate standalone live pit/stage/points association, completed stops/stages and official results against reliable evidence.
 - [x] Opt-in reliable racing events and notification/lighting blueprint implementation (Phase 3C, merged).
-- [ ] CF provider compatibility and authorized HA OS end-to-end acceptance (Phase 3D-A in progress; offline checks pass, live gates open).
-- [ ] Polling review (Phase 3D-B, not started).
+- [x] CF provider compatibility and pipeline diagnostics (Phase 3D-A, merged).
+- [ ] Authorized HA OS end-to-end CF acceptance (live source and permission gates remain open).
+- [x] Adaptive polling capability and synthetic request/Recorder budgets (Phase 3D-B, prepared for review).
+- [ ] Independently verify permitted CF cadence and real active-session latency before faster CF activation.
 - [ ] Validate active-session event semantics and physical-device automation behavior.
 - [ ] History & Analytics: on-demand historical results/laps/loop stats, bounded storage and defensible derived metrics (Phase 4).
 - [ ] Premium Dashboard: dedicated data interface, responsive accessible views and separate frontend package (Phase 5).
