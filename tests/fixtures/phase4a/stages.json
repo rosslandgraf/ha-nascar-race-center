@@ -1,0 +1,16 @@
+[
+  {
+    "race_id": 88001,
+    "run_id": 10,
+    "stage_number": 1,
+    "results": [
+      {
+        "driver_id": 99002,
+        "vehicle_number": "007",
+        "position": 1,
+        "full_name": "Fictional Archive Driver",
+        "stage_points": 0
+      }
+    ]
+  }
+]

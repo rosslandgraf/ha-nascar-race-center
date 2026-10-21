@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import device_registry as dr
@@ -35,6 +36,8 @@ from .coordinator import LiveCoordinator, ScheduleCoordinator
 from .event_runtime import EventRuntime
 from .events import EventPreferences
 from .favorites import FavoriteDriverRegistry
+from .history import HistoryService
+from .history_provider import CFHistoryProvider, DemoHistoryProvider
 from .polling_storage import LiveRequestGuard
 from .provider import CFProvider, DemoProvider, RaceProvider
 from .reference_coordinator import ReferenceCoordinator
@@ -58,6 +61,7 @@ class RuntimeData:
     favorites: FavoriteDriverRegistry
     scoring: ScoringCoordinator
     events: EventRuntime
+    history: HistoryService
 
 
 type NascarConfigEntry = ConfigEntry[RuntimeData]
@@ -150,6 +154,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
     reference = ReferenceCoordinator(hass, entry, reference_provider)
     scoring = ScoringCoordinator(hass, entry, scoring_provider, live)
     events = EventRuntime(hass, entry, live, schedule, event_preferences, provider_name)
+    history = HistoryService(
+        CFHistoryProvider(cf_provider.api)
+        if provider_name == PROVIDER_CF
+        else DemoHistoryProvider(),
+        series,
+    )
+    # Register before first refresh so failed/cancelled setup drains requests too.
+    entry.async_on_unload(history.async_close)
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, history.async_close)
+    )
     entry.runtime_data = RuntimeData(
         provider=provider,
         schedule=schedule,
@@ -158,6 +173,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
         favorites=favorites,
         scoring=scoring,
         events=events,
+        history=history,
     )
     # DataUpdateCoordinator registers each async_shutdown override with
     # entry.async_on_unload during construction, before either first refresh.

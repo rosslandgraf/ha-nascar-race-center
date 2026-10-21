@@ -1,0 +1,31 @@
+{
+  "laps": [
+    {
+      "Number": "007",
+      "FullName": "Fictional Archive Driver",
+      "Manufacturer": "Example Make",
+      "NASCARDriverID": 99002,
+      "RunningPos": 1,
+      "Laps": [
+        {
+          "Lap": 0,
+          "LapTime": null,
+          "LapSpeed": null,
+          "RunningPos": 0
+        },
+        {
+          "Lap": 1,
+          "LapTime": 30.25,
+          "LapSpeed": "140.50",
+          "RunningPos": 1
+        }
+      ]
+    }
+  ],
+  "flags": [
+    {
+      "LapsCompleted": 0,
+      "FlagState": 91
+    }
+  ]
+}

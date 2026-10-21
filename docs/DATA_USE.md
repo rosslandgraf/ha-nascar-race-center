@@ -39,3 +39,19 @@ Adaptive setting nor the existing acknowledgement enables faster CF requests.
 A future change must document independently verified permitted limits here
 before updating the CF provider record. Synthetic 10-second measurements are
 not NASCAR performance measurements or permission evidence.
+
+
+## Phase 4A historical retention
+
+The [history interface](HISTORY.md) adds only explicit on-demand access to seven
+observed historical patterns under the existing CF authorization configuration.
+This development task made no NASCAR requests and grants no additional access,
+collection, polling or redistribution rights. The two-document in-memory history
+cache and consumer-owned immutable models are transient; historical bodies,
+validators and results are not persisted in Recorder, HA Store, logs or raw
+diagnostics. Unload/reload/stop clear cached history, and restart restores no
+historical data. The documented memory/request bounds are engineering safeguards,
+not a NASCAR-approved retention or cadence policy. Source data rights, permitted
+uses, anonymous/current-context coverage and public distribution remain gates.
+The MIT license continues to apply to project code only. Fictional handmade test
+fixtures are not NASCAR results or an authorization to redistribute real data.
