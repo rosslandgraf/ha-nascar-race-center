@@ -1,6 +1,6 @@
 # NASCAR Race Center
 
-A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phases 1–3C are merged; Phase 3D-A compatibility remains private development, with live source validation and release gates outstanding.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
+A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phases 1–3D-A are merged; Phase 3D-B adaptive polling is prepared for review, with live source validation and release gates outstanding.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
 
 The long-term target includes race-weekend schedules, timing/scoring, favorite drivers, championship points, historical analytics, automations and an optional responsive dashboard. See the complete [specification](NASCAR_Race_Center_Codex_Brief.md) and [phased roadmap](ROADMAP.md).
 
@@ -12,7 +12,9 @@ blocked at proxy CONNECT, before any NASCAR response. The separately supplied [o
 corroborates structures but exposes conflicting contexts; active-session behavior
 and permission remain unverified. See [Phase 3B evidence](docs/PHASE3B_EVIDENCE.md).
 
-Latest review: [Phase 3D-A compatibility and validation](docs/PHASE3DA_VALIDATION.md),
+Latest review: [Phase 3D-B adaptive polling validation](docs/PHASE3DB_VALIDATION.md),
+[polling targets and authorization boundary](docs/POLLING.md),
+[Phase 3D-A compatibility](docs/PHASE3DA_VALIDATION.md),
 with a future [authorized HA OS CF test procedure](docs/CF_LIVE_VALIDATION.md).
 
 ## Available features
@@ -195,3 +197,17 @@ One checkered observation denotes completion; official results remain unverified
 No devices or notifications are controlled by the integration itself.
 See [event contract, reliability limits and blueprint instructions](docs/EVENTS.md)
 and [Phase 3C validation](docs/PHASE3C_VALIDATION.md).
+
+
+## Adaptive polling capability
+
+Configure offers Conservative (default) or Adaptive, plus a 30–60-second approach
+interval. Existing installations keep their settings and IDs. Adaptive supports
+ten-second race/practice/qualifying observations for a permitted provider, with
+slower session gaps, overnight/idle and off-season behavior. **CF currently keeps
+its existing conservative policy and a 300-second or slower request floor,
+regardless of that option.** A UI acknowledgement is not NASCAR permission.
+The regular demo remains offline with an empty live feed; synthetic tests measure
+the faster path. Server caching, Retry-After, source clocks and restart request
+reservations can lengthen intervals. See [POLLING.md](docs/POLLING.md) for exact
+evidence gates, diagnostics, budgets and the future verified-permission process.

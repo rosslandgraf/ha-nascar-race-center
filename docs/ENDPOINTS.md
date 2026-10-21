@@ -112,3 +112,14 @@ unknown. No endpoint, polling frequency, cache TTL or retry policy changed.
 No new NASCAR request was made, so prior direct-probe statuses above are
 historical and unchanged. The [HA OS procedure](CF_LIVE_VALIDATION.md) remains
 future authorized work; permission and active-session gates stay open.
+
+
+## Phase 3D-B polling implementation
+
+No NASCAR endpoint was requested during this assignment; the source-evidence
+inventory above is unchanged. [Adaptive polling](POLLING.md) adds tested synthetic
+10-second capability while CF retains its conservative discovery intervals and
+300-second floor. The original live endpoint remains the only automatic CF live
+feed; standalone pits/stages/points remain excluded. Cache, 304, server retry and
+restart reservations can only delay requests. No public accessibility or
+synthetic result is treated as cadence authorization or measured live latency.

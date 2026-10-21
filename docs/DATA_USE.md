@@ -31,3 +31,11 @@ until a separate rights/content review; excluded/no-store bodies are not saved.
 | Production installation/public release | Not authorized by the Phase 3A task |
 
 HACS integration requirements include a Home Assistant brands entry. CI continues to skip the `brands` validation while authorized branding is unresolved; this exception is a release blocker. The official HACS action was attempted during Phase 1 and refused this private repository. Its workflow job runs only for public repositories, without changing visibility or making private-development CI fail. Full HACS validation remains unexecuted. The validator is configured with comments disabled and no release/deployment workflow is provided.
+
+
+Phase 3D-B's [polling capability](POLLING.md) does not resolve any permission
+row above. CF's reviewed policy retains its conservative defaults; neither the
+Adaptive setting nor the existing acknowledgement enables faster CF requests.
+A future change must document independently verified permitted limits here
+before updating the CF provider record. Synthetic 10-second measurements are
+not NASCAR performance measurements or permission evidence.

@@ -19,6 +19,7 @@ from .models import (
     parse_schedule,
     parse_schedule_feed,
 )
+from .polling import CF_LIMITS, OFFLINE_LIMITS
 
 
 class RaceProvider(Protocol):
@@ -35,6 +36,8 @@ class RaceProvider(Protocol):
 
 class CFProvider:
     """Experimental CF adapter, selected only after explicit UI authorization."""
+
+    polling_limits = CF_LIMITS
 
     def __init__(self, session: ClientSession) -> None:
         """Use Home Assistant's managed shared session."""
@@ -56,7 +59,13 @@ class CFProvider:
         self.parse_results.move_to_end(key)
         while len(self.parse_results) > 24:
             self.parse_results.popitem(last=False)
-        payload = await self.api.async_get_json(path, minimum_ttl=ttl)
+        payload = await self.api.async_get_json(
+            path,
+            minimum_ttl=ttl,
+            minimum_interval=self.polling_limits.minimum_seconds
+            if path == LIVE_FEED
+            else 0,
+        )
         try:
             result = parser(payload)
         except ProviderError:
@@ -108,11 +117,20 @@ class CFProvider:
 
     async def async_get_live(self) -> LiveSnapshot | None:
         """Read session context without treating archived data as active."""
-        return await self._read(LIVE_FEED, 60, parse_live)
+        # Only the adapter's reviewed policy can lower the fallback; options
+        # and a data-use acknowledgement cannot grant faster CF requests.
+        ttl = (
+            min(60, self.polling_limits.minimum_seconds)
+            if self.polling_limits.fast_permitted
+            else 60
+        )
+        return await self._read(LIVE_FEED, ttl, parse_live)
 
 
 class DemoProvider:
     """Deterministic handmade examples, plainly marked as demonstration data."""
+
+    polling_limits = OFFLINE_LIMITS
 
     async def async_get_schedule(self, year: int, series_id: int) -> tuple[Race, ...]:
         """Supply two fictional multi-day weekends per selected series."""

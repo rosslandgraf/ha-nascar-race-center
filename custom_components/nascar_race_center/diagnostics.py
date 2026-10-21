@@ -129,6 +129,7 @@ async def async_get_config_entry_diagnostics(
             },
         },
         "live": {
+            "polling": live.polling_diagnostics(),
             "last_update_success": live.last_update_success,
             "last_successful_update": live.last_successful_update.isoformat()
             if live.last_successful_update

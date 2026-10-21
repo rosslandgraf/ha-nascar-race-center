@@ -177,8 +177,8 @@ async def test_cf_pipeline_reaches_ha_entities_and_diagnostics_without_extra_req
     assert diagnostics["cf_pipeline"]["transport"][LIVE_FEED]["delivery"] == "cache"
     assert "Synthetic Driver" not in json.dumps(diagnostics)
     assert "88021" not in json.dumps(diagnostics)
-    # After cache expiry, invalid JSON preserves prior context only as last-good.
-    freezer.tick(61)
+    # After the CF request floor expires, invalid JSON retains diagnostic context.
+    freezer.tick(301)
     aioclient_mock.clear_requests()
     aioclient_mock.get(BASE_URL + LIVE_FEED, text="<html>private-marker</html>")
     await entry.runtime_data.live.async_refresh()
