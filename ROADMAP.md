@@ -1,6 +1,6 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 4B are reviewed and merged into `main`, including PR #10 (`926e669`) and the observed API reference package. Phase 5A starts from that merge and preserves its 915-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 5A are reviewed and merged into `main`, including PR #11 (`fb8d8d0`) and the observed API reference package. Phase 5B starts from that merge and preserves its 1,006-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
 
@@ -157,11 +157,11 @@ extra Recorder rows, frontend or authenticated transport is introduced.
 **Gates:** source units, conditions, sentinel meanings, official classification,
 cross-context historical coverage and NASCAR data-use remain unverified. No tire
 strategy, pit-driver join, rating formula, invented score or championship standings.
-Phase 5A is assigned below; frontend phases remain deferred.
+Phase 5A is merged below; Phase 5B is implemented for review. Phase 5C and Phase 6 remain deferred.
 
 ## Phase 5A — Authenticated dashboard data interface
 
-**Status:** implemented for review from merged Phase 4B / PR #10. See the
+**Status:** reviewed and squash-merged in PR #11 (`fb8d8d0b4939ff1104acd35e67e35d8e683a426b`). See the
 [dashboard API v1](docs/DASHBOARD_API.md), its documented TypeScript model
 projections and [executed validation](docs/PHASE5A_VALIDATION.md).
 
@@ -173,9 +173,17 @@ snapshot-checked continuation, finite explicit serializers and lifecycle cleanup
 preserve existing upstream, events, entity IDs and Recorder boundaries.
 
 **Remaining:** real NASCAR latency/source/data-use gates, broader permission
-policy if separately authorized, and the visual frontend. Phase 5B implements a
-separate frontend against API v1; Phase 5C owns polish/accessibility. Neither
-frontend phase begins in this change. No deployment or release is authorized.
+policy if separately authorized, and the visual frontend. Phase 5B below implements the separate frontend against API v1. Phase 5C owns additional polish and device/accessibility reviews. No deployment or release is authorized.
+
+## Phase 5B — Functional premium Lovelace dashboard
+
+**Status:** implemented for review from merged Phase 5A. See [frontend installation/architecture](docs/FRONTEND.md) and [actual validation/screenshots](docs/PHASE5B_VALIDATION.md).
+
+**Delivered:** independently built/versioned local Lit card, picker/editor and explicit entry selection; five connected views; full sortable live field and favorites; requested detail disclosure; retained race weekends/manual historical keys; progressive history and backend analytics with bounded gap-preserving SVG charts; administrator/error/freshness/demo states; responsive phone/tablet/desktop/wall layouts, keyboard controls and reduced motion.
+
+**Boundaries:** one selected-series subscription; authenticated HA transport only; exact immutable snapshot offsets, two retained selections and eight cached pages/view; no NASCAR polling, backend contract change, new entities/Recorder rows, controlled assets, production installation or resource registration. Frontend CI/lockfile/versioned bundle are separate from existing integration/HACS packaging.
+
+**Remaining:** Phase 5C physical-device/additional-browser/assistive-reader and interaction polish, broader localization and record presentation. NASCAR rights, active-source units/semantics, public HACS packaging and release gates remain open. Phase 5C and Phase 6 are not begun.
 
 ## Phase 5 — Premium Dashboard and dedicated data interface
 
@@ -201,7 +209,7 @@ frontend phase begins in this change. No deployment or release is authorized.
 | Anonymous endpoint and active-session access | Supplied single-snapshot observations; this environment blocked | Authorized current-session observation with identity/time provenance |
 | Live race/session behavior | Unverified | Authorized active-session observation and replay fixtures |
 | Historical source coverage and analytics | Phase 4A merged; Phase 4B merged numerical analytics, cross-context coverage unverified | Authorized per-context source/units/conditions evidence; retain formula/sample/provenance limits |
-| Dashboard/card packaging | Planned | Separate frontend artifact and compatibility validation |
+| Dashboard/card packaging | Phase 5B local versioned artifact; plugin release deferred | Separate future HACS dashboard distribution review |
 | Full HACS validation | Action rejects private repositories | Validate after an explicitly approved public-distribution decision; do not change visibility merely to pass CI |
 | HACS brands requirement | Deferred | Authorized neutral branding submission; remove CI exception |
 | Production/release approval | Not granted | Explicit owner authorization after review |
@@ -227,7 +235,8 @@ source/live/data-use and release gates above still apply.
 - [x] On-demand historical results/laps/notes/loop/average/pit/stage foundation with bounded memory and provenance (Phase 4A, merged PR #9).
 - [x] Defensible derived analytics/comparisons and bounded internal consumer API (Phase 4B, merged PR #10).
 - [ ] Historical cross-context coverage, source units/conditions and semantic acceptance.
-- [x] Authenticated dedicated dashboard transport v1 (Phase 5A, for review).
-- [ ] Premium Dashboard: responsive accessible views and separate frontend package (Phases 5B/5C).
+- [x] Authenticated dedicated dashboard transport v1 (Phase 5A, reviewed and merged).
+- [x] Functional premium dashboard and separate frontend package (Phase 5B, for review).
+- [ ] Additional device, accessibility and interaction polish (Phase 5C).
 - [ ] Beta & Release Readiness: compatibility matrix, beta feedback, translations, diagnostics and release workflows (Phase 6).
 - [ ] HACS-ready distribution: permission/asset review, branding, no validation exceptions, distinct integration/card artifacts and explicit release authorization (Phase 6).

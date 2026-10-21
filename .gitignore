@@ -13,3 +13,7 @@ work/
 home-assistant.log*
 home-assistant_v2.db*
 .DS_Store
+node_modules/
+frontend/test-results/
+frontend/playwright-report/
+frontend/coverage/

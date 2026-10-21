@@ -57,7 +57,7 @@ flowchart TD
 | Coordinators | Deduplicate polling, select seasons, manage freshness and failures | Separate schedules, driver/track references and live sessions; history has an independent on-demand broker |
 | Entities | Render compact state and availability | No direct HTTP calls or full leaderboard attributes |
 | Config entry | Selected series, source, authorization and options lifecycle | Version/migrate persisted configuration as needed |
-| Optional frontend, later | Accessible interactive views | Dedicated package and HACS dashboard distribution |
+| Optional frontend | Five accessible interactive Lovelace views against API v1 | Independent Lit/TypeScript package; manual local module, future HACS dashboard distribution |
 
 ## Configuration and lifecycle
 
@@ -431,3 +431,40 @@ Recorder attributes, event semantics, live cadence permissions or startup GET
 budgets change. The [full contract](docs/DASHBOARD_API.md) defines Phase 5B's
 consumption boundary; its model declarations are documentation only. No frontend
 assets, card/resource registration, production installation or release is included.
+
+
+## Phase 5B optional frontend
+
+The independently versioned `frontend/` Lit/TypeScript package registers
+`nascar-race-center-card` and its in-UI editor. The Python integration release
+package and `hacs.json` are unchanged. [Frontend architecture and manual installation](docs/FRONTEND.md)
+describe the module boundaries, supported configuration, compatibility and future
+separate HACS plugin plan. No backend contract change was required.
+
+One typed client consumes the eight authenticated v1 commands and imports shared
+leaf-model declarations. Per-card generations isolate entry/series/race choices;
+one selected-series live subscription exists only on overview/timing views.
+Disconnect/config changes discard late work, clear pacing/countdown timers and
+remove listeners/subscriptions. Unrelated HA entity updates do not rerender the
+card. Native HA owns tokens/socket/reconnection and sent-request cancellation;
+card recovery bootstraps a fresh connection-bound selection.
+
+Historical/analytics selections retain at most two views/card and eight pages
+(1,600 records)/view. Explicit 200-record pages follow returned offsets/tokens,
+retain source order, discard changed streams and replay evicted offsets on the
+same immutable snapshot. Tabs reuse views. The server's two-user/four-global
+snapshot cap, fixed expiry and computation/request budgets remain authoritative.
+A shared per-connection/entry request lane paces commands; no client poll or
+refresh is added. Cached current-event metadata is matched by race ID, never
+borrowed from another event. Live freshness is withheld on stale/unknown/unavailable
+sources. Backend analytics metrics, units, classifications and null gaps survive
+in bounded charts, tables and progressive record disclosure.
+
+Original CSS graphics, HA theme properties, tabular timing, container-query
+layouts, keyboard/focus semantics and reduced-motion rules make the card usable
+at phone/tablet/desktop/wall widths. [Phase 5B validation](docs/PHASE5B_VALIDATION.md)
+records actual browser screenshots, axe results, production-bundle measurements,
+contract tests and remaining Phase 5C polish. Test-only rich fictional data is
+excluded from the runtime bundle; the real offline provider retains its honest
+empty live/lap states. No NASCAR requests, controlled assets, entities, Recorder
+rows, production installation, publication or release are introduced.
