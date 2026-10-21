@@ -1,3 +1,9 @@
+# Current validation report
+
+Phase 3A checks and evidence limits are recorded in
+[PHASE3A_VALIDATION.md](PHASE3A_VALIDATION.md). The Phase 2 and Phase 1 reports
+below are historical records, not the current inventory or check results.
+
 # Phase 2 delivery and validation
 
 Validation date: 2026-10-20. Phase 2 began on feature branch

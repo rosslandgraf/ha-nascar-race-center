@@ -325,7 +325,7 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
             and -timedelta(minutes=5)
             <= now - snapshot.source_updated_at
             <= LIVE_STALE_AFTER
-            and snapshot.flag != "checkered"
+            and snapshot.flag in {"green", "yellow", "red", "white"}
             and snapshot.lap is not None
             and snapshot.lap > 0
         ):

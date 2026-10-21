@@ -1,6 +1,6 @@
 # Contributing
 
-Read [AGENTS.md](AGENTS.md), the complete [brief](NASCAR_Race_Center_Codex_Brief.md), and the [roadmap](ROADMAP.md). Phase 1 must be reviewed before work begins on later phases. Keep changes focused and open a pull request; no direct merge, production installation or public release is part of normal development.
+Read [AGENTS.md](AGENTS.md), the complete [brief](NASCAR_Race_Center_Codex_Brief.md), and the [roadmap](ROADMAP.md). Phases 1 and 2 are reviewed and merged. Keep Phase 3A limited to live timing/leaderboards; later pit/stage/points/event work requires a new assignment. Keep changes focused and open a pull request; no direct merge, production installation or public release is part of normal development.
 
 ## Development environment
 

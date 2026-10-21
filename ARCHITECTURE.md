@@ -1,6 +1,6 @@
 # Architecture
 
-NASCAR Race Center is a UI-configured Home Assistant custom integration with a replaceable provider. Phase 2 extends the reviewed Phase 1 foundation with normalized weekend sessions, native calendars, driver/track references and favorite-driver metadata. Live provider operation remains experimental until anonymous access and active-session behavior are independently validated. Community schema references and structural tests support the adapters; no direct CF validation has been performed in this environment.
+NASCAR Race Center is a UI-configured Home Assistant custom integration with a replaceable provider. Phases 1 and 2 supply schedules, calendars and favorite metadata. Phase 3A adds normalized experimental live fields and compact race/favorite timing projections. Live provider operation remains experimental until anonymous access and active-session behavior are independently validated. Community schema references and structural tests support the adapters; no direct CF validation has been performed in this environment.
 
 ## Layers and ownership
 
@@ -65,7 +65,7 @@ One read-only native calendar per selected series projects usable season schedul
 
 `Driver` uses a NASCAR driver ID and name, with explicit `DriverAssociation` records for supplied series/car/team/manufacturer metadata. The reference directory is not treated as an active roster. Conflicting per-series metadata stays in associations rather than inventing a single current car or team. Manufacturer values that are media URLs are omitted rather than interpreted as brands. `Track` uses a track ID and supported optional name, city/state, length in miles, type and surface; no timezone or geolocation is inferred.
 
-The favorite registry stores selected driver IDs independently of reference availability, selected race series and metadata changes. Initial setup accepts optional numeric IDs; options expose cached named searchable choices without network work in forms. Source changes retain IDs without name/car matching; fictional demo IDs need user review when switching to CF. Phase 2 entities publish compact reference metadata, including at most three unambiguous per-series associations. Live timing, position and pit statistics are reserved for Phase 3. Driver/track reference refresh is daily, uses the shared bounded in-memory HTTP cache and isolates each feed's failure. Failed references or references older than seven days are not presented as available metadata. A failed driver refresh cannot remove saved favorite identities or disable schedules/calendars. Caches are runtime state, not persisted provider datasets.
+The favorite registry stores selected driver IDs independently of reference availability, selected race series and metadata changes. Initial setup accepts optional numeric IDs; options expose cached named searchable choices without network work in forms. Source changes retain IDs without name/car matching; fictional demo IDs need user review when switching to CF. Phase 2 entities publish compact reference metadata, including at most three unambiguous per-series associations. Favorite live timing is independent of reference availability; pit tracking remains deferred. Driver/track reference refresh is daily, uses the shared bounded in-memory HTTP cache and isolates each feed's failure. Failed references or references older than seven days are not presented as available metadata. A failed driver refresh cannot remove saved favorite identities or disable schedules/calendars. Caches are runtime state, not persisted provider datasets.
 
 ## Refresh and failure policy
 
@@ -80,7 +80,7 @@ The timestamp of a successful HTTP request is transport freshness. It cannot pro
 ## Extension plan
 
 - Phase 2 supplies session-aware calendars and favorite-driver metadata behind evidence-limited schedule/reference adapters. Remaining direct schema, timestamp/status and data-use gates are recorded in the evidence documents. Schedule/reference caches remain separate from live timing.
-- Phase 3 adds feed-specific capabilities for timing, flags, pits, stages and points. A session state machine and persistent event ledger suppress initial-baseline, restart and replay duplicates before automation events are enabled.
+- Phase 3A supplies evidence-limited timing and session progress. Later Phase 3 assignments own pits, stages, points and automation events. A persistent event ledger and baseline/restart/replay suppression are required before events are enabled.
 - Phase 4 adds bounded historical caches and on-demand requests keyed by season/series/race/driver. Derived statistics carry formulas, source availability and provenance; they never overwrite reported facts.
 - Phase 5 adds an authenticated Home Assistant data view for larger leaderboards/history and a separate optional card package. It must avoid huge entity attributes and unnecessary Recorder writes.
 - Phase 6 closes compatibility, translation, diagnostics, data-use, branding, replay and release gates. Dashboard and integration releases have distinct artifacts and compatibility checks.
@@ -88,3 +88,60 @@ The timestamp of a successful HTTP request is transport freshness. It cannot pro
 ## Official requirements reviewed
 
 On 2026-10-20, the implementation was checked against Home Assistant's [manifest](https://contributors.home-assistant.io/core/integrations/manifest/), [config flow](https://contributors.home-assistant.io/core/integrations/config-flow/), and [data fetching](https://contributors.home-assistant.io/core/integrations/fetching-data/) guidance: versioned custom-component metadata, UI onboarding, and coordinator-based updates form the foundation. HACS [integration requirements](https://www.hacs.dev/docs/publish/integration/) require a single integration directory and repository/manifest metadata. HACS branding and publication approval remain pending; see [DATA_USE.md](docs/DATA_USE.md).
+
+## Phase 3A live field and consumer boundary
+
+`LiveSnapshot` preserves its original fields and positional constructor order;
+`status` still means session kind. New optional run ID/name, reported total and
+remaining laps, elapsed seconds and `Leaderboard` fields extend that contract.
+`session_key` is `(series_id, race_id, run_id)`; absent run ID stays `None`.
+The run is not equated with Phase 2's derived named schedule-session ID.
+`observed_at` is local transport context and excluded from model equality.
+
+`timing.py` holds immutable `LiveDriver`, `LedInterval` and `Leaderboard` models
+and the narrow vehicles parser. A sorted tuple supports field traversal; a
+read-only NASCAR-ID map supports constant-time favorite lookup. Field order is
+reported position then driver ID for deterministic presentation, without claiming
+ties are resolved. Leader selection requires exactly one position 1. Unsupported
+positions stay unknown, not zero. Parser bounds are 100 vehicles, 1,000 laps-led
+intervals per driver and 160-character text, within the existing 2 MiB transport
+bound. Missing driver identities are omitted/countable. Duplicate identities or
+an unusable field mark optional scoring failed while flags/laps survive.
+
+No rows are merged across polls, races, runs or series. The single global live
+coordinator replaces the whole snapshot; an older field cannot supply a missing
+competitor or metric. Failed snapshots are retained only as diagnostic context.
+`live.view(series_id)` returns a read-only `LiveView` containing separate health,
+evidence-limited progress and an available normalized leaderboard. Its
+`driver(driver_id)` helper does not depend on the general reference directory.
+This is the reusable internal consumer boundary for later assignments, not a
+frontend API or persistent historical/event store.
+
+Source freshness remains separate from transport success. The view exposes
+`ok`, `freshness_unknown`, `stale`, `offline`, `denied`, `not_reported` and
+`no_active_session`. Fresh recognized racing flags plus a positive lap support
+an experimental `active` observation; a fresh checkered flag supports
+`completed`, without final-result semantics. Unknown timestamps/flags do not
+establish progress. Live failures do not disable calendars or references.
+No lifecycle/event transition is persisted or emitted in Phase 3A.
+
+Favorite metrics reuse each Phase 2 driver device and global NASCAR-ID identity,
+with reported series/race/run context. Six live metrics per selected favorite
+are registered, with only position enabled by default; this avoids multiplying
+metrics by three series or by all field entries. Race sensors use series scope.
+The full normalized field is never stored in state attributes or diagnostics.
+Bounded diagnostics expose counts of available timing fields and omitted rows.
+
+Legacy live-sensor source timestamps remain attached to their last meaningful
+sample. The sensor coordinator callback compares value, availability and compact
+context before writing; timestamp-only updates stay in diagnostics. The optional
+transport timestamp sensor is an explicit user choice. An actual in-memory
+Recorder test verifies ten timestamp/other-driver refreshes add zero rows for
+unchanged favorite position, current lap and leader, then one position change
+adds exactly one favorite row. There is no persisted timing cache/history.
+
+The CF provider still requests only the original global live endpoint, once per
+shared refresh. No pit/flag-history/stage/points endpoint, faster minimum
+interval, alternate-series polling, network permission or data-use grant was
+introduced. Existing HTTP cache/backoff/cancellation and entry-owned coordinator
+shutdown remain the sole polling/resource owners.

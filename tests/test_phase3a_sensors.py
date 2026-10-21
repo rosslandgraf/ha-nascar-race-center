@@ -430,3 +430,29 @@ async def test_recorder_ignores_unchanged_favorites_other_drivers_and_source_clo
     assert after[favorite] == before[favorite] + 1
     assert after[current_lap] == before[current_lap]
     assert after[leader] == before[leader]
+
+
+@pytest.mark.parametrize("flag_state", [0, 8, 9, 99])
+async def test_unknown_or_track_only_flags_do_not_accelerate_polling(
+    hass, live_setup, flag_state
+):
+    entry, provider = await live_setup()
+    await refresh(hass, entry, provider, {**timing_payload(), "flag_state": flag_state})
+    assert state(hass, entry, "1_session_status").state == STATE_UNKNOWN
+    assert entry.runtime_data.live.update_interval >= timedelta(hours=6)
+
+
+async def test_fifty_favorites_bound_enabled_entities_without_extra_polls(
+    hass, live_setup
+):
+    selected = tuple(str(driver_id) for driver_id in range(99001, 99051))
+    entry, provider = await live_setup(favorites=selected)
+    entries = [
+        entity
+        for entity in er.async_get(hass).entities.values()
+        if entity.config_entry_id == entry.entry_id and "_live_" in entity.unique_id
+    ]
+    assert len(entries) == 50 * len(FAVORITE_LIVE_METRICS)
+    assert sum(entity.disabled_by is None for entity in entries) == 50
+    provider.async_get_live.assert_awaited_once()
+    assert len(entry.runtime_data.live.data.leaderboard.drivers) == 3

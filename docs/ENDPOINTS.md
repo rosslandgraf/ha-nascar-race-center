@@ -2,13 +2,13 @@
 
 The primary provider is `https://cf.nascar.com`. The owner's browser inventory dated **2026-10-20** reports 24 working URLs and four Error/Login results. Those reports are preserved below. They do not establish anonymous access, permission, JSON shape, freshness, or availability for another season/session.
 
-No direct CF requests were made during Phase 1 or Phase 2 development: the managed environment's destination policy does not include `cf.nascar.com`. Tests use synthetic structural fixtures. Third-party source references, where available, support parser hypotheses; they do not independently verify today's CF service. The owner's Phase 2 confirmation of the seven schedule/reference URLs does not alter this distinction. See [SCHEMA_EVIDENCE.md](SCHEMA_EVIDENCE.md) for parser-specific provenance and limitations.
+No direct CF requests were made during Phase 1, Phase 2 or Phase 3A development: the managed environment's destination policy does not include `cf.nascar.com`. Tests use synthetic structural fixtures. Third-party source references, where available, support parser hypotheses; they do not independently verify today's CF service. The owner's Phase 2 confirmation of the seven schedule/reference URLs does not alter this distinction. See [SCHEMA_EVIDENCE.md](SCHEMA_EVIDENCE.md) for parser-specific provenance and limitations.
 
 In the table, **owner: working** and **owner: Error/Login** are owner reports, not automated verification. **Unverified** means no direct anonymous endpoint/schema/live-race check has run in this task. CI never polls CF.
 
 | Category | Exact owner-tested URL | Owner report | Direct verification | Phase |
 | --- | --- | --- | --- | --- |
-| Live | https://cf.nascar.com/live/feeds/live-feed.json | Working | Unverified | Experimental Phase 1 adapter |
+| Live | https://cf.nascar.com/live/feeds/live-feed.json | Working | Unverified | Experimental session-context and Phase 3A timing adapter |
 | Live | https://cf.nascar.com/live/feeds/live-flag-data.json | Working | Unverified | Phase 3 |
 | Live | https://cf.nascar.com/live/feeds/live-pit-data.json | Working | Unverified | Phase 3 |
 | Live | https://cf.nascar.com/live/feeds/live-points.json | Working | Unverified | Phase 3 |
@@ -59,3 +59,14 @@ The shared CF transport uses a 16-entry LRU response cache (the usual two-season
 Before an authorized direct check, record the date, exact URL, ordinary anonymous client (no cookies or NASCAR authorization headers), HTTP result, minimal structural field notes, and applicable permission assumptions. Preserve no credentials or raw restricted assets. A successful historical response does not establish current live behavior, and a fresh HTTP response does not prove fresh timing data.
 
 Excluded endpoints are not fallback login paths. The integration must not use the credential-protected `feed.nascar.com` Swagger service, NASCAR Drive token discovery, or a video proxy. SnappyTV metadata does not establish rights to stream or redistribute media.
+
+## Phase 3A evidence update
+
+The pinned community live model/document were reread before implementation;
+[the live structural contract](../tests/fixtures/PHASE3A_LIVE.md) records the
+additional fields and semantics that remain unknown. Global `live-feed.json`
+now also normalizes `vehicles` and reported run/lap context. The adapter makes
+no additional endpoint requests and never queries alternate series live paths
+for concurrent coverage. Live pit/stage/points/flag-history URLs remain unused.
+No CF URL was probed: network policy excludes the host, and data-use gates remain
+unresolved. Every direct-verification status in this matrix remains unchanged.

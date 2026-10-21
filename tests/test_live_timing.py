@@ -154,3 +154,34 @@ def test_source_timestamp_semantics_are_not_inferred(timestamp):
 def test_local_observation_time_does_not_change_model_equality():
     snapshot = parse_live(timing_payload())
     assert snapshot == replace(snapshot, observed_at=snapshot.source_updated_at)
+
+
+async def test_conditional_live_cache_retains_source_time_and_reported_field():
+    """304 and local cache hits are transport successes, not new observations."""
+    from unittest.mock import MagicMock, patch
+
+    from test_api import Response
+
+    from custom_components.nascar_race_center.provider import CFProvider
+
+    session = MagicMock()
+    session.get.side_effect = [
+        Response(body=FIXTURE.read_bytes(), headers={"ETag": '"timing-v1"'}),
+        Response(status=304),
+    ]
+    provider = CFProvider(session)
+    with patch("custom_components.nascar_race_center.api._monotonic", return_value=100):
+        initial = await provider.async_get_live()
+        cached = await provider.async_get_live()
+    assert session.get.call_count == 1
+    with patch("custom_components.nascar_race_center.api._monotonic", return_value=200):
+        revalidated = await provider.async_get_live()
+    assert session.get.call_count == 2
+    assert (
+        initial.source_updated_at
+        == cached.source_updated_at
+        == revalidated.source_updated_at
+    )
+    assert initial.leaderboard == revalidated.leaderboard
+    assert session.get.call_args.kwargs["headers"]["If-None-Match"] == '"timing-v1"'
+    session.close.assert_not_called()

@@ -27,3 +27,8 @@ and normalized canceled status cases are structural test scenarios. In
 particular, synthetic status cases do not claim a verified CF cancellation
 field. No naive timestamp timezone, missing duration or unpublished session is
 invented. The evidence document records exact fields and pinned source links.
+
+Phase 3A adds `live_timing.json`; its exact community references, supported
+fields, defensive limits and unresolved semantics are in
+[PHASE3A_LIVE.md](PHASE3A_LIVE.md). Replays mutate these fictional records;
+no live field, driver directory, race result or timing capture is redistributed.
