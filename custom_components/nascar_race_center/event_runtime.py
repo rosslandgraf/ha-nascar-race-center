@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import CoreState, HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.storage import Store
@@ -67,8 +67,8 @@ class EventRuntime:
             self.engine.observe(
                 self.live.data, valid=self._live_valid(), now=dt_util.utcnow()
             )
-            self._observe_schedule()
-            await self.store.async_save(self.engine.export())
+            self._observe_schedule(arm_timer=False)
+            await self._async_save_ledger(self.engine.export())
         except (
             OSError,
             ValueError,
@@ -92,6 +92,29 @@ class EventRuntime:
             self.schedule.async_add_listener(self._schedule_changed),
         ]
         self.status = "ready"
+        self._observe_schedule()
+
+    async def _async_save_ledger(self, data: dict[str, Any]) -> None:
+        """Store logs some write errors instead of raising: verify its read-back.
+
+        During stopping HA may defer writes and serve pending data from memory;
+        that cannot authorize publication. Normal saves invalidate its read cache.
+        """
+        if self.hass.state in {
+            CoreState.stopping,
+            CoreState.final_write,
+            CoreState.stopped,
+        }:
+            raise ValueError("HA is stopping")
+        await self.store.async_save(data)
+        if self.hass.state in {
+            CoreState.stopping,
+            CoreState.final_write,
+            CoreState.stopped,
+        }:
+            raise ValueError("HA stopped before durable verification")
+        if await self.store.async_load() != data:
+            raise ValueError("Event ledger write did not persist")
 
     def _live_valid(self) -> bool:
         snapshot = self.live.data
@@ -146,7 +169,7 @@ class EventRuntime:
                 self._async_process(), "NASCAR event delivery", eager_start=False
             )
 
-    def _observe_schedule(self) -> tuple[RacingEvent, ...]:
+    def _observe_schedule(self, *, arm_timer: bool = True) -> tuple[RacingEvent, ...]:
         now = dt_util.utcnow()
         races = tuple(
             race
@@ -160,7 +183,7 @@ class EventRuntime:
         events = self.engine.reminders(races, now)
         self._cancel_timer()
         deadline = self.engine.next_reminder(now)
-        if deadline is not None and not self._stopped:
+        if deadline is not None and not self._stopped and arm_timer:
             self._timer = async_track_point_in_utc_time(
                 self.hass, self._reminder_due, deadline
             )
@@ -185,7 +208,7 @@ class EventRuntime:
                 after = self.engine.export()
                 if before != after:
                     try:
-                        await self.store.async_save(after)
+                        await self._async_save_ledger(after)
                     except OSError, ValueError, HomeAssistantError:
                         _LOGGER.error(
                             "Racing events disabled: event ledger save failed"
@@ -198,7 +221,11 @@ class EventRuntime:
                             unsub()
                         self._unsubs.clear()
                         return
-                if self._stopped or epoch != self._epoch:
+                if (
+                    self._stopped
+                    or epoch != self._epoch
+                    or self.hass.state is not CoreState.running
+                ):
                     continue
                 for event in events:
                     # A source outage/switch during disk I/O invalidates delivery.
@@ -236,7 +263,7 @@ class EventRuntime:
         )
 
     async def async_shutdown(self) -> None:
-        """Stop callbacks and await/cancel in-flight storage work before unload."""
+        """Stop callbacks and drain any write before a replacement entry can load."""
         self._stopped = True
         if self.status != "ledger_error":
             self.status = "stopped"
@@ -247,8 +274,12 @@ class EventRuntime:
         self._unsubs.clear()
         self._queue.clear()
         if self._task is not None:
-            self._task.cancel()
             try:
-                await self._task
+                await asyncio.shield(self._task)
             except asyncio.CancelledError:
-                pass
+                # An executor write cannot be cancelled once started. Finish it
+                # before propagating cancellation so an old writer cannot race
+                # a replacement entry's newer replay barriers.
+                if self._task is not None:
+                    await self._task
+                raise

@@ -79,7 +79,7 @@ feed enters Recorder. Removing the integration deletes its ledger; disabling
 and re-enabling events keeps it. Diagnostics expose `disabled`, `ready`,
 `ledger_error` or `stopped` and selected event types, without dumping the ledger.
 
-Replay barriers are saved **before** publishing. A save/load/schema error disables
+Replay barriers are saved **before** publishing and checked through the public Store read-back API. HA can log a failed write without raising it; a mismatched read-back disables events. A save/load/schema error disables
 events for that load while schedules/entities remain usable. Inspect HA logs and
 restore a valid ledger from backup before reloading; do not delete it to retry
 notifications. Delivery favors **at-most-once** behavior: a crash after saving but
@@ -129,7 +129,7 @@ the state the devices expose (including on/off, brightness and reported color).
 Unavailable lights are excluded. Device/network failures, disabling/reloading
 an active automation or stopping HA can interrupt restoration; no automation can
 command an unreachable device or continue while HA is stopped. Restore the
-retained scene manually if needed. Physical bulbs and production HA were not used.
+retained scene manually if needed. Physical bulbs and production HA were not used. A retained recovery scene blocks further effects until it is recovered and removed, preserving the original snapshot.
 
 The test suite loads both blueprints through HA's real blueprint schema and
 executes notification filtering plus light effects, rapid transitions, on/off

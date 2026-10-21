@@ -49,7 +49,7 @@ No blocked NASCAR destination was requested or bypassed.
 | Check | Result |
 | --- | --- |
 | Untouched main baseline | **429 passed** |
-| Complete `pytest -q` | **507 passed** (all 429 baseline tests plus 78 Phase 3C cases) |
+| Complete `pytest -q` | **508 passed** (all 429 baseline tests plus 79 Phase 3C cases) |
 | Blueprint runtime tests | **5 passed**, including rapid/latest flag colors, on/off restoration, failed command and failed-restoration recovery |
 | `ruff check .` | Passed |
 | `ruff format --check .` | Passed; 95 Python files |
@@ -61,7 +61,7 @@ No blocked NASCAR destination was requested or bypassed.
 | New NASCAR probes / active-session verification | Not run; existing evidence and data-use limits preserved |
 | Physical bulbs / production HA / manual browser review | Not run; real HA schemas/flows/automations and local test lights were exercised |
 | HACS | Private-repository skip and temporary brands exception remain; no full HACS approval |
-| Hosted GitHub Actions | Recorded in the Phase 3C PR; distinct from these local checks |
+| Hosted GitHub Actions | Checkpoint `6afc2a3`: [Tests and quality passed](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39617824621), [Hassfest passed](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39617824775); final-head results recorded in [PR #6](https://github.com/rosslandgraf/ha-nascar-race-center/pull/6) |
 
 Hassfest used official Home Assistant source commit
 `8d7fd8b68677c2585be36ec86043308f403875b8`, extracting only `script/` into ignored
@@ -101,7 +101,7 @@ completion tombstones, bounded retention and eviction floors. HA runtime tests
 verify data is already saved when the bus event is observed, zero setup/reload
 publication, disabled legacy behavior with zero storage work, multi-series single
 publication, source failures, changed options, bounded bursts, corrupt/renamed
-ledger handling and write errors. Disk-write races cover unload, outage, switch,
+ledger handling and write errors. A no-op save reproduces HA Store’s swallowed-write-error contract; a read-back mismatch disables events before publication. Unload drains an active write so an old executor job cannot overwrite replacement-entry replay barriers. Disk-write races cover unload, outage, switch,
 switch-and-return, unknown flags and future clocks. Listeners/tasks/timers stop on
 unload; existing failed/cancelled setup and late coordinator completion tests
 remain in the complete suite. Event startup follows successful platform setup.

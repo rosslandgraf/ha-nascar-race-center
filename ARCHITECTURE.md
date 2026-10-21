@@ -249,12 +249,12 @@ no official results or unsupported scoring transitions are exposed.
 
 `event_runtime.py` owns one live listener, one schedule listener, a bounded
 32-item queue, one serialized async worker, one local reminder timer and a private
-versioned HA Store ledger. It writes replay barriers before bus publication,
+versioned HA Store ledger. It writes replay barriers and verifies a Store read-back before bus publication,
 drops pending publication after source loss/switch/unload, and fails closed on
 ledger errors without disabling entities. At-most-once delivery can omit an event
 if HA stops between save and publish; it never replays a catch-up outbox. The
 entry registers cleanup before initial refresh and starts listeners only after
-platform setup succeeds. Reload/unload/failure cancel timers/listeners/tasks;
+platform setup succeeds. Reload/unload/failure stop timers/listeners and drain an active writer before replacement setup;
 entry removal removes only its own ledger. Disabled events attach no listeners,
 start no timer and perform no storage work. Existing polling and CF eligibility
 are unchanged. Reminders use existing fresh schedules with one local deadline.

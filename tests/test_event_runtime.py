@@ -217,7 +217,16 @@ async def test_inflight_disk_write_cannot_publish_after_evidence_is_lost(
             runtime.live.async_set_updated_data(sample(30, flag="yellow"))
             await asyncio.wait_for(entered.wait(), timeout=1)
             if stop == "unload":
-                assert await hass.config_entries.async_unload(entry.entry_id)
+                unload = hass.async_create_task(
+                    hass.config_entries.async_unload(entry.entry_id), eager_start=False
+                )
+                for _ in range(100):
+                    if runtime.events._stopped:
+                        break
+                    await asyncio.sleep(0)
+                assert runtime.events._stopped
+                release.set()
+                assert await unload
             elif stop == "outage":
                 runtime.live.async_set_update_error(UpdateFailed("synthetic outage"))
             elif stop == "future":
@@ -324,4 +333,25 @@ async def test_renamed_corrupt_ledger_stays_disabled_across_reload(hass, freezer
         assert entry.runtime_data.events.status == "ledger_error"
         assert await hass.config_entries.async_reload(entry.entry_id)
         assert entry.runtime_data.events.status == "ledger_error"
+        assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_store_swallowed_write_failure_is_detected_by_readback(hass, freezer):
+    freezer.move_to(BASE)
+    entry = demo_entry(["1"])
+    entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(entry, options=event_options())
+    seen = []
+    hass.bus.async_listen(EVENT_NAMESPACE, lambda event: seen.append(event.data))
+    with patch(
+        "custom_components.nascar_race_center.DemoProvider",
+        return_value=provider_mock(),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        runtime = entry.runtime_data
+        # Reproduce the public Store contract: log/return without persisting.
+        with patch.object(runtime.events.store, "async_save", return_value=None):
+            await update(hass, freezer, runtime, 30, flag="yellow")
+        assert runtime.events.status == "ledger_error"
+        assert seen == []
         assert await hass.config_entries.async_unload(entry.entry_id)
