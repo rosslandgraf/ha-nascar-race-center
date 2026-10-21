@@ -1,0 +1,52 @@
+name: Frontend quality
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build && npm run check:bundle
+      - name: Verify committed bundle is reproducible
+        run: git diff --exit-code -- dist/
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser rendering and accessibility
+        env:
+          CHROMIUM_PATH: bundled
+        run: npm run test:browser
+      - name: Retain actual-card screenshots and measurements
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: phase5b-browser-validation
+          path: |
+            docs/screenshots/phase5b/
+            frontend/test-results/
+          retention-days: 14

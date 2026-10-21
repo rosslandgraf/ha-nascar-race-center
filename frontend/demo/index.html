@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Race Center · Fictional contract preview</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --primary-text-color: #e8edf2;
+        --secondary-text-color: #a8b3bf;
+        --accent-color: #a8ef75;
+        --ha-card-background: #151b23;
+      }
+      body {
+        margin: 0;
+        background: #0b1016;
+        font-family: system-ui;
+        padding: 28px;
+      }
+      .preview-note {
+        max-width: 1500px;
+        margin: 0 auto 16px;
+        color: #a8b3bf;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      nascar-race-center-card {
+        max-width: 1500px;
+        margin: auto;
+      }
+      @media (max-width: 600px) {
+        body {
+          padding: 8px;
+        }
+        .preview-note {
+          padding: 4px 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <p class="preview-note">
+      FICTIONAL CONTRACT PREVIEW · Actual custom card with a test-only HA
+      adapter. Historical example: season 2024 / race 88001. Analytics: drivers
+      99002, 99003 / laps 1–48 / window 5 / all available / all seven datasets.
+      The installed offline provider has an intentionally empty live feed.
+    </p>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
