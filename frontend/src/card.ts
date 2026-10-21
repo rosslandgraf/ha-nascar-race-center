@@ -458,6 +458,7 @@ export class NascarRaceCenterCard extends LitElement {
       const view = new PageView(
         scoring ? "live_scoring" : "live_driver",
         selection,
+        this.liveData?.identity,
       );
       this.detail?.invalidate();
       this.detail = view;
@@ -939,6 +940,18 @@ export class NascarRaceCenterCard extends LitElement {
         ? html`${v.current
             ? html`<p class="muted">
                   ${label(v.current.availability)} · ${label(v.current.reason)}
+                  · Race ${v.current.identity?.race_id ?? "Unknown"} / timing
+                  run ${v.current.identity?.run_id ?? "Unknown"}
+                </p>
+                ${v.current.provenance
+                  ? html`<details>
+                      <summary>Source provenance</summary>
+                      ${values(v.current.provenance)}
+                    </details>`
+                  : nothing}
+                <p class="notice">
+                  Provisional reported observations. Source timing units remain
+                  unverified.
                 </p>
                 ${v.current.records.length
                   ? records(v.current.records)

@@ -12,6 +12,7 @@ export class PageView {
   constructor(
     public command: PageCommand,
     public selection: PageSelection,
+    private expectedLive?: { race_id: string | null; run_id: string | null },
   ) {}
   get records(): DataRow[] {
     return [...this.pages.values()]
@@ -65,6 +66,13 @@ export class PageView {
         this.current?.pagination.snapshot,
       );
       if (generation !== this.generation) return;
+      if (
+        this.expectedLive &&
+        (page.identity?.series_id !== this.selection.series_id ||
+          page.identity?.race_id !== this.expectedLive.race_id ||
+          page.identity?.run_id !== this.expectedLive.run_id)
+      )
+        throw new DashboardError("snapshot_changed");
       if (!this.created) this.created = Date.now();
       this.pages.set(offset, page);
       this.current = page;

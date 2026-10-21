@@ -247,6 +247,20 @@ export class DashboardClient {
     });
     if (command === "analytics" && p.contract_version !== 1)
       throw new DashboardError("api_version");
+    const key =
+      command === "history"
+        ? p.race
+        : command === "analytics"
+          ? p.query?.key
+          : undefined;
+    if (
+      (command === "history" || command === "analytics") &&
+      (!key ||
+        key.series_id !== selection.series_id ||
+        key.season !== selection.season ||
+        key.race_id !== String(selection.race_id))
+    )
+      throw new DashboardError("invalid_response");
     const page = p.pagination;
     if (
       !page ||

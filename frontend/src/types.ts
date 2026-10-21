@@ -266,7 +266,13 @@ export interface Page {
   query?: API.AnalyticsQuery;
   race_metrics?: API.Metric[];
   caveats?: string[];
-  identity?: Live["identity"];
+  identity?: {
+    series_id: number | null;
+    race_id: string | null;
+    run_id: string | null;
+    source_updated_at?: string | null;
+  } | null;
+  provenance?: API.Provenance | null;
   collection?: string;
   driver_id?: string;
 }

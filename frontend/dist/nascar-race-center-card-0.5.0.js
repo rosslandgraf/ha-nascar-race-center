@@ -192,7 +192,7 @@ const Ve = (r) => new Te(typeof r == "string" ? r : r + "", void 0, ce), X = (r,
   for (const s of e.cssRules) t += s.cssText;
   return Ve(t);
 })(r) : r;
-const { is: Ge, defineProperty: Ke, getOwnPropertyDescriptor: Ze, getOwnPropertyNames: Ye, getOwnPropertySymbols: Xe, getPrototypeOf: Qe } = Object, Q = globalThis, ge = Q.trustedTypes, et = ge ? ge.emptyScript : "", tt = Q.reactiveElementPolyfillSupport, O = (r, e) => r, ae = { toAttribute(r, e) {
+const { is: Ge, defineProperty: Ke, getOwnPropertyDescriptor: Ze, getOwnPropertyNames: Ye, getOwnPropertySymbols: Xe, getPrototypeOf: Qe } = Object, Q = globalThis, ge = Q.trustedTypes, et = ge ? ge.emptyScript : "", tt = Q.reactiveElementPolyfillSupport, F = (r, e) => r, ae = { toAttribute(r, e) {
   switch (e) {
     case Boolean:
       r = r ? et : null;
@@ -250,13 +250,13 @@ let P = class extends HTMLElement {
     return this.elementProperties.get(e) ?? fe;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(O("elementProperties"))) return;
+    if (this.hasOwnProperty(F("elementProperties"))) return;
     const e = Qe(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(O("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(O("properties"))) {
+    if (this.hasOwnProperty(F("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(F("properties"))) {
       const t = this.properties, s = [...Ye(t), ...Xe(t)];
       for (const i of s) this.createProperty(i, t[i]);
     }
@@ -403,9 +403,9 @@ let P = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-P.elementStyles = [], P.shadowRootOptions = { mode: "open" }, P[O("elementProperties")] = /* @__PURE__ */ new Map(), P[O("finalized")] = /* @__PURE__ */ new Map(), tt?.({ ReactiveElement: P }), (Q.reactiveElementVersions ??= []).push("2.1.2");
-const de = globalThis, $e = (r) => r, Y = de.trustedTypes, be = Y ? Y.createPolicy("lit-html", { createHTML: (r) => r }) : void 0, Ie = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, Le = "?" + A, st = `<${Le}>`, D = document, F = () => D.createComment(""), B = (r) => r === null || typeof r != "object" && typeof r != "function", he = Array.isArray, it = (r) => he(r) || typeof r?.[Symbol.iterator] == "function", te = `[ 	
-\f\r]`, L = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ye = /-->/g, _e = />/g, S = RegExp(`>|${te}(?:([^\\s"'>=/]+)(${te}*=${te}*(?:[^ 	
+P.elementStyles = [], P.shadowRootOptions = { mode: "open" }, P[F("elementProperties")] = /* @__PURE__ */ new Map(), P[F("finalized")] = /* @__PURE__ */ new Map(), tt?.({ ReactiveElement: P }), (Q.reactiveElementVersions ??= []).push("2.1.2");
+const de = globalThis, $e = (r) => r, Y = de.trustedTypes, be = Y ? Y.createPolicy("lit-html", { createHTML: (r) => r }) : void 0, Ie = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, Le = "?" + A, st = `<${Le}>`, D = document, B = () => D.createComment(""), W = (r) => r === null || typeof r != "object" && typeof r != "function", he = Array.isArray, it = (r) => he(r) || typeof r?.[Symbol.iterator] == "function", te = `[ 	
+\f\r]`, q = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ye = /-->/g, _e = />/g, S = RegExp(`>|${te}(?:([^\\s"'>=/]+)(${te}*=${te}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), xe = /'/g, we = /"/g, qe = /^(?:script|style|textarea|title)$/i, He = (r) => (e, ...t) => ({ _$litType$: r, strings: e, values: t }), l = He(1), T = He(2), N = Symbol.for("lit-noChange"), h = Symbol.for("lit-nothing"), Ae = /* @__PURE__ */ new WeakMap(), R = D.createTreeWalker(D, 129);
 function Oe(r, e) {
   if (!he(r) || !r.hasOwnProperty("raw")) throw Error("invalid template strings array");
@@ -413,23 +413,23 @@ function Oe(r, e) {
 }
 const rt = (r, e) => {
   const t = r.length - 1, s = [];
-  let i, a = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", n = L;
+  let i, a = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", n = q;
   for (let c = 0; c < t; c++) {
     const o = r[c];
     let u, $, p = -1, d = 0;
-    for (; d < o.length && (n.lastIndex = d, $ = n.exec(o), $ !== null); ) d = n.lastIndex, n === L ? $[1] === "!--" ? n = ye : $[1] !== void 0 ? n = _e : $[2] !== void 0 ? (qe.test($[2]) && (i = RegExp("</" + $[2], "g")), n = S) : $[3] !== void 0 && (n = S) : n === S ? $[0] === ">" ? (n = i ?? L, p = -1) : $[1] === void 0 ? p = -2 : (p = n.lastIndex - $[2].length, u = $[1], n = $[3] === void 0 ? S : $[3] === '"' ? we : xe) : n === we || n === xe ? n = S : n === ye || n === _e ? n = L : (n = S, i = void 0);
+    for (; d < o.length && (n.lastIndex = d, $ = n.exec(o), $ !== null); ) d = n.lastIndex, n === q ? $[1] === "!--" ? n = ye : $[1] !== void 0 ? n = _e : $[2] !== void 0 ? (qe.test($[2]) && (i = RegExp("</" + $[2], "g")), n = S) : $[3] !== void 0 && (n = S) : n === S ? $[0] === ">" ? (n = i ?? q, p = -1) : $[1] === void 0 ? p = -2 : (p = n.lastIndex - $[2].length, u = $[1], n = $[3] === void 0 ? S : $[3] === '"' ? we : xe) : n === we || n === xe ? n = S : n === ye || n === _e ? n = q : (n = S, i = void 0);
     const v = n === S && r[c + 1].startsWith("/>") ? " " : "";
-    a += n === L ? o + st : p >= 0 ? (s.push(u), o.slice(0, p) + Ie + o.slice(p) + A + v) : o + A + (p === -2 ? c : v);
+    a += n === q ? o + st : p >= 0 ? (s.push(u), o.slice(0, p) + Ie + o.slice(p) + A + v) : o + A + (p === -2 ? c : v);
   }
   return [Oe(r, a + (r[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), s];
 };
-class W {
+class j {
   constructor({ strings: e, _$litType$: t }, s) {
     let i;
     this.parts = [];
     let a = 0, n = 0;
     const c = e.length - 1, o = this.parts, [u, $] = rt(e, t);
-    if (this.el = W.createElement(u, s), R.currentNode = this.el.content, t === 2 || t === 3) {
+    if (this.el = j.createElement(u, s), R.currentNode = this.el.content, t === 2 || t === 3) {
       const p = this.el.content.firstChild;
       p.replaceWith(...p.childNodes);
     }
@@ -443,8 +443,8 @@ class W {
           const p = i.textContent.split(A), d = p.length - 1;
           if (d > 0) {
             i.textContent = Y ? Y.emptyScript : "";
-            for (let v = 0; v < d; v++) i.append(p[v], F()), R.nextNode(), o.push({ type: 2, index: ++a });
-            i.append(p[d], F());
+            for (let v = 0; v < d; v++) i.append(p[v], B()), R.nextNode(), o.push({ type: 2, index: ++a });
+            i.append(p[d], B());
           }
         }
       } else if (i.nodeType === 8) if (i.data === Le) o.push({ type: 2, index: a });
@@ -460,11 +460,11 @@ class W {
     return s.innerHTML = e, s;
   }
 }
-function z(r, e, t = r, s) {
+function I(r, e, t = r, s) {
   if (e === N) return e;
   let i = s !== void 0 ? t._$Co?.[s] : t._$Cl;
-  const a = B(e) ? void 0 : e._$litDirective$;
-  return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(r), i._$AT(r, t, s)), s !== void 0 ? (t._$Co ??= [])[s] = i : t._$Cl = i), i !== void 0 && (e = z(r, i._$AS(r, e.values), i, s)), e;
+  const a = W(e) ? void 0 : e._$litDirective$;
+  return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(r), i._$AT(r, t, s)), s !== void 0 ? (t._$Co ??= [])[s] = i : t._$Cl = i), i !== void 0 && (e = I(r, i._$AS(r, e.values), i, s)), e;
 }
 class at {
   constructor(e, t) {
@@ -483,7 +483,7 @@ class at {
     for (; o !== void 0; ) {
       if (n === o.index) {
         let u;
-        o.type === 2 ? u = new I(a, a.nextSibling, this, e) : o.type === 1 ? u = new o.ctor(a, o.name, o.strings, this, e) : o.type === 6 && (u = new ct(a, this, e)), this._$AV.push(u), o = s[++c];
+        o.type === 2 ? u = new L(a, a.nextSibling, this, e) : o.type === 1 ? u = new o.ctor(a, o.name, o.strings, this, e) : o.type === 6 && (u = new ct(a, this, e)), this._$AV.push(u), o = s[++c];
       }
       n !== o?.index && (a = R.nextNode(), n++);
     }
@@ -494,7 +494,7 @@ class at {
     for (const s of this._$AV) s !== void 0 && (s.strings !== void 0 ? (s._$AI(e, s, t), t += s.strings.length - 2) : s._$AI(e[t])), t++;
   }
 }
-class I {
+class L {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
@@ -513,7 +513,7 @@ class I {
     return this._$AB;
   }
   _$AI(e, t = this) {
-    e = z(this, e, t), B(e) ? e === h || e == null || e === "" ? (this._$AH !== h && this._$AR(), this._$AH = h) : e !== this._$AH && e !== N && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : it(e) ? this.k(e) : this._(e);
+    e = I(this, e, t), W(e) ? e === h || e == null || e === "" ? (this._$AH !== h && this._$AR(), this._$AH = h) : e !== this._$AH && e !== N && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : it(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -522,10 +522,10 @@ class I {
     this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
   }
   _(e) {
-    this._$AH !== h && B(this._$AH) ? this._$AA.nextSibling.data = e : this.T(D.createTextNode(e)), this._$AH = e;
+    this._$AH !== h && W(this._$AH) ? this._$AA.nextSibling.data = e : this.T(D.createTextNode(e)), this._$AH = e;
   }
   $(e) {
-    const { values: t, _$litType$: s } = e, i = typeof s == "number" ? this._$AC(e) : (s.el === void 0 && (s.el = W.createElement(Oe(s.h, s.h[0]), this.options)), s);
+    const { values: t, _$litType$: s } = e, i = typeof s == "number" ? this._$AC(e) : (s.el === void 0 && (s.el = j.createElement(Oe(s.h, s.h[0]), this.options)), s);
     if (this._$AH?._$AD === i) this._$AH.p(t);
     else {
       const a = new at(i, this), n = a.u(this.options);
@@ -534,13 +534,13 @@ class I {
   }
   _$AC(e) {
     let t = Ae.get(e.strings);
-    return t === void 0 && Ae.set(e.strings, t = new W(e)), t;
+    return t === void 0 && Ae.set(e.strings, t = new j(e)), t;
   }
   k(e) {
     he(this._$AH) || (this._$AH = [], this._$AR());
     const t = this._$AH;
     let s, i = 0;
-    for (const a of e) i === t.length ? t.push(s = new I(this.O(F()), this.O(F()), this, this.options)) : s = t[i], s._$AI(a), i++;
+    for (const a of e) i === t.length ? t.push(s = new L(this.O(B()), this.O(B()), this, this.options)) : s = t[i], s._$AI(a), i++;
     i < t.length && (this._$AR(s && s._$AB.nextSibling, i), t.length = i);
   }
   _$AR(e = this._$AA.nextSibling, t) {
@@ -566,11 +566,11 @@ class ee {
   _$AI(e, t = this, s, i) {
     const a = this.strings;
     let n = !1;
-    if (a === void 0) e = z(this, e, t, 0), n = !B(e) || e !== this._$AH && e !== N, n && (this._$AH = e);
+    if (a === void 0) e = I(this, e, t, 0), n = !W(e) || e !== this._$AH && e !== N, n && (this._$AH = e);
     else {
       const c = e;
       let o, u;
-      for (e = a[0], o = 0; o < a.length - 1; o++) u = z(this, c[s + o], t, o), u === N && (u = this._$AH[o]), n ||= !B(u) || u !== this._$AH[o], u === h ? e = h : e !== h && (e += (u ?? "") + a[o + 1]), this._$AH[o] = u;
+      for (e = a[0], o = 0; o < a.length - 1; o++) u = I(this, c[s + o], t, o), u === N && (u = this._$AH[o]), n ||= !W(u) || u !== this._$AH[o], u === h ? e = h : e !== h && (e += (u ?? "") + a[o + 1]), this._$AH[o] = u;
     }
     n && !i && this.j(e);
   }
@@ -599,7 +599,7 @@ class lt extends ee {
     super(e, t, s, i, a), this.type = 5;
   }
   _$AI(e, t = this) {
-    if ((e = z(this, e, t, 0) ?? h) === N) return;
+    if ((e = I(this, e, t, 0) ?? h) === N) return;
     const s = this._$AH, i = e === h && s !== h || e.capture !== s.capture || e.once !== s.once || e.passive !== s.passive, a = e !== h && (s === h || i);
     i && this.element.removeEventListener(this.name, this, s), a && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
@@ -615,17 +615,17 @@ class ct {
     return this._$AM._$AU;
   }
   _$AI(e) {
-    z(this, e);
+    I(this, e);
   }
 }
-const dt = { I }, ht = de.litHtmlPolyfillSupport;
-ht?.(W, I), (de.litHtmlVersions ??= []).push("3.3.3");
+const dt = { I: L }, ht = de.litHtmlPolyfillSupport;
+ht?.(j, L), (de.litHtmlVersions ??= []).push("3.3.3");
 const pt = (r, e, t) => {
   const s = t?.renderBefore ?? e;
   let i = s._$litPart$;
   if (i === void 0) {
     const a = t?.renderBefore ?? null;
-    s._$litPart$ = i = new I(e.insertBefore(F(), a), a, void 0, t ?? {});
+    s._$litPart$ = i = new L(e.insertBefore(B(), a), a, void 0, t ?? {});
   }
   return i._$AI(r), i;
 };
@@ -662,7 +662,7 @@ const ne = [
   "Race Weekend",
   "History",
   "Analytics"
-], M = {
+], U = {
   1: "Cup Series",
   2: "National Series 2",
   3: "Truck Series"
@@ -710,20 +710,20 @@ function J(r, e = 1e10) {
     throw new y("unsafe_identifier");
   return Number(r);
 }
-function q(r) {
+function H(r) {
   return typeof r == "object" && r !== null && !Array.isArray(r);
 }
 function Se(r, e) {
-  if (q(r) && r.type === "result") {
+  if (H(r) && r.type === "result") {
     if (r.success === !1)
       throw new y(
-        q(r.error) ? String(r.error.code) : "invalid_response"
+        H(r.error) ? String(r.error.code) : "invalid_response"
       );
     r = r.result;
-  } else q(r) && r.type === "event" && (r = r.event);
-  if (!q(r) || r.api_version !== 1)
+  } else H(r) && r.type === "event" && (r = r.event);
+  if (!H(r) || r.api_version !== 1)
     throw new y("api_version");
-  if (r.entry_id !== e || !q(r.data))
+  if (r.entry_id !== e || !H(r.data))
     throw new y("invalid_response");
   return r;
 }
@@ -826,10 +826,13 @@ class ft {
     });
     if (e === "analytics" && a.contract_version !== 1)
       throw new y("api_version");
-    const n = a.pagination;
-    if (!n || n.offset !== s || !Array.isArray(a.records) || a.records.length > 200 || n.returned !== a.records.length || !/^([a-f0-9]{64})$/.test(n.snapshot) || !Number.isInteger(n.total) || n.total < s + a.records.length || i && n.snapshot !== i || n.next_offset !== null && (n.next_offset !== s + a.records.length || n.next_offset <= s) || n.complete !== (n.next_offset === null))
+    const n = e === "history" ? a.race : e === "analytics" ? a.query?.key : void 0;
+    if ((e === "history" || e === "analytics") && (!n || n.series_id !== t.series_id || n.season !== t.season || n.race_id !== String(t.race_id)))
       throw new y("invalid_response");
-    return (e === "live_driver" || e === "live_scoring") && (a.records = a.records.map((c) => ({ ...c, kind: "detail" }))), a;
+    const c = a.pagination;
+    if (!c || c.offset !== s || !Array.isArray(a.records) || a.records.length > 200 || c.returned !== a.records.length || !/^([a-f0-9]{64})$/.test(c.snapshot) || !Number.isInteger(c.total) || c.total < s + a.records.length || i && c.snapshot !== i || c.next_offset !== null && (c.next_offset !== s + a.records.length || c.next_offset <= s) || c.complete !== (c.next_offset === null))
+      throw new y("invalid_response");
+    return (e === "live_driver" || e === "live_scoring") && (a.records = a.records.map((o) => ({ ...o, kind: "detail" }))), a;
   }
   schedule(e, t = 0, s) {
     return this.page("schedule", e, t, s);
@@ -862,7 +865,7 @@ function b(r, e, t = 0) {
     maximumFractionDigits: t
   }).format(r) : "—";
 }
-function U(r) {
+function M(r) {
   if (!r || !/^\d{4}-\d\d-\d\dT\d\d:\d\d(?::\d\d(?:\.\d+)?)?(?:Z|[+-]\d\d:\d\d)$/.test(
     r
   ))
@@ -871,7 +874,7 @@ function U(r) {
   return Number.isFinite(e) ? e : null;
 }
 function E(r, e) {
-  const t = U(r);
+  const t = M(r);
   return t === null ? "Time unconfirmed" : new Intl.DateTimeFormat(e?.locale?.language, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -880,7 +883,7 @@ function E(r, e) {
   }).format(t);
 }
 function $t(r, e = Date.now()) {
-  const t = U(r);
+  const t = M(r);
   if (t === null || t <= e) return null;
   const s = Math.ceil((t - e) / 6e4);
   return s >= 1440 ? `${Math.floor(s / 1440)}d ${Math.floor(s % 1440 / 60)}h` : `${Math.floor(s / 60)}h ${s % 60}m`;
@@ -920,8 +923,8 @@ function Z(r) {
   return e === "none" ? "none" : e === "comma_decimal" ? "en-US" : e === "decimal_comma" ? "de-DE" : e === "space_comma" ? "fr-FR" : e === "system" ? void 0 : r?.locale?.language;
 }
 class ie {
-  constructor(e, t) {
-    this.command = e, this.selection = t, this.pages = /* @__PURE__ */ new Map(), this.loading = !1, this.created = 0, this.generation = 0, this.previousOffsets = [];
+  constructor(e, t, s) {
+    this.command = e, this.selection = t, this.expectedLive = s, this.pages = /* @__PURE__ */ new Map(), this.loading = !1, this.created = 0, this.generation = 0, this.previousOffsets = [];
   }
   get records() {
     return [...this.pages.values()].sort((e, t) => e.pagination.offset - t.pagination.offset).flatMap((e) => e.records);
@@ -957,6 +960,8 @@ class ie {
         this.current?.pagination.snapshot
       );
       if (i !== this.generation) return;
+      if (this.expectedLive && (n.identity?.series_id !== this.selection.series_id || n.identity?.race_id !== this.expectedLive.race_id || n.identity?.run_id !== this.expectedLive.run_id))
+        throw new y("snapshot_changed");
       for (this.created || (this.created = Date.now()), this.pages.set(t, n), this.current = n; this.pages.size > 8; )
         this.pages.delete(this.pages.keys().next().value);
     } catch (n) {
@@ -1742,15 +1747,15 @@ const V = X`
     }
   }
 `;
-function j(r, e = 0) {
+function z(r, e = 0) {
   return r == null ? "Unknown / not reported" : typeof r == "boolean" ? r ? "Yes" : "No" : typeof r == "number" ? b(r, void 0, 6) : typeof r == "string" ? r : e > 6 ? "Nested observation" : Array.isArray(r) ? r.length ? l`${r.map(
     (t, s) => l`<div>
-              ${r.length > 1 ? l`<small>Observation ${s + 1}</small>` : h}${j(t, e + 1)}
+              ${r.length > 1 ? l`<small>Observation ${s + 1}</small>` : h}${z(t, e + 1)}
             </div>`
   )}` : "No reported records" : l`<dl>
     ${Object.entries(r).map(
     ([t, s]) => l`<dt>${m(t)}</dt>
-          <dd>${j(s, e + 1)}</dd>`
+          <dd>${z(s, e + 1)}</dd>`
   )}
   </dl>`;
 }
@@ -1761,7 +1766,7 @@ function G(r) {
           <summary>
             ${m(e.kind)}${e.driver_id ? ` · driver ${e.driver_id}` : ""}${e.number != null ? ` · stage ${e.number}` : ""}${e.size ? ` · ${e.size} laps` : ""}${e.source_index != null ? ` · source index ${e.source_index}` : ` · record ${t + 1}`}
           </summary>
-          ${j(e.value ?? e.best_mean ?? e)}
+          ${z(e.value ?? e.best_mean ?? e)}
         </details>`
   )}
   </div>`;
@@ -1867,10 +1872,10 @@ let At = class {
     return this.render(...t);
   }
 };
-const { I: kt } = dt, Pe = (r) => r, Me = () => document.createComment(""), H = (r, e, t) => {
+const { I: kt } = dt, Pe = (r) => r, Ue = () => document.createComment(""), O = (r, e, t) => {
   const s = r._$AA.parentNode, i = e === void 0 ? r._$AB : e._$AA;
   if (t === void 0) {
-    const a = s.insertBefore(Me(), i), n = s.insertBefore(Me(), i);
+    const a = s.insertBefore(Ue(), i), n = s.insertBefore(Ue(), i);
     t = new kt(a, n, r, r.options);
   } else {
     const a = t._$AB.nextSibling, n = t._$AM, c = n !== r;
@@ -1890,7 +1895,7 @@ const { I: kt } = dt, Pe = (r) => r, Me = () => document.createComment(""), H = 
 }, C = (r, e, t = r) => (r._$AI(e, t), r), St = {}, Ct = (r, e = St) => r._$AH = e, Et = (r) => r._$AH, re = (r) => {
   r._$AR(), r._$AA.remove();
 };
-const Ue = (r, e, t) => {
+const Me = (r, e, t) => {
   const s = /* @__PURE__ */ new Map();
   for (let i = e; i <= t; i++) s.set(r[i], i);
   return s;
@@ -1918,19 +1923,19 @@ const Ue = (r, e, t) => {
     else if (i[d] === null) d--;
     else if (c[p] === n[v]) o[v] = C(i[p], a[v]), p++, v++;
     else if (c[d] === n[g]) o[g] = C(i[d], a[g]), d--, g--;
-    else if (c[p] === n[g]) o[g] = C(i[p], a[g]), H(r, o[g + 1], i[p]), p++, g--;
-    else if (c[d] === n[v]) o[v] = C(i[d], a[v]), H(r, i[p], i[d]), d--, v++;
-    else if (u === void 0 && (u = Ue(n, v, g), $ = Ue(c, p, d)), u.has(c[p])) if (u.has(c[d])) {
+    else if (c[p] === n[g]) o[g] = C(i[p], a[g]), O(r, o[g + 1], i[p]), p++, g--;
+    else if (c[d] === n[v]) o[v] = C(i[d], a[v]), O(r, i[p], i[d]), d--, v++;
+    else if (u === void 0 && (u = Me(n, v, g), $ = Me(c, p, d)), u.has(c[p])) if (u.has(c[d])) {
       const _ = $.get(n[v]), f = _ !== void 0 ? i[_] : null;
       if (f === null) {
-        const x = H(r, i[p]);
+        const x = O(r, i[p]);
         C(x, a[v]), o[v] = x;
-      } else o[v] = C(f, a[v]), H(r, i[p], f), i[_] = null;
+      } else o[v] = C(f, a[v]), O(r, i[p], f), i[_] = null;
       v++;
     } else re(i[d]), d--;
     else re(i[p]), p++;
     for (; v <= g; ) {
-      const _ = H(r, o[g + 1]);
+      const _ = O(r, o[g + 1]);
       C(_, a[v]), o[v++] = _;
     }
     for (; p <= d; ) {
@@ -2221,7 +2226,7 @@ function Pt(r) {
   }
   return t.length && e.push(t), e;
 }
-class Mt extends w {
+class Ut extends w {
   constructor() {
     super(...arguments), this.rows = [], this.mode = "time";
   }
@@ -2380,8 +2385,8 @@ class Mt extends w {
       </details>`;
   }
 }
-customElements.define("nrc-chart", Mt);
-function Ut(r) {
+customElements.define("nrc-chart", Ut);
+function Mt(r) {
   const e = /* @__PURE__ */ new Map(), t = (s, i, a) => {
     const n = JSON.stringify([
       i,
@@ -2505,7 +2510,7 @@ class Tt extends w {
     ];
   }
   render() {
-    const e = Ut(this.rows), t = e.find((o) => o.key === this.selected) ?? e[0];
+    const e = Mt(this.rows), t = e.find((o) => o.key === this.selected) ?? e[0];
     if (!t)
       return l`<div class="notice">
         Load pages containing driver summaries or supported
@@ -2670,7 +2675,7 @@ class zt extends w {
         >
           <option value="">First monitored series</option>
           ${[1, 2, 3].map(
-      (e) => l`<option value=${e}>${M[e]}</option>`
+      (e) => l`<option value=${e}>${U[e]}</option>`
     )}
         </select></label
       ><label class="field"
@@ -2915,7 +2920,8 @@ class Lt extends w {
       ));
       const a = new ie(
         t ? "live_scoring" : "live_driver",
-        i
+        i,
+        this.liveData?.identity
       );
       this.detail?.invalidate(), this.detail = a;
       const n = a.load(this.client);
@@ -3026,8 +3032,8 @@ class Lt extends w {
       i?.start_time,
       ...(i?.sessions ?? []).map((d) => d.start_time)
     ].filter(
-      (d) => !!d && U(d) !== null && U(d) > Date.now()
-    ).sort((d, v) => U(d) - U(v))[0], c = se(t), o = Re(t), u = t?.leaderboard?.find(
+      (d) => !!d && M(d) !== null && M(d) > Date.now()
+    ).sort((d, v) => M(d) - M(v))[0], c = se(t), o = Re(t), u = t?.leaderboard?.find(
       (d) => d.driver_id === t.leader_driver_id
     ), $ = $t(n), p = t?.leaderboard?.filter((d) => d.favorite) ?? [];
     return l`<div class="stack">
@@ -3041,7 +3047,7 @@ class Lt extends w {
       <section class="panel hero">
         <div class="hero-content">
           <p class="eyebrow">
-            ${M[this.series]} ·
+            ${U[this.series]} ·
             ${s ? "Reported session" : i ? "Next known event" : "Schedule & live coverage"}
           </p>
           <h1>
@@ -3179,7 +3185,7 @@ class Lt extends w {
     return l`<div class="stack">
       <div class="section-head">
         <div>
-          <p class="eyebrow">${M[this.series]} · Timing tower</p>
+          <p class="eyebrow">${U[this.series]} · Timing tower</p>
           <h2>${t?.run_name ?? "Live Timing"}</h2>
           <p class="muted">
             ${m(t?.status)}${t ? ` · Reported lap ${this.formatNumber(t.lap)} / ${this.formatNumber(t.total_laps)}` : ""}
@@ -3271,9 +3277,19 @@ class Lt extends w {
             </div>
             <details>
               <summary>Reported driver measurements</summary>
-              ${j(e)}
+              ${z(e)}
             </details>` : h}${this.detailError ? this.errorView(this.detailError) : h}${t ? l`${t.current ? l`<p class="muted">
                   ${m(t.current.availability)} · ${m(t.current.reason)}
+                  · Race ${t.current.identity?.race_id ?? "Unknown"} / timing
+                  run ${t.current.identity?.run_id ?? "Unknown"}
+                </p>
+                ${t.current.provenance ? l`<details>
+                      <summary>Source provenance</summary>
+                      ${z(t.current.provenance)}
+                    </details>` : h}
+                <p class="notice">
+                  Provisional reported observations. Source timing units remain
+                  unverified.
                 </p>
                 ${t.current.records.length ? G(t.current.records) : this.state(
       "No detail records",
@@ -3290,7 +3306,7 @@ class Lt extends w {
     return l`<div class="stack">
       <div class="section-head">
         <div>
-          <p class="eyebrow">${M[this.series]} · Retained schedule</p>
+          <p class="eyebrow">${U[this.series]} · Retained schedule</p>
           <h2>Race Weekend</h2>
           <p class="muted">
             Known events and sessions ·
@@ -3404,7 +3420,7 @@ class Lt extends w {
             @change=${(n) => this.selectSeries(Number(n.target.value))}
           >
             ${this.bootstrapData.series_ids.map(
-      (n) => l`<option value=${n}>${M[n]}</option>`
+      (n) => l`<option value=${n}>${U[n]}</option>`
     )}
           </select></label
         ><label class="field"
@@ -3661,7 +3677,7 @@ class Lt extends w {
                     </div>
                     <details>
                       <summary>Coverage and exclusions</summary>
-                      ${j(a.value?.coverage)}
+                      ${z(a.value?.coverage)}
                       <p>${m(a.value?.reason)}</p>
                     </details>
                   </section>`
@@ -3716,7 +3732,7 @@ class Lt extends w {
     )}
                 >
                   ${e.series_ids.map(
-      (s) => l`<option value=${s}>${M[s]}</option>`
+      (s) => l`<option value=${s}>${U[s]}</option>`
     )}
                 </select></label
               >

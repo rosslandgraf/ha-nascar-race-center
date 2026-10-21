@@ -301,3 +301,33 @@ test("changed stateless schedule snapshots discard assembled pages", async () =>
   expect(view.records).toHaveLength(0);
   expect((view.error as { code: string }).code).toBe("snapshot_changed");
 });
+
+test("driver detail racing context cannot change behind an open selection", async () => {
+  const hass = new MockHass(),
+    client = new DashboardClient(hass, "FICTIONAL_ENTRY");
+  const view = new PageView(
+    "live_driver",
+    { series_id: 1, driver_id: 99002, collection: "pit_stops" },
+    { race_id: "DIFFERENT_RACE", run_id: "DIFFERENT_RUN" },
+  );
+  await view.load(client);
+  expect(view.current).toBeUndefined();
+  expect(view.records).toHaveLength(0);
+  expect((view.error as { code: string }).code).toBe("snapshot_changed");
+});
+
+test("history pages cannot substitute a different race selection", async () => {
+  const hass = new MockHass(),
+    client = new DashboardClient(hass, "FICTIONAL_ENTRY");
+  const wire = structuredClone(fixtures.history) as Envelope<Page>;
+  wire.data.race!.race_id = "OTHER";
+  hass.callWS = vi.fn(async <T>() => wire as T) as typeof hass.callWS;
+  await expect(
+    client.history({
+      series_id: 1,
+      season: 2024,
+      race_id: 88001,
+      datasets: ["weekend"],
+    }),
+  ).rejects.toThrow("invalid_response");
+});
