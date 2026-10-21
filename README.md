@@ -161,8 +161,9 @@ matching monitored race source; there is no per-driver request.
 Three per-series diagnostic sensors explain standalone pit, stage-result and
 championship-point capability. The observed global pits lack race/driver IDs,
 stages reference a different race and lack series/source time, and points have
-zero context IDs. These datasets remain separate in memory and **cannot currently
-supply active-race scores**. Fresh HTTP responses cannot resolve those blockers.
+zero context IDs. These feeds **cannot currently supply active-race scores**
+and are not automatically requested; their capability is
+`unsupported_association`. Fresh HTTP responses cannot resolve those blockers.
 No name/car/membership-ID or numeric cross-namespace join is attempted.
 
 Reported stage position/points and provisional championship position/totals/race
@@ -173,8 +174,10 @@ CF currently cannot. No totals, completed stages, scoring rules, championship
 rank changes or official finality are calculated from incomplete evidence.
 Checkered never promotes provisional scores to official results.
 
-One shared optional refresh reads the three global feeds, at least 15 minutes
-apart during supported active racing and six hours otherwise. Failures remain
-independent; server backoff and cache validators apply. These defaults do not
-establish NASCAR polling permission. See [Phase 3B validation](docs/PHASE3B_VALIDATION.md)
+One shared optional refresh reads only feeds eligible for live association, at
+least 15 minutes apart during supported active racing and six hours otherwise.
+CF currently declares none; embedded pits/current stage use the existing live
+request. Parsers/models and future provider interfaces remain available. Failures
+of eligible feeds remain independent; server backoff and cache validators apply.
+These defaults do not establish NASCAR polling permission. See [Phase 3B validation](docs/PHASE3B_VALIDATION.md)
 for executed checks, measured request/Recorder budgets and remaining work.

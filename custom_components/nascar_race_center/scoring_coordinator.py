@@ -14,7 +14,7 @@ from homeassistant.util import dt as dt_util
 from .coordinator import LiveCoordinator
 from .models import ProviderError
 from .scoring import RaceContext, ScoringFeed, association_state
-from .scoring_provider import SCORING_KINDS, ScoringKind, ScoringProvider
+from .scoring_provider import ScoringKind, ScoringProvider
 
 _LOGGER = logging.getLogger(__name__)
 SCORING_INTERVAL = timedelta(minutes=15)
@@ -29,7 +29,7 @@ class ScoringData:
 
 
 class ScoringCoordinator(DataUpdateCoordinator[ScoringData]):
-    """Three global requests, independent of series count and favorite count.
+    """Eligible global feeds, independent of series count and favorite count.
 
     HA owns shutdown through config_entry. No custom timers/tasks or persisted
     data. Local live-source expiry also notifies scoring listeners so trusted
@@ -73,6 +73,8 @@ class ScoringCoordinator(DataUpdateCoordinator[ScoringData]):
 
     def capability(self, kind: ScoringKind, series_id: int) -> str:
         """A retained feed cannot silently become data for a different race."""
+        if kind not in self.provider.polling_kinds:
+            return "unsupported_association"
         view = self.live.view(series_id)
         if not view.available:
             return view.health
@@ -137,7 +139,7 @@ class ScoringCoordinator(DataUpdateCoordinator[ScoringData]):
         failed = set(self.data.failed)
         errors = dict(self.data.errors)
         now = dt_util.utcnow()
-        for kind in SCORING_KINDS:
+        for kind in self.provider.polling_kinds:
             if self._retry_at.get(kind, now) > now:
                 continue
             try:

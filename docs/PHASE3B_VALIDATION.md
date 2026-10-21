@@ -19,8 +19,9 @@ and pushed during work. See [evidence and blockers](PHASE3B_EVIDENCE.md).
   substituted. Mixed contexts, historical scope and run namespaces are rejected.
 - Fourth independent coordinator and shared transport/cache; bounded whole-feed
   retention, independent failures/retry hints, 15-minute active / six-hour idle
-  polling, local expiry and entry-owned shutdown. No per-favorite/per-series
-  feed requests, alternate URL search, historical fetch or persisted raw capture.
+  polling for eligible providers, local expiry and entry-owned shutdown. CF
+  standalone feeds are intentionally excluded from automatic requests. No
+  per-favorite/per-series feed requests, alternate URL search, historical fetch or persisted raw capture.
 - Current-stage and diagnostic capability sensors; opt-in race stage-result-set
   count and provisional championship leader; three opt-in favorite summaries.
   Existing entity/configuration identity, demo and Phase 1–3A behavior preserved.
@@ -35,7 +36,7 @@ are checked against the imported package without treating placeholders as facts.
 
 | Check | Result |
 | --- | --- |
-| Complete `pytest -q` | **428 passed** (330 baseline + 98 additional cases) |
+| Complete `pytest -q` | **429 passed** (including all 330 Phase 1–3A baseline cases) |
 | `ruff check .` | Passed |
 | `ruff format --check .` | Passed; 88 files |
 | `mypy custom_components/nascar_race_center` | Passed; 25 source files |
@@ -78,12 +79,43 @@ stale/missing/future source clocks, independent source expiry, outages/403/429/5
 unexpected coordinator errors, cancellation, cache hits/304, favorites cleanup,
 reload, failed/cancelled setup, queued and late in-flight shutdown behavior.
 
-A fresh three-series CF setup with unavailable references makes **10 mocked GETs**:
-the seven existing requests plus exactly one each for global pits/stages/points.
-Immediate primary and scoring refreshes add **zero GETs** through shared caching.
-An optional pit 429 makes **eight GETs** total and suppresses the following two
-optional requests through host-wide backoff; a 403/503 isolates that endpoint.
-No extra requests depend on the number of favorite drivers.
+## Focused final review correction
+
+The original coordinator requested all three standalone CF feeds even though
+no available evidence could allow their live association. Providers now declare
+`polling_kinds`; CF declares an empty tuple. Setup and every later optional
+refresh skip these feeds. Capability is `unsupported_association` before primary
+health/session checks, so an intentional association limit cannot be mislabeled
+as `offline`, `denied`, or merely `not_reported`. Eligible normalized providers
+retain independent network failure, retry, expiry and association behavior.
+No existing configuration, IDs, embedded parsers, models, source evidence or
+direct adapter reads changed. No manual override or Phase 3C behavior was added.
+
+Five focused HA regression cases failed before the correction, showing an
+attempted unregistered standalone pit GET and incorrect capability states.
+The complete revised suite passes. Regression coverage leaves all three optional
+URLs unregistered and requires successful coordinator refreshes; unexpected I/O
+cannot be swallowed as a coordinator error. It covers one/three series, zero/two
+favorites, immediate and elapsed 16-minute/seven-hour optional refreshes,
+embedded values, opt-in entity reload, entry reload/unload and primary outage.
+Existing eligible-provider 403/429/503, parser/cache/304, source expiry,
+cancellation and Recorder cases remain in the passing suite.
+
+Measured mocked single-season startup with unavailable driver/track references:
+
+| Selected series | Startup GETs | Standalone scoring GETs |
+| --- | --- | --- |
+| One | **5** | **0** |
+| Three | **7** (previously 10) | **0** |
+
+The three-series seven requests are one shared season list, three detailed
+schedules, one global live feed and two reference requests. Immediate live
+refresh is cached; immediate and elapsed optional refreshes add **zero GETs**.
+Favorites do not change these counts. Reload recreates the entry's existing
+providers/caches and still makes no standalone requests. Existing primary,
+schedule and reference cadence/cache/backoff behavior is unchanged. No NASCAR
+requests were made for this review; these are synthetic budgets, not live
+provider measurements or polling permission.
 
 Actual in-memory Recorder measurement covers five advancing timestamps plus
 nonfavorite timing changes: **zero new rows** for the unchanged favorite pit
@@ -97,8 +129,10 @@ budgets, not a live-session or production Recorder benchmark.
 CF standalone stage results and championship scores are intentionally unavailable
 as active-race entities: missing/zero IDs, unverified run namespaces and missing
 source clocks cannot pass association. Standalone pit tire/type/duration facts
-remain unbound in memory because that feed supplies neither context nor NASCAR
-driver IDs. Embedded pits/current stage work when the parent feed is usable.
+remain unsupported for live association because that feed supplies neither
+context nor NASCAR driver IDs. These CF feeds are not automatically requested;
+normalized parsers and future provider integration interfaces remain available.
+Embedded pits/current stage work when the parent feed is usable.
 Trusted normalized synthetic providers demonstrate supported scoring rendering;
 production never fills CF gaps with those facts or fixtures.
 

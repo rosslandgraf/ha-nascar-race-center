@@ -24,7 +24,7 @@ from test_phase3a_sensors import (
 from test_phase3a_sensors import (
     mock_recorder_before_hass as mock_recorder_before_hass,
 )
-from test_scoring import NOW, embedded_payload, fixture, trusted_feed
+from test_scoring import NOW, embedded_payload, trusted_feed
 
 from custom_components.nascar_race_center.const import (
     CONF_DATA_USE_AUTHORIZED,
@@ -42,14 +42,12 @@ from custom_components.nascar_race_center.endpoints import (
     BASE_URL,
     DRIVERS,
     LIVE_FEED,
-    LIVE_PITS,
-    LIVE_POINTS,
-    LIVE_STAGES,
     TRACKS,
     schedule_feed_path,
     schedule_path,
 )
 from custom_components.nascar_race_center.models import ProviderError
+from custom_components.nascar_race_center.scoring_provider import SCORING_KINDS
 
 
 async def enable_scoring(hass, entry):
@@ -80,7 +78,7 @@ async def scoring_refresh(hass, entry, *, stages=None, points=None, error=None):
             raise error
         return points
 
-    provider = Mock()
+    provider = Mock(polling_kinds=SCORING_KINDS)
     provider.async_get_scoring = AsyncMock(side_effect=get)
     entry.runtime_data.scoring.provider = provider
     await entry.runtime_data.scoring.async_refresh()
@@ -354,75 +352,93 @@ async def test_favorite_removal_cleans_only_recognized_scoring_entities(
     assert state(hass, entry, "1_current_stage").state == "2"
 
 
-async def cf_entry(hass, aioclient_mock, *, pit_status=200):
+async def cf_entry(hass, aioclient_mock, *, series=(1, 2, 3), favorites=("99002",)):
     aioclient_mock.get(
         BASE_URL + schedule_path(2026), json={f"series_{s}": [] for s in (1, 2, 3)}
     )
-    for series in (1, 2, 3):
-        aioclient_mock.get(BASE_URL + schedule_feed_path(2026, series), json=[])
+    for series_id in series:
+        aioclient_mock.get(BASE_URL + schedule_feed_path(2026, series_id), json=[])
     aioclient_mock.get(BASE_URL + DRIVERS, status=503)
     aioclient_mock.get(BASE_URL + TRACKS, status=503)
     aioclient_mock.get(BASE_URL + LIVE_FEED, json=embedded_payload())
-    aioclient_mock.get(BASE_URL + LIVE_PITS, json=fixture("pits"), status=pit_status)
-    aioclient_mock.get(BASE_URL + LIVE_STAGES, json=fixture("stages"))
-    aioclient_mock.get(BASE_URL + LIVE_POINTS, json=fixture("points"))
+    # Standalone URLs are deliberately unregistered: any request fails the test.
     entry = MockConfigEntry(
         domain=DOMAIN,
         data={
             CONF_PROVIDER: PROVIDER_CF,
             CONF_DATA_USE_AUTHORIZED: True,
-            CONF_SERIES: ["1", "2", "3"],
-            CONF_FAVORITE_DRIVERS: ["99002"],
+            CONF_SERIES: [str(value) for value in series],
+            CONF_FAVORITE_DRIVERS: list(favorites),
         },
     )
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
+    assert entry.runtime_data.scoring.last_update_success
     return entry
 
 
-async def test_cf_observed_global_conflicts_caching_and_small_diagnostics(
+@pytest.mark.parametrize("series", [(1,), (1, 2, 3)])
+@pytest.mark.parametrize("favorites", [(), ("99002", "99003")])
+async def test_cf_unsupported_feeds_add_no_setup_or_refresh_requests(
+    hass, aioclient_mock, freezer, series, favorites
+):
+    freezer.move_to(NOW)
+    entry = await cf_entry(hass, aioclient_mock, series=series, favorites=favorites)
+    expected = 4 + len(series)  # shared schedule, details, live, two references
+    assert aioclient_mock.call_count == expected
+    for series_id in series:
+        for kind in SCORING_KINDS:
+            assert state(hass, entry, f"{series_id}_{kind}_capability").state == (
+                "unsupported_association"
+            )
+    await entry.runtime_data.live.async_refresh()
+    for elapsed in (timedelta(), timedelta(minutes=16), timedelta(hours=7)):
+        freezer.tick(elapsed)
+        await entry.runtime_data.scoring.async_refresh()
+        assert entry.runtime_data.scoring.last_update_success
+    assert aioclient_mock.call_count == expected
+    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+    assert diagnostics["scoring"]["feeds"] == {}
+    assert diagnostics["scoring"]["failed_feeds"] == []
+    assert diagnostics["live"]["embedded_scoring"]["stage_reported"]
+    assert "Synthetic Driver" not in str(diagnostics)
+    assert len(str(diagnostics["scoring"])) < 4000
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_cf_unsupported_capability_preserves_embedded_values_and_clean_reload(
     hass, aioclient_mock, freezer
 ):
     freezer.move_to(NOW)
     entry = await cf_entry(hass, aioclient_mock)
-    assert aioclient_mock.call_count == 10
-    assert state(hass, entry, "1_pits_capability").state == "context_unknown"
-    assert state(hass, entry, "1_stages_capability").state == "context_mismatch"
-    assert state(hass, entry, "1_points_capability").state == "context_unknown"
-    await entry.runtime_data.scoring.async_refresh()
-    await entry.runtime_data.live.async_refresh()
-    assert aioclient_mock.call_count == 10
-    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
-    assert diagnostics["scoring"]["feeds"]["points"]["points_rows"] == 1
-    assert diagnostics["scoring"]["feeds"]["points"]["source_updated_at"] is None
-    assert diagnostics["scoring"]["feeds"]["pits"]["contexts"] == []
-    assert diagnostics["live"]["embedded_scoring"]["stage_reported"]
-    assert "Synthetic Driver" not in str(diagnostics)
-    assert len(str(diagnostics["scoring"])) < 4000
-    assert entry.runtime_data.scoring.update_interval >= timedelta(minutes=15)
-    assert await hass.config_entries.async_unload(entry.entry_id)
-
-
-@pytest.mark.parametrize("status", [403, 429, 503])
-async def test_cf_optional_access_rate_limit_and_server_failure(
-    hass, aioclient_mock, freezer, status
-):
-    freezer.move_to(NOW)
-    entry = await cf_entry(hass, aioclient_mock, pit_status=status)
-    runtime = entry.runtime_data
-    assert "pits" in runtime.scoring.data.failed
+    await enable_scoring(hass, entry)
     assert state(hass, entry, "1_current_stage").state == "2"
-    assert state(hass, entry, "driver_99002_live_position").state == "2"
-    if status == 429:
-        assert runtime.scoring.data.failed == {"pits", "stages", "points"}
-        assert aioclient_mock.call_count == 8  # host-wide pause suppresses next GETs
-    else:
-        assert runtime.scoring.data.failed == {"pits"}
-        assert aioclient_mock.call_count == 10
+    assert state(hass, entry, "driver_99002_scoring_pit_lap").state == "40"
+    assert state(hass, entry, "1_pits_capability").attributes["embedded"] == "available"
+    old = entry.runtime_data
+    assert await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert old.scoring._stopped and old.scoring._unsub_expiry is None
+    assert not old.scoring._listeners and not old.live._listeners
+    assert not async_get_clientsession(hass).closed
+    runtime = entry.runtime_data
     before = aioclient_mock.call_count
+    await old.scoring.async_request_refresh()
     await runtime.scoring.async_refresh()
     assert aioclient_mock.call_count == before
+    # A primary outage must not relabel deliberately unsupported feeds offline.
+    runtime.live.provider.async_get_live = AsyncMock(
+        side_effect=ProviderError("synthetic", status=503)
+    )
+    await runtime.live.async_refresh()
+    await hass.async_block_till_done()
+    assert state(hass, entry, "1_current_stage").state == STATE_UNAVAILABLE
+    for kind in SCORING_KINDS:
+        assert state(hass, entry, f"1_{kind}_capability").state == (
+            "unsupported_association"
+        )
+    assert not runtime.scoring.data.failed
     assert await hass.config_entries.async_unload(entry.entry_id)
 
 
@@ -436,7 +452,9 @@ async def test_inflight_optional_refresh_cannot_rearm_after_shutdown(hass, live_
         await release.wait()
         return trusted_feed("points") if kind == "points" else None
 
-    coordinator.provider = Mock(async_get_scoring=AsyncMock(side_effect=delayed))
+    coordinator.provider = Mock(
+        polling_kinds=SCORING_KINDS, async_get_scoring=AsyncMock(side_effect=delayed)
+    )
     task = asyncio.create_task(coordinator.async_refresh())
     try:
         await started.wait()

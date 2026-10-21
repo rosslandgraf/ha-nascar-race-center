@@ -18,12 +18,19 @@ SCORING_KINDS: tuple[ScoringKind, ...] = ("pits", "stages", "points")
 
 
 class ScoringProvider(Protocol):
+    # Only feeds with an evidenced live-association path merit automatic I/O.
+    polling_kinds: tuple[ScoringKind, ...]
+
     async def async_get_scoring(self, kind: ScoringKind) -> ScoringFeed | None:
         """Return one independent reported dataset, without live association."""
         ...
 
 
 class CFScoringProvider:
+    # Current CF evidence cannot establish context and source freshness for any
+    # standalone feed. Keep parsers/direct reads for future validated adapters.
+    polling_kinds: tuple[ScoringKind, ...] = ()
+
     def __init__(self, api: NascarApiClient) -> None:
         self.api = api
 
@@ -42,6 +49,8 @@ class CFScoringProvider:
 
 
 class DemoScoringProvider:
+    polling_kinds = SCORING_KINDS
+
     async def async_get_scoring(self, kind: ScoringKind) -> ScoringFeed | None:
         """An empty offline live feed accompanies fictional demo schedules."""
         return None

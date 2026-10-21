@@ -18,11 +18,14 @@ permission gates remain open. No NASCAR requests are needed for development.
 All standalone datasets remain separate. Normalized provenance distinguishes
 source identity, source content time and local retrieval time. Context validation
 rejects conflicts, unknown identifiers, namespace differences, stale/unknown
-source times and nonrace sessions. A shared optional-feed coordinator isolates
-failures, retains last-good data only for diagnostics, and replaces whole
+source times and nonrace sessions. Current CF feeds are not automatically
+requested because none has an evidenced live-association path; capability is
+`unsupported_association`, distinct from `offline`/`denied` network failures.
+Parsers, immutable models and direct adapter interfaces remain intact.
+A shared optional-feed coordinator isolates failures, retains last-good data only for diagnostics, and replaces whole
 successful datasets rather than merging rows across polls. It makes at most one
-request per global feed per slow refresh, independent of favorites/series count;
-no historical probes or fallback URL searches. Existing transport handles cache
+request per eligible global feed per slow refresh, independent of favorites or
+series count; no historical probes or fallback URL searches. Existing transport handles cache
 validators, bounded bodies/caches, negative cooldowns and host-wide 429 pauses.
 No faster polling permission is implied.
 

@@ -92,9 +92,9 @@ unresolved. Every direct-verification status in this matrix remains unchanged.
 | Source | Network support | Active-race use |
 | --- | --- | --- |
 | Global live feed (01) | Existing shared live request | Embedded NASCAR-ID pits and stage descriptor inherit parent race/run/time |
-| `/live/feeds/live-pit-data.json` (03) | Shared optional request; 15-minute fallback TTL | Separate activity only; absent race/driver identity and source time block joining |
-| `/live/feeds/live-stage-points.json` (05) | Shared optional request; 15-minute fallback TTL | Separate results; conflicting observed race, absent series/time and unverified run namespace block joining |
-| `/live/feeds/live-points.json` (04) | Shared optional request; 15-minute fallback TTL | Separate reported points; observed zero IDs and absent source time block joining |
+| `/live/feeds/live-pit-data.json` (03) | No automatic request; parser/direct adapter retained | Separate activity only; absent race/driver identity and source time block joining |
+| `/live/feeds/live-stage-points.json` (05) | No automatic request; parser/direct adapter retained | Separate results; conflicting observed race, absent series/time and unverified run namespace block joining |
+| `/live/feeds/live-points.json` (04) | No automatic request; parser/direct adapter retained | Separate reported points; observed zero IDs and absent source time block joining |
 | Archived pit/stage shapes (18/19) | Structural evidence only; no historical request added | Never a current live fallback |
 
 No new probe was made in Phase 3B. Permitted data use/cadence, official-finality

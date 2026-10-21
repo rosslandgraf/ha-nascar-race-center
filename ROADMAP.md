@@ -66,8 +66,10 @@ sensors; offline demo and stable configuration/IDs; synthetic and real-HA covera
 
 **Evidence boundary:** global pits lack race/driver identity; stages report another
 race and lack series/source time; points report zero IDs. Those datasets remain
-separate/unavailable for live association. No fabricated totals, scoring formulas,
-completed-stage/stop counts, pit time units, rank movement or official finality.
+unavailable for live association and are not automatically requested. Capability
+is `unsupported_association`; parsers/models and future integration interfaces
+remain available. No fabricated totals, scoring formulas, completed-stage/stop
+counts, pit time units, rank movement or official finality.
 Live permission/cadence and active-session acceptance remain open. Readiness for
 code review does not mean those data gates are satisfied.
 

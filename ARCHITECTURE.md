@@ -177,20 +177,25 @@ and race-session requirement apply to every new embedded sensor. No per-driver
 request or field-wide entity creation is introduced.
 
 A fourth entry-owned `ScoringCoordinator` uses `CFScoringProvider` on the same
-`NascarApiClient`, fetching global pits/stages/points independently. It keeps
-whole last-good datasets for diagnostics, replacing each successful snapshot
+`NascarApiClient`, fetching only provider-declared `polling_kinds` independently.
+CF declares none until identity/source-time evidence supports live association;
+its capability sensors report `unsupported_association`, including during a
+primary outage. Normalized parsers and direct adapter reads remain available.
+The coordinator keeps whole last-good datasets for diagnostics, replacing each successful snapshot
 rather than merging missing rows from old polls. Each feed has independent
 failure/status/retry state; cancellation propagates to HA. Transport negative
 cooldowns, server retry hints and host-wide 429 pauses still apply. Optional
 schema/network failures cannot invalidate schedule/reference/live coordinator
-state. The 16-entry LRU accommodates the normal 14 distinct URLs for two seasons,
-three selected series, references, leaderboard and three scoring feeds.
+state. The 16-entry LRU retains room for future scoring sources; unsupported CF
+feeds consume no cache slots or requests.
 
-Optional polling is at least 15 minutes during a source-supported active race
-and six hours otherwise; the configured live interval can only lengthen the
-active minimum. The initial refresh samples each global source once, independent
-of favorite/series count. A transition from idle can wait until the existing
-optional refresh deadline; no extra transition poll or alternate/historical URL
+Polling of eligible optional feeds is at least 15 minutes during a supported
+active race and six hours otherwise; the configured live interval can only lengthen the
+active minimum. The initial refresh samples each eligible source once, independent
+of favorite/series count. CF makes zero standalone scoring requests at setup or
+on later refreshes; its three-series startup budget remains seven GETs in the
+mocked single-season case with unavailable references. A transition from idle
+can wait until the existing optional refresh deadline; no extra transition poll or alternate/historical URL
 fallback is scheduled. Source cache fallback is 15 minutes, honoring upstream
 cache directives/validators. These are engineering defaults, not NASCAR-approved
 polling rates. The default demo returns no live scoring and performs no requests.
@@ -209,9 +214,9 @@ it does not claim that a new HTTP request or source update occurred.
 **Actual CF boundary:** global pits supply no context or NASCAR driver IDs;
 stages supply race/run but no series or source clock and have an unverified run
 namespace; points observed zero context IDs and no source clock. None is attached
-to active live scoring. Normalized source data remains separate in memory with
-bounded diagnostic counts/context summaries. Synthetic trusted-provider tests
-exercise the available path without inventing CF fields or enabling a manual
+to active live scoring or automatically requested. Normalized parsers/models and
+bounded diagnostics remain available for future evidenced provider integration.
+Synthetic trusted-provider tests exercise the available path without inventing CF fields or enabling a manual
 association override. All scoring feeds remain provisional; checkered cannot
 make them official. Standings movement, official results and scoring formulas
 remain unavailable where unsupported by evidence.
