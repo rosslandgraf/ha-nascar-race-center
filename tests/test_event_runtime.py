@@ -186,7 +186,9 @@ async def test_invalid_ledger_leaves_events_disabled_but_setup_usable(hass, free
         assert await hass.config_entries.async_unload(entry.entry_id)
 
 
-@pytest.mark.parametrize("stop", ["unload", "outage", "switch"])
+@pytest.mark.parametrize(
+    "stop", ["unload", "outage", "switch", "switch_return", "future", "unknown_flag"]
+)
 async def test_inflight_disk_write_cannot_publish_after_evidence_is_lost(
     hass, freezer, stop
 ):
@@ -218,8 +220,14 @@ async def test_inflight_disk_write_cannot_publish_after_evidence_is_lost(
                 assert await hass.config_entries.async_unload(entry.entry_id)
             elif stop == "outage":
                 runtime.live.async_set_update_error(UpdateFailed("synthetic outage"))
+            elif stop == "future":
+                runtime.live.async_set_updated_data(sample(300, flag="red"))
+            elif stop == "unknown_flag":
+                runtime.live.async_set_updated_data(sample(30, flag=None))
             else:
                 runtime.live.async_set_updated_data(sample(30, series_id=2, flag="red"))
+                if stop == "switch_return":
+                    runtime.live.async_set_updated_data(sample(30, flag="yellow"))
             release.set()
             await hass.async_block_till_done()
         assert seen == []
@@ -259,3 +267,61 @@ async def test_reminder_timer_is_local_once_and_cancelled_on_unload(hass, freeze
         assert len(seen) == 1
         assert await hass.config_entries.async_unload(entry.entry_id)
         assert runtime.events._timer is None
+
+
+async def test_option_changes_rebaseline_and_queue_remains_bounded(hass, freezer):
+    freezer.move_to(BASE)
+    entry = demo_entry(["1"])
+    entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(entry, options=event_options())
+    seen = []
+    hass.bus.async_listen(EVENT_NAMESPACE, lambda event: seen.append(event.data))
+    with patch(
+        "custom_components.nascar_race_center.DemoProvider",
+        return_value=provider_mock(),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        old = entry.runtime_data
+        hass.config_entries.async_update_entry(
+            entry, options={**event_options(), "event_top_n": 20}
+        )
+        await hass.async_block_till_done()
+        assert entry.runtime_data is not old
+        assert seen == []
+        runtime = entry.runtime_data
+        # A burst stays bounded and establishes a new baseline at overflow.
+        for second in range(1, 42):
+            freezer.move_to(BASE + timedelta(seconds=second))
+            runtime.live.async_set_updated_data(sample(second, flag="green"))
+            assert len(runtime.events._queue) <= 32
+        await hass.async_block_till_done()
+        assert seen == []
+        await update(hass, freezer, runtime, 60, flag="yellow")
+        assert [event["event_type"] for event in seen] == [EventType.FLAG]
+        assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_renamed_corrupt_ledger_stays_disabled_across_reload(hass, freezer):
+    freezer.move_to(BASE)
+    entry = demo_entry(["1"])
+    entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(entry, options=event_options())
+    with (
+        patch(
+            "custom_components.nascar_race_center.DemoProvider",
+            return_value=provider_mock(),
+        ),
+        patch(
+            "custom_components.nascar_race_center.event_runtime.EventRuntime._ledger_exists",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.nascar_race_center.event_runtime.Store.async_load",
+            return_value=None,
+        ),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        assert entry.runtime_data.events.status == "ledger_error"
+        assert await hass.config_entries.async_reload(entry.entry_id)
+        assert entry.runtime_data.events.status == "ledger_error"
+        assert await hass.config_entries.async_unload(entry.entry_id)

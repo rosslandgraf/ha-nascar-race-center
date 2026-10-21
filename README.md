@@ -1,6 +1,6 @@
 # NASCAR Race Center
 
-A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phase 3B remains private development, with live source validation and release gates outstanding.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
+A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phase 3C remains private development, with live source validation and release gates outstanding.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
 
 The long-term target includes race-weekend schedules, timing/scoring, favorite drivers, championship points, historical analytics, automations and an optional responsive dashboard. See the complete [specification](NASCAR_Race_Center_Codex_Brief.md) and [phased roadmap](ROADMAP.md).
 
@@ -24,7 +24,7 @@ and permission remain unverified. See [Phase 3B evidence](docs/PHASE3B_EVIDENCE.
 - Race leader, reported lap totals/remaining laps and evidence-limited session progress; favorite-driver live sensors independent of the reference directory.
 - Mocked provider and Home Assistant lifecycle tests, Ruff/mypy checks, Hassfest and HACS validation workflows.
 
-Phase 3B adds embedded pit/current-stage observations and conservative standalone scoring adapters; live association of standalone feeds remains blocked where identity/freshness is unproven. Automation events, history/analytics and custom cards remain future phases. The normalized leaderboard is available to integration consumers in memory; a user-facing full-field dashboard/data endpoint is a later deliverable. The [validation report](docs/VALIDATION.md) records precisely which checks ran; configured CI is not a claim that every check passed. Real CF response schemas, cancellation/status fields and timestamp semantics remain unverified; [schema evidence](docs/SCHEMA_EVIDENCE.md) distinguishes community references from current service validation.
+Phase 3B adds embedded pit/current-stage observations and conservative standalone scoring adapters; live association of standalone feeds remains blocked where identity/freshness is unproven. Phase 3C adds opt-in racing events and user-enabled notification/lighting blueprints. History/analytics and custom cards remain future phases. The normalized leaderboard is available to integration consumers in memory; a user-facing full-field dashboard/data endpoint is a later deliverable. The [validation report](docs/VALIDATION.md) records precisely which checks ran; configured CI is not a claim that every check passed. Real CF response schemas, cancellation/status fields and timestamp semantics remain unverified; [schema evidence](docs/SCHEMA_EVIDENCE.md) distinguishes community references from current service validation.
 
 ## Development installation
 
@@ -181,3 +181,14 @@ request. Parsers/models and future provider interfaces remain available. Failure
 of eligible feeds remain independent; server backoff and cache validators apply.
 These defaults do not establish NASCAR polling permission. See [Phase 3B validation](docs/PHASE3B_VALIDATION.md)
 for executed checks, measured request/Recorder budgets and remaining work.
+
+
+## Racing events and automation blueprints
+
+Events are off by default. Enable racing events and individual event types in
+**Configure**, then separately create an automation from the notification or
+optional flag-light blueprint. Setup/reload/reconnect never backfill events.
+One checkered observation denotes completion; official results remain unverified.
+No devices or notifications are controlled by the integration itself.
+See [event contract, reliability limits and blueprint instructions](docs/EVENTS.md)
+and [Phase 3C validation](docs/PHASE3C_VALIDATION.md).

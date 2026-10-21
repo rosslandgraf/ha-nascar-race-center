@@ -122,7 +122,7 @@ def test_invalid_evidence_and_recovery_baseline(changes):
     assert (
         observe(
             engine,
-                sample(30, position=1, **{"flag": "yellow", **changes}),
+            sample(30, position=1, **{"flag": "yellow", **changes}),
             now=BASE + timedelta(seconds=30),
         )
         == ()

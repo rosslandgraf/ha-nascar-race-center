@@ -232,3 +232,37 @@ unchanged samples and one meaningful pit update. Existing IDs, favorite device
 ownership and configuration version remain unchanged; removal recognizes only
 owned metric suffixes. HA unload owns all polling, the live listener and optional
 source-expiry timer, including failed/cancelled setup and late completion.
+
+## Phase 3C event boundary
+
+`events.py` consumes immutable `LiveSnapshot`/`Race` observations, independently
+of provider JSON, HA actions and endpoint selection. `EventPreferences` and
+`RacingEvent` define typed opt-in behavior and the small public payload.
+`EventEngine` has one global live baseline plus bounded durable session clocks,
+progress, completion marks, hashed event IDs and sent-reminder identities.
+Persistence excludes the field, raw data and driver/pit histories. Eviction
+advances replay floors. First/recovered/switched/gapped observations baseline
+silently; unknown/stale/failed/future clocks break continuity. Complete matching
+race/run identity and meaningful changes are required. Missing driver data never
+counts as a top-N crossing. Checkered is a single observed flag-completion event;
+no official results or unsupported scoring transitions are exposed.
+
+`event_runtime.py` owns one live listener, one schedule listener, a bounded
+32-item queue, one serialized async worker, one local reminder timer and a private
+versioned HA Store ledger. It writes replay barriers before bus publication,
+drops pending publication after source loss/switch/unload, and fails closed on
+ledger errors without disabling entities. At-most-once delivery can omit an event
+if HA stops between save and publish; it never replays a catch-up outbox. The
+entry registers cleanup before initial refresh and starts listeners only after
+platform setup succeeds. Reload/unload/failure cancel timers/listeners/tasks;
+entry removal removes only its own ledger. Disabled events attach no listeners,
+start no timer and perform no storage work. Existing polling and CF eligibility
+are unchanged. Reminders use existing fresh schedules with one local deadline.
+
+Blueprints are user-enabled HA automations outside the event engine. The
+notification blueprint invokes only user-chosen actions. The optional lighting
+blueprint snapshots an HA scene and restores it in queued execution before the
+next effect; rapid events cannot cancel restoration. Standard scenes/lights are
+brand-independent. Physical device/HA shutdown limitations and the exact stable
+namespace/payload/retention contract are documented in [EVENTS.md](docs/EVENTS.md).
+The Phase 5 dashboard and its dedicated data interface remain future work.

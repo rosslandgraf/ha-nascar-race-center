@@ -4,7 +4,7 @@ import asyncio
 import logging
 from collections import deque
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -49,6 +49,7 @@ class EventRuntime:
         self._task: asyncio.Task[None] | None = None
         self._stopped = False
         self._epoch = 0
+        self._last_live_key: tuple[int, int, int | None] | None = None
         self.status = "disabled"
         entry.async_on_unload(self.async_shutdown)
 
@@ -57,9 +58,7 @@ class EventRuntime:
         if not self.engine.preferences.enabled:
             return
         try:
-            existed = await self.hass.async_add_executor_job(
-                Path(self.store.path).is_file
-            )
+            existed = await self.hass.async_add_executor_job(self._ledger_exists)
             data = await self.store.async_load()
             if existed and data is None:
                 raise ValueError("Event ledger was empty or corrupt")
@@ -87,6 +86,7 @@ class EventRuntime:
             self.status = "ledger_error"
             self._cancel_timer()
             return
+        self._last_live_key = self.live.data.session_key if self.live.data else None
         self._unsubs = [
             self.live.async_add_listener(self._live_changed),
             self.schedule.async_add_listener(self._schedule_changed),
@@ -95,12 +95,37 @@ class EventRuntime:
 
     def _live_valid(self) -> bool:
         snapshot = self.live.data
-        return snapshot is not None and self.live.view(snapshot.series_id).available
+        return (
+            snapshot is not None
+            and self.live.view(snapshot.series_id).available
+            and snapshot.source_updated_at is not None
+            and snapshot.source_updated_at <= dt_util.utcnow()
+            and snapshot.status == "race"
+            and snapshot.run_id is not None
+            and snapshot.lap is not None
+            and snapshot.flag
+            in {
+                "cold_track",
+                "hot_track",
+                "green",
+                "yellow",
+                "red",
+                "white",
+                "checkered",
+            }
+        )
+
+    def _ledger_exists(self) -> bool:
+        """HA can rename corrupt JSON; keep that loss fail-closed across reloads."""
+        path = Path(self.store.path)
+        return path.is_file() or any(path.parent.glob(f"{path.name}.corrupt.*"))
 
     @callback
     def _live_changed(self) -> None:
-        if not self._live_valid():
+        key = self.live.data.session_key if self.live.data else None
+        if not self._live_valid() or key != self._last_live_key:
             self._epoch += 1
+        self._last_live_key = key
         self._enqueue(True)
 
     @callback
@@ -184,6 +209,8 @@ class EventRuntime:
                         != (event.series_id, event.race_id, event.run_id)
                     ):
                         continue
+                    if not live and not self._reminder_valid(event):
+                        continue
                     self.hass.bus.async_fire(EVENT_NAMESPACE, event.payload())
         finally:
             self._task = None
@@ -192,6 +219,21 @@ class EventRuntime:
         if self._timer is not None:
             self._timer()
             self._timer = None
+
+    def _reminder_valid(self, event: RacingEvent) -> bool:
+        """Schedule failures or rescheduling during disk I/O suppress delivery."""
+        now = dt_util.utcnow()
+        updated = self.schedule.data.updated_at.get(event.series_id)
+        if updated is None or not timedelta(0) <= now - updated <= SCHEDULE_STALE_AFTER:
+            return False
+        return any(
+            race.race_id == event.race_id
+            and race.start_time is not None
+            and race.start_time > now
+            and race.start_time.isoformat() == dict(event.detail).get("scheduled_start")
+            and now - event.source_time <= timedelta(minutes=1)
+            for race in self.schedule.usable_races(event.series_id)
+        )
 
     async def async_shutdown(self) -> None:
         """Stop callbacks and await/cancel in-flight storage work before unload."""

@@ -1,0 +1,73 @@
+blueprint:
+  name: NASCAR Race Center notifications
+  description: >-
+    Notify only for enabled NASCAR Race Center events. Importing this blueprint
+    does not enable integration events. Choose event types and series, then
+    choose your notification action. Checkered means observed completion,
+    never official finalized results. Demo events require a separate opt-in.
+  domain: automation
+  input:
+    series:
+      name: Series IDs
+      default: ['1', '2', '3']
+      selector:
+        select:
+          multiple: true
+          options: ['1', '2', '3']
+    event_types:
+      name: Events to notify
+      default: [upcoming_race, session_started, flag_changed, favorite_lead]
+      selector:
+        select:
+          multiple: true
+          options:
+            - upcoming_race
+            - session_started
+            - flag_changed
+            - lead_changed
+            - favorite_lead
+            - favorite_top_n_entered
+            - favorite_top_n_left
+            - favorite_pit_observed
+    allow_demo:
+      name: Allow offline demonstration events
+      default: false
+      selector:
+        boolean:
+    notify_actions:
+      name: Notification actions
+      description: >-
+        Choose your notification service or another standard action. Templates
+        can use racing_title, racing_message, and racing_event. No action runs
+        until you save and enable this automation.
+      default: []
+      selector:
+        action:
+variables:
+  selected_series: !input series
+  selected_events: !input event_types
+  allow_demo: !input allow_demo
+triggers:
+  - trigger: event
+    event_type: nascar_race_center_event
+conditions:
+  - condition: template
+    value_template: >-
+      {{ trigger.event.data.get('series_id') | string in selected_series
+         and trigger.event.data.get('event_type') in selected_events
+         and (trigger.event.data.get('source') == 'nascar_cf'
+              or (allow_demo and trigger.event.data.get('source') == 'demo')) }}
+actions:
+  - variables:
+      racing_event: '{{ trigger.event.data }}'
+      racing_title: NASCAR Race Center
+      racing_message: >-
+        Series {{ racing_event.series_id }}, race {{ racing_event.race_id }}:
+        {{ racing_event.event_type | replace('_', ' ') }}{% if racing_event.get('driver_id') %}
+        (NASCAR driver {{ racing_event.driver_id }}){% endif %}{% if racing_event.get('flag') %}
+        — {{ racing_event.flag }}{% endif %}{% if racing_event.get('completion') == 'observed' %}
+        (observed completion; results remain provisional){% endif %}.
+  - sequence: !input notify_actions
+mode: queued
+max: 20
+max_exceeded: silent

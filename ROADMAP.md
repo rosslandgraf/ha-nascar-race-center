@@ -1,6 +1,6 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1, 2 and 3A and the observed API package are merged into `main`. Phase 3B starts from `54d7d34`; its 330-test baseline is preserved. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1, 2, 3A and 3B are reviewed and squash-merged into `main`, including the observed API reference package. Phase 3C starts from `219ac5f` and preserves its 429-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
 
@@ -55,7 +55,7 @@ or production deployment is included.
 
 ## Phase 3B — Live pits, stages and reported championship points
 
-**Status:** evidence-limited implementation ready for review. See
+**Status:** reviewed and squash-merged in PR #5; evidence-limited features retain their validation gates. See
 [validation](docs/PHASE3B_VALIDATION.md) and [field/association blockers](docs/PHASE3B_EVIDENCE.md).
 
 **Delivered:** embedded NASCAR-ID pit observations and current stage; normalized
@@ -73,12 +73,24 @@ counts, pit time units, rank movement or official finality.
 Live permission/cadence and active-session acceptance remain open. Readiness for
 code review does not mean those data gates are satisfied.
 
-## Phase 3C — Automation events and notifications — not started
+## Phase 3C — Racing events, notifications and automations
 
-Future work must implement opt-in delivery, persistent deduplication,
-initial-baseline suppression and restart/replay protection before exposing events
-or notification/light blueprints. Phase 3B adds no events or hidden event ledger.
-Historical collection remains Phase 4.
+**Status:** implemented on `phase3c-race-events`, ready for review after the
+[validation checks](docs/PHASE3C_VALIDATION.md). Phases 1–3B remain merged.
+
+**Delivered:** opt-in typed event engine over existing normalized live/schedule
+models; silent setup/restart/reconnect/switch baselines; bounded durable
+high-water marks and event IDs saved before publication; fresh-evidence gates;
+upcoming reminders, verified start, flags, lead/favorite top-N and embedded pit
+observations; one observed checkered completion per session; translated options;
+notification and optional scene-restoring lighting blueprints; synthetic replay
+and actual Home Assistant lifecycle/storage/automation tests.
+
+**Limits:** no official results, retirements, stage finishes or championship
+movement events; no new endpoints or faster polling. Active-session semantics and
+physical-device testing remain unverified. Event publication never directly
+notifies users or controls devices. History acquisition remains Phase 4.
+See [event behavior and blueprint setup](docs/EVENTS.md).
 
 ## Phase 4 — History and analytical views
 
@@ -88,11 +100,11 @@ Historical collection remains Phase 4.
 
 **Acceptance:** fixture-based numerical checks document formulas and sample limits. Unknown and unpublished results differ from network failure. Cross-season/race IDs never collide. No startup bulk history download or accidental unbounded storage.
 
-## Phase 5 — Optional dashboard and Lovelace cards
+## Phase 5 — Premium Dashboard and dedicated data interface
 
 **Depends on:** stable integration models/data-view interface, independent frontend packaging plan, and authorized assets.
 
-**Work:** overview/upcoming weekend, series selector, favorites, sortable leaderboard, flags/stages/pits, standings, history and analytics; accessible controls, keyboard support, tablet/mobile layouts, reduced motion, loading/empty/denied/offline/stale states. Use neutral or user-supplied assets. Document resource registration and version compatibility.
+**Work:** a dedicated authenticated Home Assistant data interface for larger live/history views, plus overview/upcoming weekend, series selector, favorites, sortable leaderboard, flags/stages/pits, standings, history and analytics; accessible controls, keyboard support, tablet/mobile layouts, reduced motion, loading/empty/denied/offline/stale states. Use neutral or user-supplied assets. Document resource registration and version compatibility.
 
 **Acceptance:** browser/accessibility tests and screenshots at phone, desktop and wall-tablet sizes; large data views avoid state-attribute inflation; card distribution and integration distribution validated independently. No media proxying, restricted logos, photos or video included.
 
@@ -116,3 +128,22 @@ Historical collection remains Phase 4.
 | Full HACS validation | Action rejects private repositories | Validate after an explicitly approved public-distribution decision; do not change visibility merely to pass CI |
 | HACS brands requirement | Deferred | Authorized neutral branding submission; remove CI exception |
 | Production/release approval | Not granted | Explicit owner authorization after review |
+
+
+## Persistent final-objective completion checklist
+
+Update this checklist in every phase. Checked items describe implemented code;
+source/live/data-use and release gates above still apply.
+
+- [x] Foundation, offline demonstration, stable IDs and independent coordinators (Phase 1, merged).
+- [x] Multi-series race/session schedules and native calendars (Phase 2, merged; timestamp/status limits documented).
+- [x] Favorite-driver selection, metadata and live timing (Phases 2/3A, merged).
+- [x] Live NASCAR timing, normalized leaderboard and provisional session progress (Phase 3A, merged).
+- [x] Embedded pits/current stage and evidence-gated pit/stage/points models/sensors (Phase 3B, merged).
+- [ ] Validate standalone live pit/stage/points association, completed stops/stages and official results against reliable evidence.
+- [x] Opt-in reliable racing events and notification/lighting blueprint implementation (Phase 3C review branch).
+- [ ] Validate active-session event semantics and physical-device automation behavior.
+- [ ] History & Analytics: on-demand historical results/laps/loop stats, bounded storage and defensible derived metrics (Phase 4).
+- [ ] Premium Dashboard: dedicated data interface, responsive accessible views and separate frontend package (Phase 5).
+- [ ] Beta & Release Readiness: compatibility matrix, beta feedback, translations, diagnostics and release workflows (Phase 6).
+- [ ] HACS-ready distribution: permission/asset review, branding, no validation exceptions, distinct integration/card artifacts and explicit release authorization (Phase 6).

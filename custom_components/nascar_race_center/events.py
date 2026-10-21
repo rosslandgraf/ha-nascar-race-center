@@ -165,7 +165,8 @@ class EventEngine:
     def restore(self, data: dict[str, Any]) -> None:
         """Reject corrupt/future storage rather than silently losing protection."""
         if (
-            data.get("schema") != 1
+            not isinstance(data, dict)
+            or data.get("schema") != 1
             or not isinstance(data.get("sessions"), dict)
             or len(data["sessions"]) > MAX_SESSIONS
             or not isinstance(data.get("ids"), list)
@@ -305,7 +306,11 @@ class EventEngine:
         self._sessions[key] = SessionMark(
             time,
             snapshot.lap,
-            snapshot.elapsed_seconds,
+            snapshot.elapsed_seconds
+            if snapshot.elapsed_seconds is not None
+            else mark.elapsed
+            if mark
+            else None,
             active or bool(mark and mark.started),
             completed or bool(mark and mark.completed),
         )

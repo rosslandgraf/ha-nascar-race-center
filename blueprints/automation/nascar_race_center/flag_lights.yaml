@@ -1,0 +1,108 @@
+blueprint:
+  name: NASCAR Race Center brief flag lights
+  description: >-
+    Optional brand-independent flag effect. Choose color-capable lights; each
+    effect snapshots and restores their prior state before the next effect.
+    Queued execution never cancels restoration. A newer flag ends the current
+    effect early. Queued events older than the effect duration are skipped.
+    Checkered uses neutral white, not an official-results signal. Use one copy
+    per light group and avoid other automations controlling these lights during
+    an effect. Home Assistant must remain running to execute restoration.
+  domain: automation
+  input:
+    lights:
+      name: Lights
+      selector:
+        entity:
+          domain: light
+          multiple: true
+    series:
+      name: Series ID
+      default: '1'
+      selector:
+        select:
+          options: ['1', '2', '3']
+    seconds:
+      name: Maximum effect duration (seconds)
+      default: 3
+      selector:
+        number:
+          min: 1
+          max: 10
+          step: 1
+          mode: box
+    allow_demo:
+      name: Allow offline demonstration events
+      default: false
+      selector:
+        boolean:
+variables:
+  selected_lights: !input lights
+  selected_series: !input series
+  effect_seconds: !input seconds
+  allow_demo: !input allow_demo
+triggers:
+  - trigger: event
+    event_type: nascar_race_center_event
+    event_data:
+      event_type: flag_changed
+conditions:
+  - condition: template
+    value_template: >-
+      {{ trigger.event.data.get('series_id') | string == selected_series
+         and trigger.event.data.get('flag') in ['green', 'yellow', 'red', 'white', 'checkered']
+         and (trigger.event.data.get('source') == 'nascar_cf'
+              or (allow_demo and trigger.event.data.get('source') == 'demo')) }}
+actions:
+  - condition: template
+    value_template: >-
+      {{ 0 <= as_timestamp(now()) - as_timestamp(trigger.event.time_fired) < effect_seconds | float }}
+  - variables:
+      available_lights: >-
+        {{ expand(selected_lights) | rejectattr('state', 'in', ['unavailable', 'unknown'])
+           | map(attribute='entity_id') | list }}
+      snapshot_id: "{{ 'nascar_flag_' ~ this.entity_id.split('.')[1] }}"
+      flag_rgb: >-
+        {{ {'green': [0, 255, 0], 'yellow': [255, 190, 0], 'red': [255, 0, 0],
+            'white': [255, 255, 255], 'checkered': [255, 255, 255]}[trigger.event.data.flag] }}
+  - condition: template
+    value_template: '{{ available_lights | count > 0 }}'
+  # A retained failed-restoration scene must not be overwritten by another run.
+  - condition: template
+    value_template: "{{ expand('scene.' ~ snapshot_id) | count == 0 }}"
+  # Snapshot must succeed before any device command runs.
+  - action: scene.create
+    data:
+      scene_id: '{{ snapshot_id }}'
+      snapshot_entities: '{{ available_lights }}'
+  - action: light.turn_on
+    continue_on_error: true
+    target:
+      entity_id: '{{ available_lights }}'
+    data:
+      rgb_color: '{{ flag_rgb }}'
+      brightness_pct: 70
+      transition: 0
+  - wait_for_trigger:
+      - trigger: event
+        event_type: nascar_race_center_event
+        event_data:
+          event_type: flag_changed
+          series_id: "{{ selected_series | int }}"
+          source: '{{ trigger.event.data.source }}'
+    timeout:
+      seconds: '{{ effect_seconds }}'
+    continue_on_timeout: true
+  # A failed color command still reaches restoration. If restoration fails,
+  # leave the snapshot scene available for manual recovery instead of deleting it.
+  - action: scene.turn_on
+    target:
+      entity_id: "{{ 'scene.' ~ snapshot_id }}"
+    data:
+      transition: 0
+  - action: scene.delete
+    target:
+      entity_id: "{{ 'scene.' ~ snapshot_id }}"
+mode: queued
+max: 10
+max_exceeded: silent
