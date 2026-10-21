@@ -475,3 +475,45 @@ async def test_cursor_replay_and_page_size_change(hass, aioclient_mock, hass_ws_
     second = await call(client, entry, "history", **params, offset=1)
     assert second["result"]["data"]["records"] == data["records"][1:]
     assert aioclient_mock.call_count == 10
+
+
+@pytest.mark.parametrize("phase", ["initial", "continuation"])
+async def test_disconnected_page_worker_retains_global_slot_until_drained(
+    hass, aioclient_mock, hass_ws_client, monkeypatch, phase
+):
+    import threading
+
+    from test_dashboard_websocket import message
+
+    from custom_components.nascar_race_center import dashboard_snapshots as snapshots
+
+    monkeypatch.setattr(snapshots, "MAX_SNAPSHOTS", 1)
+    entry = await prepared(hass, aioclient_mock)
+    first, second = await hass_ws_client(hass), await hass_ws_client(hass)
+    paging = {}
+    if phase == "continuation":
+        result = await call(first, entry, "history", **selection())
+        token = result["result"]["data"]["pagination"]["snapshot"]
+        paging = {"snapshot": token, "offset": 2}
+    started, release = asyncio.Event(), threading.Event()
+    original = snapshots.SnapshotIndex.page
+
+    def blocked(*args):
+        hass.loop.call_soon_threadsafe(started.set)
+        assert release.wait(timeout=5)
+        return original(*args)
+
+    monkeypatch.setattr(snapshots.SnapshotIndex, "page", blocked)
+    await first.send_json_auto_id(message(entry, "history", **selection(), **paging))
+    await started.wait()
+    try:
+        await first.client.close()
+        store = entry.runtime_data.dashboard.snapshots
+        assert len(store.leases) == 1
+        assert next(iter(store.leases.values())).retired
+        result = await call(second, entry, "history", **selection())
+        assert result["error"]["code"] == "snapshot_limit"
+    finally:
+        release.set()
+    await asyncio.gather(*entry.runtime_data.dashboard.requests, return_exceptions=True)
+    assert not store.leases

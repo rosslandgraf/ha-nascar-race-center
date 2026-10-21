@@ -94,6 +94,8 @@ class SnapshotLease:
     index: SnapshotIndex | None = None
     expires: float = 0
     timer: asyncio.TimerHandle | None = None
+    readers: int = 0
+    retired: bool = False
 
 
 class SnapshotStore:
@@ -138,16 +140,23 @@ class SnapshotStore:
     def release(
         self, lease: SnapshotLease, *, remove_subscription: bool = True
     ) -> None:
-        self.leases.pop(lease.token, None)
+        lease.retired = True
         if remove_subscription:
             lease.connection.subscriptions.pop((STORE_KEY, lease.token), None)
         if lease.timer is not None:
             lease.timer.cancel()
-        lease.index = None
+        if not lease.readers:
+            self.leases.pop(lease.token, None)
+            lease.index = None
+
+    def finish_read(self, lease: SnapshotLease) -> None:
+        lease.readers -= 1
+        if lease.retired:
+            self.release(lease)
 
     def get(
         self, token: str, owner: object, connection: ActiveConnection, selection: str
-    ) -> SnapshotIndex:
+    ) -> SnapshotLease:
         lease = self.leases.get(token)
         if (
             lease is None
@@ -156,12 +165,14 @@ class SnapshotStore:
             or lease.user_id != connection.user.id
             or lease.selection != selection
             or lease.index is None
+            or lease.retired
         ):
             raise PageError("snapshot_invalid")
         if self.loop.time() >= lease.expires:
             self.release(lease)
             raise PageError("snapshot_expired")
-        return lease.index
+        lease.readers += 1
+        return lease
 
     def close(self, owner: object) -> None:
         for lease in tuple(self.leases.values()):

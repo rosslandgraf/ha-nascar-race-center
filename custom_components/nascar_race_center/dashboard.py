@@ -337,8 +337,12 @@ class DashboardRuntime:
             sort_keys=True,
         )
         if snapshot is not None:
-            index = self.snapshots.get(snapshot, self, connection, selection)
-            return await self._executor(index.page, snapshot, offset, limit)
+            lease = self.snapshots.get(snapshot, self, connection, selection)
+            try:
+                assert lease.index is not None
+                return await self._executor(lease.index.page, snapshot, offset, limit)
+            finally:
+                self.snapshots.finish_read(lease)
         lease = self.snapshots.reserve(self, connection, selection)
         try:
             return await self._snapshot_data(msg, lease, offset, limit)
@@ -368,7 +372,11 @@ class DashboardRuntime:
             result = await runtime.analytics.async_get(query, datasets)
         index = await self._executor(build_index, result)
         self.snapshots.publish(lease, index)
-        return await self._executor(index.page, lease.token, offset, limit)
+        lease.readers += 1
+        try:
+            return await self._executor(index.page, lease.token, offset, limit)
+        finally:
+            self.snapshots.finish_read(lease)
 
     async def async_close(self, _: object = None) -> None:
         """Unload/reload/shutdown closes sockets' entry work without touching peers."""

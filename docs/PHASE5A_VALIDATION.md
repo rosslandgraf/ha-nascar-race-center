@@ -63,7 +63,8 @@ source availability stays pinned rather than silently acquiring/dropping records
   pointers and metadata allowance. This supports measured 50,000-lap and roughly
   80,000-record analytics streams without enlarging the raw HTTP cache.
 - **300-second fixed lifetime** from completed construction; no sliding renewal.
-  Expiry removes data and its connection cleanup registration. Completed streams
+  Expiry invalidates the token and removes its connection cleanup registration.
+  Active page readers retain the slot until their executor work drains. Completed streams
   remain replayable only for that lifetime. No admission-driven eviction.
 - Disconnect releases only that connection's snapshots. Unload/reload/shutdown
   cancels/drains work and removes the owner's snapshots. Canceled builders retain
@@ -86,7 +87,7 @@ No endpoint, polling timer, historical prefetch, disk archive or formula was add
 
 ## Regression coverage and executed checks
 
-`tests/test_dashboard_pagination.py` adds **27 actual HA WebSocket cases**:
+`tests/test_dashboard_pagination.py` adds **29 actual HA WebSocket cases**:
 
 - Retrieve **every page** with three distinct datasets and with all seven; compare
   the concatenation against independently parsed original fixture record sequences.
@@ -106,7 +107,10 @@ No endpoint, polling timer, historical prefetch, disk archive or formula was add
   over-budget selection and an oversized later row fail explicitly.
 
 Existing tests now target the index worker when testing cancellation drain and
-assert that only the surviving peer's snapshot remains. The Recorder test replays
+assert that only the surviving peer's snapshot remains. Further disconnect cases
+block initial-page and continuation workers and proves that the global slot remains reserved
+until that reader drains, preventing replacement admissions from exceeding the
+index memory budget. The Recorder test replays
 its two pinned history/analytics tokens, verifying **zero new Recorder rows** for
 20 reads plus a live subscription. Inherited tests continue covering concurrent
 service sharing, blocked-request cancellation, stop/unload/reload, authentication,
@@ -116,15 +120,15 @@ its calls were corrected to follow the bounded token lifecycle, then rerun.
 
 | Check | Actual result |
 | --- | --- |
-| Focused pagination tests | **27 passed in 7.24 s** |
-| Full pytest suite | **1,004 passed in 52.48 s**; original 977 plus 27 new WebSocket cases |
+| Focused pagination tests | **29 passed in 6.99 s** |
+| Full pytest suite | **1,006 passed in 50.90 s**; original 977 plus 29 new WebSocket cases |
 | Ruff lint / formatting | Passed after correction |
 | Strict mypy | Passed; **44** integration source files |
 | Official HA **2026.10.2** Hassfest | Passed; **1 integration, 0 invalid** |
 | Independent prepared HA runtime smoke | **1 passed in 0.23 s**; independent REST/state/service smoke, not a NASCAR test |
 | `hass --script check_config` | Passed; exit zero |
 | `git diff --check` | Passed |
-| Hosted GitHub Actions | Correction push triggers existing workflows; hosted results appended after completion |
+| Hosted GitHub Actions | **3b731c5**: [Tests and quality](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39679334392) and [Integration validation](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39679334356) passed; final follow-up head results are in PR #11 checks and the delivery report |
 | HACS | Existing private-repository conditional skip/brands exception retained; no full HACS approval |
 | NASCAR / production / visual frontend | No network access, deployment or frontend work |
 

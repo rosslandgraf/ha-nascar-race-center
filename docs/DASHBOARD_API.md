@@ -204,7 +204,8 @@ existing HTTP freshness/cache/floor rules permit. Partial/unavailable source sta
 remain explicit and pinned too; snapshot completion does not assert source coverage.
 
 Snapshots expire **300 seconds after construction**, without sliding renewal, and
-are removed on disconnect, unload, reload or shutdown. Completed snapshots remain
+are invalidated on disconnect, unload, reload or shutdown. Any active page worker
+keeps its slot reserved until it drains, including after expiry/disconnect. Completed snapshots remain
 replayable within that lifetime. Tokens cannot move between connections, users or
 entries. Expired/released/modified/wrong-selection tokens return `snapshot_invalid`
 (or `snapshot_expired` if expiry is detected before its cleanup callback); restart
