@@ -11,12 +11,16 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from .const import (
+    CONF_APPROACHING_INTERVAL,
     CONF_DATA_USE_AUTHORIZED,
     CONF_FAVORITE_DRIVERS,
     CONF_LIVE_INTERVAL,
+    CONF_POLLING_POLICY,
     CONF_PROVIDER,
     CONF_SERIES,
+    DEFAULT_APPROACHING_INTERVAL,
     DEFAULT_LIVE_INTERVAL,
+    DEFAULT_POLLING_POLICY,
     DEFAULT_SERIES,
     DOMAIN,
     FAVORITE_LIVE_METRICS,
@@ -31,6 +35,7 @@ from .coordinator import LiveCoordinator, ScheduleCoordinator
 from .event_runtime import EventRuntime
 from .events import EventPreferences
 from .favorites import FavoriteDriverRegistry
+from .polling_storage import LiveRequestGuard
 from .provider import CFProvider, DemoProvider, RaceProvider
 from .reference_coordinator import ReferenceCoordinator
 from .reference_provider import (
@@ -90,6 +95,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
         or not MIN_LIVE_INTERVAL <= live_interval <= MAX_LIVE_INTERVAL
     ):
         raise ConfigEntryError("Live polling interval must be 300 to 3600 seconds")
+    polling_policy = options.get(CONF_POLLING_POLICY, DEFAULT_POLLING_POLICY)
+    approaching_interval = options.get(
+        CONF_APPROACHING_INTERVAL, DEFAULT_APPROACHING_INTERVAL
+    )
+    if (
+        polling_policy not in ("conservative", "adaptive")
+        or type(approaching_interval) is not int
+        or not 30 <= approaching_interval <= 60
+    ):
+        raise ConfigEntryError(
+            "Select a valid live polling policy and approaching interval"
+        )
     try:
         favorites = FavoriteDriverRegistry(options.get(CONF_FAVORITE_DRIVERS, []))
     except ValueError as err:
@@ -102,7 +119,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
     reference_provider: ReferenceProvider
     scoring_provider: ScoringProvider
     if provider_name == PROVIDER_CF:
-        cf_provider = CFProvider(async_get_clientsession(hass))
+        previous = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+        if isinstance(previous, CFProvider):
+            # Keep the shared response cache/cooldowns through a normal reload.
+            # A real restart restores only the compact request reservation.
+            cf_provider = previous
+        else:
+            cf_provider = CFProvider(async_get_clientsession(hass))
+            guard = LiveRequestGuard(hass, entry.entry_id)
+            await guard.async_load()
+            cf_provider.api.live_guard = guard
+            hass.data.setdefault(DOMAIN, {})[entry.entry_id] = cf_provider
         provider = cf_provider
         reference_provider = CFReferenceProvider(cf_provider.api)
         scoring_provider = CFScoringProvider(cf_provider.api)
@@ -111,7 +138,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
         reference_provider = DemoReferenceProvider()
         scoring_provider = DemoScoringProvider()
     schedule = ScheduleCoordinator(hass, entry, provider, series)
-    live = LiveCoordinator(hass, entry, provider, schedule, live_interval)
+    live = LiveCoordinator(
+        hass,
+        entry,
+        provider,
+        schedule,
+        live_interval,
+        polling_policy=polling_policy,
+        approaching_interval=approaching_interval,
+    )
     reference = ReferenceCoordinator(hass, entry, reference_provider)
     scoring = ScoringCoordinator(hass, entry, scoring_provider, live)
     events = EventRuntime(hass, entry, live, schedule, event_preferences, provider_name)
@@ -207,4 +242,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> b
 
 async def async_remove_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> None:
     """Removing the installation removes its compact event ledger too."""
+    hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
     await Store(hass, 1, f"{DOMAIN}.{entry.entry_id}.events").async_remove()
+    await Store(hass, 1, f"{DOMAIN}.{entry.entry_id}.live_polling").async_remove()

@@ -11,6 +11,7 @@ from collections.abc import Mapping
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
+from typing import TYPE_CHECKING
 
 from aiohttp import ClientError, ClientSession, ClientTimeout
 
@@ -23,7 +24,16 @@ from .endpoints import (
     LIVE_STAGES,
     TRACKS,
 )
-from .models import AccessDeniedError, ProviderError, RateLimitedError, SchemaError
+from .models import (
+    AccessDeniedError,
+    PollingDeferred,
+    ProviderError,
+    RateLimitedError,
+    SchemaError,
+)
+
+if TYPE_CHECKING:
+    from .polling_storage import LiveRequestGuard
 
 _MAX_RESPONSE_BYTES = 2 * 1024 * 1024
 _MAX_CACHE_ENTRIES = 6
@@ -58,6 +68,8 @@ class _RequestDiagnostic:
     http_status: int | None = None
     json_status: str = "not_checked"
     response_at: str | None = None
+    attempt_at: str | None = None
+    successful_response_at: str | None = None
 
 
 @dataclass(slots=True)
@@ -122,8 +134,10 @@ def _cache_policy(headers: Mapping[str, str], minimum_ttl: float) -> tuple[bool,
         age = max(0, age) if math.isfinite(age) else 0
     except ValueError:
         age = 0
-    # An unreasonable upstream lifetime must not keep in-memory data forever.
-    return True, max(0, min(lifetime - age, 86400))
+    if date := _http_date(headers.get("Date")):
+        age = max(age, (datetime.now(UTC) - date).total_seconds())
+    # Never shorten an upstream freshness lifetime to an internal cache cap.
+    return True, max(0, lifetime - age)
 
 
 class NascarApiClient:
@@ -149,6 +163,20 @@ class NascarApiClient:
         self._retry_at = 0.0
         self._failures: OrderedDict[str, int] = OrderedDict()
         self._cooldowns: OrderedDict[str, tuple[float, int | None]] = OrderedDict()
+        self._request_deadlines: OrderedDict[str, float] = OrderedDict()
+        self.live_guard: LiveRequestGuard | None = None
+
+    def request_delay(self, path: str) -> float:
+        """Earliest eligible network read, including cache and all throttle layers."""
+        cached = self._cache.get(path)
+        return max(
+            0,
+            (cached.expires_at if cached else 0) - _monotonic(),
+            self._request_deadlines.get(path, 0) - _monotonic(),
+            self._cooldowns.get(path, (0, None))[0] - _monotonic(),
+            self._retry_at - _monotonic(),
+            self.live_guard.remaining if path == LIVE_FEED and self.live_guard else 0,
+        )
 
     def _record(self, path: str, result: _RequestDiagnostic) -> None:
         """Bound diagnostics separately from cached bodies and retry metadata."""
@@ -181,7 +209,9 @@ class NascarApiClient:
         error = RateLimitedError if status == 429 else ProviderError
         return error(message, retry_after=delay, status=status)
 
-    async def async_get_json(self, path: str, *, minimum_ttl: float = 0) -> object:
+    async def async_get_json(
+        self, path: str, *, minimum_ttl: float = 0, minimum_interval: float = 0
+    ) -> object:
         """Fetch an allowlisted CF JSON document, with one in-flight request."""
         if (
             path
@@ -227,13 +257,44 @@ class NascarApiClient:
                     retry_after=remaining,
                     status=status,
                 )
+            remaining = max(
+                0,
+                self._request_deadlines.get(path, 0) - _monotonic(),
+                self.live_guard.remaining
+                if path == LIVE_FEED and self.live_guard
+                else 0,
+            )
+            if remaining > 0:
+                self._record(
+                    path,
+                    replace(
+                        self._diagnostics.get(path, _RequestDiagnostic()),
+                        delivery="cache" if cached else "cooldown",
+                    ),
+                )
+                if cached is not None:
+                    return cached.payload
+                raise PollingDeferred(
+                    "Live request interval is reserved", retry_after=remaining
+                )
+            if path == LIVE_FEED and self.live_guard is not None:
+                await self.live_guard.async_reserve(minimum_interval)
+            if minimum_interval:
+                self._request_deadlines[path] = _monotonic() + minimum_interval
+                self._request_deadlines.move_to_end(path)
+                while len(self._request_deadlines) > 24:
+                    self._request_deadlines.popitem(last=False)
             headers = {"Accept": "application/json"}
             if cached is not None:
                 if cached.etag is not None:
                     headers["If-None-Match"] = cached.etag
                 if cached.last_modified is not None:
                     headers["If-Modified-Since"] = cached.last_modified
-            result = _RequestDiagnostic()
+            previous = self._diagnostics.get(path, _RequestDiagnostic())
+            result = _RequestDiagnostic(
+                attempt_at=datetime.now(UTC).isoformat(),
+                successful_response_at=previous.successful_response_at,
+            )
             try:
                 async with self._session.get(
                     f"{BASE_URL}{path}",
@@ -241,7 +302,8 @@ class NascarApiClient:
                     timeout=ClientTimeout(total=15),
                     allow_redirects=False,
                 ) as response:
-                    result = _RequestDiagnostic(
+                    result = replace(
+                        result,
                         transport="response",
                         http_status=response.status,
                         response_at=datetime.now(UTC).isoformat(),
@@ -253,7 +315,9 @@ class NascarApiClient:
                                 "Received 304 without a cached response", status=304
                             )
                         cache_headers = dict(cached.cache_headers)
-                        for name in ("Cache-Control", "Expires", "Age"):
+                        for name in ("Age", "Date"):
+                            cache_headers.pop(name, None)
+                        for name in ("Cache-Control", "Expires", "Age", "Date"):
                             if name in response.headers:
                                 cache_headers[name] = response.headers[name]
                         store, ttl = _cache_policy(cache_headers, minimum_ttl)
@@ -267,6 +331,10 @@ class NascarApiClient:
                             del self._cache[path]
                         self._failures.pop(path, None)
                         self._cooldowns.pop(path, None)
+                        result = replace(
+                            result, successful_response_at=result.response_at
+                        )
+                        await self._async_response_guard(path, ttl, response.headers)
                         self._record(
                             path,
                             replace(
@@ -279,6 +347,7 @@ class NascarApiClient:
                             path,
                             "Anonymous CF endpoint access was denied",
                             response.status,
+                            _retry_after(response.headers.get("Retry-After")),
                         )
                         raise AccessDeniedError(
                             "Anonymous CF endpoint access was denied",
@@ -317,7 +386,12 @@ class NascarApiClient:
                         raise SchemaError(
                             "CF endpoint did not return valid JSON", status=200
                         ) from err
-                    self._record(path, replace(result, json_status="valid"))
+                    result = replace(
+                        result,
+                        json_status="valid",
+                        successful_response_at=result.response_at,
+                    )
+                    self._record(path, result)
                     store, ttl = _cache_policy(response.headers, minimum_ttl)
                     if store:
                         self._cache[path] = _CacheEntry(
@@ -327,7 +401,7 @@ class NascarApiClient:
                             response.headers.get("Last-Modified"),
                             {
                                 name: response.headers[name]
-                                for name in ("Cache-Control", "Expires", "Age")
+                                for name in ("Cache-Control", "Expires", "Age", "Date")
                                 if name in response.headers
                             },
                         )
@@ -338,12 +412,32 @@ class NascarApiClient:
                         self._cache.pop(path, None)
                     self._failures.pop(path, None)
                     self._cooldowns.pop(path, None)
+                    await self._async_response_guard(path, ttl, response.headers)
                     return payload
             except asyncio.CancelledError:
                 self._record(path, replace(result, delivery="cancelled"))
                 raise
             except (ClientError, TimeoutError) as err:
                 self._record(path, replace(result, transport="connection_error"))
-                raise self._failure(
-                    path, "Unable to reach the CF endpoint", None
-                ) from err
+                error = self._failure(path, "Unable to reach the CF endpoint", None)
+                await self._async_failure_guard(path, error)
+                raise error from err
+            except ProviderError as err:
+                if isinstance(err, SchemaError):
+                    error = self._failure(path, str(err), err.status)
+                    err.retry_after = error.retry_after
+                await self._async_failure_guard(path, err)
+                raise
+
+    async def _async_failure_guard(self, path: str, error: ProviderError) -> None:
+        if self.live_guard is not None and (path == LIVE_FEED or error.status == 429):
+            await self.live_guard.async_reserve(max(0, error.retry_after or 0))
+
+    async def _async_response_guard(
+        self, path: str, ttl: float, headers: Mapping[str, str]
+    ) -> None:
+        delay = _retry_after(headers.get("Retry-After"))
+        if delay:
+            self._cooldowns[path] = (_monotonic() + delay, None)
+        if path == LIVE_FEED and self.live_guard is not None:
+            await self.live_guard.async_reserve(max(ttl, delay))

@@ -40,6 +40,10 @@ class RateLimitedError(ProviderError):
     """The provider requested a pause before another request."""
 
 
+class PollingDeferred(ProviderError):
+    """A persisted request slot has not expired; no network failure occurred."""
+
+
 @dataclass(frozen=True, slots=True)
 class Session:
     """A scheduled session; an unknown end is never an estimated duration.

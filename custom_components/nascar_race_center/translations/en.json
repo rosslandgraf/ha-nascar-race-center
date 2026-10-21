@@ -15,14 +15,19 @@
           "event_types": "Race events",
           "favorite_event_types": "Favorite-driver events",
           "event_top_n": "Favorite top position threshold (1–40)",
-          "reminder_minutes": "Remind before scheduled race start (minutes)"
+          "reminder_minutes": "Remind before scheduled race start (minutes)",
+          "live_polling_policy": "Live polling policy",
+          "approaching_interval": "Approaching session interval (30–60 seconds)"
         },
         "data_description": {
           "favorite_drivers": "Optional numeric NASCAR driver IDs. Choose favorites by name in options after the directory loads. Use NASCAR IDs, not car numbers; demonstration driver IDs are fictional.",
           "racing_events": "Off by default. Events only reach Home Assistant’s event bus. Enable an automation blueprint separately for notifications or lights.",
           "event_types": "Choose each event you want. A checkered flag means observed completion, not official final results. Starts require an observed lap-zero to green transition.",
           "favorite_event_types": "Applies to the saved favorite NASCAR driver IDs. Missing drivers never count as top-position changes. Pit observations require embedded lap and entry-clock evidence.",
-          "reminder_minutes": "Only known offset-aware scheduled starts qualify. Setup inside a reminder window and recovered outages do not send catch-up reminders."
+          "reminder_minutes": "Only known offset-aware scheduled starts qualify. Setup inside a reminder window and recovered outages do not send catch-up reminders.",
+          "live_polling_policy": "Adaptive timing supports 10-second offline/synthetic updates. CF retains its conservative cadence until permitted limits are independently verified; this option grants no NASCAR permission.",
+          "approaching_interval": "Used for adaptive discovery within 30 minutes of a verified scheduled start. Provider and server limits take precedence.",
+          "live_interval": "Conservative polling minimum (300–3600 seconds). Adaptive offline/synthetic mode uses its session targets. CF always retains this minimum and its existing schedule windows."
         }
       }
     },
@@ -32,7 +37,9 @@
       "invalid_provider": "Select a supported data source.",
       "invalid_interval": "Enter a whole number from 300 to 3600 seconds.",
       "invalid_favorite_drivers": "Select up to 50 drivers or enter positive numeric NASCAR driver IDs.",
-      "invalid_events": "Choose supported events and whole numbers: top position 1–40, reminder 1–1440 minutes."
+      "invalid_events": "Choose supported events and whole numbers: top position 1–40, reminder 1–1440 minutes.",
+      "invalid_polling_policy": "Select a supported polling policy.",
+      "invalid_approaching_interval": "Choose an integer from 30 to 60 seconds."
     },
     "abort": {
       "already_configured": "NASCAR Race Center is already configured. Use its options to change your selections."
@@ -53,14 +60,19 @@
           "event_types": "Race events",
           "favorite_event_types": "Favorite-driver events",
           "event_top_n": "Favorite top position threshold (1–40)",
-          "reminder_minutes": "Remind before scheduled race start (minutes)"
+          "reminder_minutes": "Remind before scheduled race start (minutes)",
+          "live_polling_policy": "Live polling policy",
+          "approaching_interval": "Approaching session interval (30–60 seconds)"
         },
         "data_description": {
           "favorite_drivers": "Names and metadata are cached reference data. CF setup makes no request while this form is open; its searchable directory becomes available in options after setup. Use NASCAR driver IDs, not car numbers. Demo-prefixed choices use fictional IDs; changing sources preserves your selected IDs for review.",
           "racing_events": "Off by default. Events only reach Home Assistant’s event bus. Enable an automation blueprint separately for notifications or lights.",
           "event_types": "Choose each event you want. A checkered flag means observed completion, not official final results. Starts require an observed lap-zero to green transition.",
           "favorite_event_types": "Applies to the saved favorite NASCAR driver IDs. Missing drivers never count as top-position changes. Pit observations require embedded lap and entry-clock evidence.",
-          "reminder_minutes": "Only known offset-aware scheduled starts qualify. Setup inside a reminder window and recovered outages do not send catch-up reminders."
+          "reminder_minutes": "Only known offset-aware scheduled starts qualify. Setup inside a reminder window and recovered outages do not send catch-up reminders.",
+          "live_polling_policy": "Adaptive timing supports 10-second offline/synthetic updates. CF retains its conservative cadence until permitted limits are independently verified; this option grants no NASCAR permission.",
+          "approaching_interval": "Used for adaptive discovery within 30 minutes of a verified scheduled start. Provider and server limits take precedence.",
+          "live_interval": "Conservative polling minimum (300–3600 seconds). Adaptive offline/synthetic mode uses its session targets. CF always retains this minimum and its existing schedule windows."
         }
       }
     },
@@ -70,7 +82,9 @@
       "invalid_provider": "Select a supported data source.",
       "invalid_interval": "Enter a whole number from 300 to 3600 seconds.",
       "invalid_favorite_drivers": "Select up to 50 drivers or enter positive numeric NASCAR driver IDs.",
-      "invalid_events": "Choose supported events and whole numbers: top position 1–40, reminder 1–1440 minutes."
+      "invalid_events": "Choose supported events and whole numbers: top position 1–40, reminder 1–1440 minutes.",
+      "invalid_polling_policy": "Select a supported polling policy.",
+      "invalid_approaching_interval": "Choose an integer from 30 to 60 seconds."
     }
   },
   "entity": {
@@ -185,6 +199,12 @@
         "favorite_top_n_entered": "Favorite enters top positions",
         "favorite_top_n_left": "Favorite leaves top positions",
         "favorite_pit_observed": "Favorite pit observation"
+      }
+    },
+    "live_polling_policy": {
+      "options": {
+        "conservative": "Conservative (existing cadence)",
+        "adaptive": "Adaptive (subject to provider limits)"
       }
     }
   }

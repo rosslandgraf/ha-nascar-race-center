@@ -13,12 +13,16 @@ from homeassistant.core import callback
 from homeassistant.helpers import selector
 
 from .const import (
+    CONF_APPROACHING_INTERVAL,
     CONF_DATA_USE_AUTHORIZED,
     CONF_FAVORITE_DRIVERS,
     CONF_LIVE_INTERVAL,
+    CONF_POLLING_POLICY,
     CONF_PROVIDER,
     CONF_SERIES,
+    DEFAULT_APPROACHING_INTERVAL,
     DEFAULT_LIVE_INTERVAL,
+    DEFAULT_POLLING_POLICY,
     DEFAULT_SERIES,
     DOMAIN,
     MAX_LIVE_INTERVAL,
@@ -139,6 +143,21 @@ def _schema(
                 )
             ),
             probatio.Required(
+                CONF_POLLING_POLICY,
+                default=values.get(CONF_POLLING_POLICY, DEFAULT_POLLING_POLICY),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["conservative", "adaptive"],
+                    translation_key="live_polling_policy",
+                )
+            ),
+            probatio.Required(
+                CONF_APPROACHING_INTERVAL,
+                default=values.get(
+                    CONF_APPROACHING_INTERVAL, DEFAULT_APPROACHING_INTERVAL
+                ),
+            ): probatio.All(probatio.Coerce(int), probatio.Range(min=30, max=60)),
+            probatio.Required(
                 "racing_events", default=values.get("racing_events", False)
             ): selector.BooleanSelector(),
             probatio.Optional(
@@ -214,6 +233,14 @@ def _validate(values: dict[str, Any]) -> dict[str, str]:
     ):
         return {CONF_DATA_USE_AUTHORIZED: "authorization_required"}
     favorites = values.get(CONF_FAVORITE_DRIVERS, [])
+    if values.get(CONF_POLLING_POLICY, DEFAULT_POLLING_POLICY) not in (
+        "conservative",
+        "adaptive",
+    ):
+        return {CONF_POLLING_POLICY: "invalid_polling_policy"}
+    approaching = values.get(CONF_APPROACHING_INTERVAL, DEFAULT_APPROACHING_INTERVAL)
+    if type(approaching) is not int or not 30 <= approaching <= 60:
+        return {CONF_APPROACHING_INTERVAL: "invalid_approaching_interval"}
     try:
         if not isinstance(favorites, list):
             raise ValueError("Favorite drivers must be a list")

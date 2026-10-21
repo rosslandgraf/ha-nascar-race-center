@@ -174,7 +174,7 @@ async def test_conditional_live_cache_retains_source_time_and_reported_field():
         initial = await provider.async_get_live()
         cached = await provider.async_get_live()
     assert session.get.call_count == 1
-    with patch("custom_components.nascar_race_center.api._monotonic", return_value=200):
+    with patch("custom_components.nascar_race_center.api._monotonic", return_value=400):
         revalidated = await provider.async_get_live()
     assert session.get.call_count == 2
     assert (
