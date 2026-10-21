@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
 
@@ -102,9 +103,7 @@ class ScoringCoordinator(DataUpdateCoordinator[ScoringData]):
         )
 
     @callback
-    def _schedule_expiry(self) -> None:
-        from homeassistant.helpers.event import async_track_point_in_utc_time
-
+    def _schedule_expiry(self, data: ScoringData | None = None) -> None:
         if self._unsub_expiry is not None:
             self._unsub_expiry()
             self._unsub_expiry = None
@@ -113,7 +112,7 @@ class ScoringCoordinator(DataUpdateCoordinator[ScoringData]):
         now = dt_util.utcnow()
         deadlines = [
             feed.provenance.source_updated_at + timedelta(minutes=15, seconds=1)
-            for feed in self.data.feeds.values()
+            for feed in (data or self.data).feeds.values()
             if feed.provenance.source_updated_at is not None
             and feed.provenance.source_updated_at.utcoffset() is not None
             and feed.provenance.source_updated_at <= now + timedelta(minutes=5)
@@ -163,7 +162,5 @@ class ScoringCoordinator(DataUpdateCoordinator[ScoringData]):
             else SCORING_IDLE_INTERVAL
         )
         result = ScoringData(feeds, frozenset(failed), errors)
-        # Schedule against the new data before the coordinator publishes it.
-        self.data = result
-        self._schedule_expiry()
+        self._schedule_expiry(result)
         return result

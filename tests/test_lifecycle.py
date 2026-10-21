@@ -33,10 +33,13 @@ async def assert_quiet(hass: HomeAssistant, runtime: RuntimeData) -> None:
     schedule, live, reference = runtime.schedule, runtime.live, runtime.reference
     assert schedule._unsub_boundary is None
     assert live._unsub_source_expiry is None
+    assert runtime.scoring._unsub_expiry is None
     with (
         patch.object(schedule, "async_update_listeners") as schedule_update,
         patch.object(live, "async_update_listeners") as live_update,
         patch.object(reference, "async_update_listeners") as reference_update,
+        patch.object(runtime.scoring, "async_update_listeners") as scoring_update,
+        patch.object(runtime.scoring.provider, "async_get_scoring") as get_scoring,
         patch.object(reference.provider, "async_get_drivers") as get_drivers,
         patch.object(reference.provider, "async_get_tracks") as get_tracks,
     ):
@@ -44,6 +47,7 @@ async def assert_quiet(hass: HomeAssistant, runtime: RuntimeData) -> None:
         await schedule.async_request_refresh()
         await live.async_request_refresh()
         await reference.async_request_refresh()
+        await runtime.scoring.async_request_refresh()
         future = dt_util.utcnow() + timedelta(hours=7)
         with patch(
             "custom_components.nascar_race_center.coordinator.dt_util.utcnow",
@@ -54,6 +58,8 @@ async def assert_quiet(hass: HomeAssistant, runtime: RuntimeData) -> None:
         schedule_update.assert_not_called()
         live_update.assert_not_called()
         reference_update.assert_not_called()
+        scoring_update.assert_not_called()
+        get_scoring.assert_not_called()
         get_drivers.assert_not_called()
         get_tracks.assert_not_called()
     assert schedule._unsub_boundary is None
@@ -124,7 +130,7 @@ async def test_failed_setup_cancels_both_armed_timers(
     provider.async_get_live.assert_not_awaited()
 
 
-@pytest.mark.parametrize("kind", ["schedule", "live", "reference"])
+@pytest.mark.parametrize("kind", ["schedule", "live", "reference", "scoring"])
 async def test_inflight_refresh_cannot_rearm_timer_after_unload(
     hass: HomeAssistant, kind: str
 ) -> None:
@@ -139,7 +145,10 @@ async def test_inflight_refresh_cannot_rearm_timer_after_unload(
         await hass.async_block_till_done()
     runtime = entry.runtime_data
     started, release = asyncio.Event(), asyncio.Event()
-    if kind == "reference":
+    if kind == "scoring":
+        method = AsyncMock(return_value=None)
+        runtime.scoring.provider.async_get_scoring = method
+    elif kind == "reference":
         method = AsyncMock(return_value=())
         runtime.reference.provider.async_get_drivers = method
     else:

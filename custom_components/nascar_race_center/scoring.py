@@ -74,8 +74,8 @@ def parse_embedded_pits(payload: object) -> tuple[PitStop, ...]:
     rows = _rows(payload, 1000)
     return tuple(
         PitStop(
-            lap=_count(row.get("pit_in_lap_count")),
-            leader_lap=_count(row.get("pit_in_leader_lap")),
+            lap=_count(row.get("pit_in_lap_count"), positive=True),
+            leader_lap=_count(row.get("pit_in_leader_lap"), positive=True),
             entry_time=_physical(row.get("pit_in_elapsed_time")),
             exit_time=_physical(row.get("pit_out_elapsed_time")),
             entry_position=_count(row.get("pit_in_rank"), positive=True),
@@ -187,7 +187,8 @@ class ScoringFeed:
     classification: Literal["provisional"] = field(default="provisional", init=False)
 
     def driver_points(self, driver_id: int) -> DriverPoints | None:
-        return next((row for row in self.points if row.driver_id == driver_id), None)
+        rows = [row for row in self.points if row.driver_id == driver_id]
+        return rows[0] if len(rows) == 1 else None
 
 
 def _rows(payload: object, limit: int) -> list[dict[str, object]]:
@@ -212,8 +213,8 @@ def parse_pit_feed(payload: object, provenance: Provenance) -> ScoringFeed:
             car_number=_text(row.get("vehicle_number")),
             driver_name=_text(row.get("driver_name")),
             stop=PitStop(
-                _count(row.get("lap_count")),
-                _count(row.get("leader_lap")),
+                _count(row.get("lap_count"), positive=True),
+                _count(row.get("leader_lap"), positive=True),
                 _physical(row.get("pit_in_race_time")),
                 _physical(row.get("pit_out_race_time")),
                 _count(row.get("pit_in_rank"), positive=True),
