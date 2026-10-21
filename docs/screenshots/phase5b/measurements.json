@@ -1,0 +1,7 @@
+{
+  "first_render_ms": 6.300000000046566,
+  "data_ready_ms": 871.3000000000466,
+  "update_mean_ms": 1.8650000000023284,
+  "update_max_ms": 28.600000000093132,
+  "rendered_rows": 100
+}

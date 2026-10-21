@@ -211,3 +211,15 @@ The regular demo remains offline with an empty live feed; synthetic tests measur
 the faster path. Server caching, Retry-After, source clocks and restart request
 reservations can lengthen intervals. See [POLLING.md](docs/POLLING.md) for exact
 evidence gates, diagnostics, budgets and the future verified-permission process.
+
+
+### Optional Phase 5B Lovelace dashboard
+
+The separate [NASCAR Race Center card](frontend/README.md) adds Race Center,
+Live Timing, Race Weekend, History and Analytics through the authenticated
+administrator-only dashboard API v1. See [manual local installation and card
+configuration](docs/FRONTEND.md) and [validation with actual-card screenshots](docs/PHASE5B_VALIDATION.md).
+It has its own reproducible build/versioned JS bundle; the existing integration
+HACS package does not automatically install or register a dashboard plugin.
+The offline provider remains clearly simulated; current timing appears only
+when a source supplies fresh matching observations.
