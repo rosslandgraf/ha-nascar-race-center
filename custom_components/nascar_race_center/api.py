@@ -26,6 +26,16 @@ _SESSION_PATH = re.compile(r"/cacher/[0-9]{4}/[123]/schedule-feed\.json")
 _monotonic = time.monotonic
 
 
+def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Reject ambiguous keys before they can overwrite series/driver identity."""
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Duplicate JSON object key")
+        result[key] = value
+    return result
+
+
 @dataclass(slots=True)
 class _CacheEntry:
     payload: object
@@ -227,7 +237,9 @@ class NascarApiClient:
                         if len(body) > _MAX_RESPONSE_BYTES:
                             raise SchemaError("CF response exceeded the size limit")
                     try:
-                        payload: object = json.loads(body)
+                        payload: object = json.loads(
+                            body, object_pairs_hook=_unique_object
+                        )
                     except (ValueError, UnicodeDecodeError) as err:
                         raise SchemaError(
                             "CF endpoint did not return valid JSON"

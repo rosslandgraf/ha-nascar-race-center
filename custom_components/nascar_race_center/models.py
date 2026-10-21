@@ -8,6 +8,8 @@ from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from hashlib import sha256
 
+from .timing import Leaderboard, parse_leaderboard
+
 
 class ProviderError(Exception):
     """An upstream failure safe to expose without raw response/credential data."""
@@ -80,7 +82,21 @@ class LiveSnapshot:
     flag: str | None = None
     lap: int | None = None
     source_updated_at: datetime | None = None
-    observed_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    observed_at: datetime = field(
+        default_factory=lambda: datetime.now(UTC), compare=False
+    )
+    run_id: int | None = None
+    run_name: str | None = None
+    total_laps: int | None = None
+    laps_remaining: int | None = None
+    elapsed_seconds: int | None = None
+    leaderboard: Leaderboard | None = None
+    leaderboard_failed: bool = False
+
+    @property
+    def session_key(self) -> tuple[int, int, int | None]:
+        """Reported run identity; missing run IDs do not become invented IDs."""
+        return self.series_id, self.race_id, self.run_id
 
 
 def _integer(value: object, *, positive: bool = False) -> int | None:
@@ -342,6 +358,15 @@ def parse_live(payload: object) -> LiveSnapshot | None:
     run_types = {1: "practice", 2: "qualifying", 3: "race"}
     run_type = _integer(payload.get("run_type"))
     flag_state = _integer(payload.get("flag_state"))
+    run_name = _text(payload.get("run_name"))
+    leaderboard = None
+    leaderboard_failed = False
+    if "vehicles" in payload:
+        try:
+            leaderboard = parse_leaderboard(payload["vehicles"])
+        except ValueError:
+            # Optional scoring drift cannot discard independent flag/lap data.
+            leaderboard_failed = True
     return LiveSnapshot(
         series_id=series_id,
         race_id=race_id,
@@ -349,4 +374,11 @@ def parse_live(payload: object) -> LiveSnapshot | None:
         flag=flags.get(flag_state) if flag_state is not None else None,
         lap=_integer(payload.get("lap_number")),
         source_updated_at=_timestamp(payload.get("time_of_day_os")),
+        run_id=_integer(payload.get("run_id"), positive=True),
+        run_name=run_name[:160] if run_name is not None else None,
+        total_laps=_integer(payload.get("laps_in_race"), positive=True),
+        laps_remaining=_integer(payload.get("laps_to_go")),
+        elapsed_seconds=_integer(payload.get("elapsed_time")),
+        leaderboard=leaderboard,
+        leaderboard_failed=leaderboard_failed,
     )

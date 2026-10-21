@@ -321,7 +321,12 @@ async def test_options_clear_all_favorites_persists_and_preserves_other_entities
         await hass.async_block_till_done()
     registry = er.async_get(hass)
     devices = dr.async_get(hass)
-    removed = [favorite_entity_id(hass, entry, value) for value in (99001, 99002)]
+    removed = [
+        entity.entity_id
+        for entity in er.async_entries_for_config_entry(registry, entry.entry_id)
+        if entity.platform == DOMAIN
+        and entity.unique_id.startswith(f"{entry.entry_id}_driver_")
+    ]
     removed_devices = [registry.async_get(value).device_id for value in removed]
     unrelated = registry.async_get_or_create(
         "sensor", "other_integration", "unrelated", config_entry=entry

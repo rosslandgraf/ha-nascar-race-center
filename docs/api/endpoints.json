@@ -1,0 +1,672 @@
+{
+  "source": "NASCAR_Race_Center_Codex_Brief.md",
+  "owner_test_date": "2026-10-20",
+  "endpoints": [
+    {
+      "id": "live_feed",
+      "url": "https://cf.nascar.com/live/feeds/live-feed.json",
+      "category": "live",
+      "purpose": "Global reported live session and vehicle scoring",
+      "owner_report": "working",
+      "url_context": {
+        "season": null,
+        "series_id": null,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1,
+        2,
+        3
+      ],
+      "behavior_intent": "global live path; may contain archived/inactive content",
+      "features": "Live context, flag/lap, leaderboard and favorites (Phases 1/3A)",
+      "synthetic_fixture": "tests/fixtures/nascar/live_timing.json",
+      "related": [
+        "season_races",
+        "cup_schedule",
+        "drivers",
+        "tracks"
+      ]
+    },
+    {
+      "id": "live_flags",
+      "url": "https://cf.nascar.com/live/feeds/live-flag-data.json",
+      "category": "live",
+      "purpose": "Reported flag observations",
+      "owner_report": "working",
+      "url_context": {
+        "season": null,
+        "series_id": null,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1,
+        2,
+        3
+      ],
+      "behavior_intent": "global live path; may contain archived/inactive content",
+      "features": "Future Phase 3B/4 only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "live_pits",
+      "url": "https://cf.nascar.com/live/feeds/live-pit-data.json",
+      "category": "live",
+      "purpose": "Reported pit activity",
+      "owner_report": "working",
+      "url_context": {
+        "season": null,
+        "series_id": null,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1,
+        2,
+        3
+      ],
+      "behavior_intent": "global live path; may contain archived/inactive content",
+      "features": "Future Phase 3B/4 only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "live_points",
+      "url": "https://cf.nascar.com/live/feeds/live-points.json",
+      "category": "live",
+      "purpose": "Reported championship points",
+      "owner_report": "working",
+      "url_context": {
+        "season": null,
+        "series_id": null,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1,
+        2,
+        3
+      ],
+      "behavior_intent": "global live path; may contain archived/inactive content",
+      "features": "Future Phase 3B/4 only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "live_stage_points",
+      "url": "https://cf.nascar.com/live/feeds/live-stage-points.json",
+      "category": "live",
+      "purpose": "Reported stage points",
+      "owner_report": "working",
+      "url_context": {
+        "season": null,
+        "series_id": null,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1,
+        2,
+        3
+      ],
+      "behavior_intent": "global live path; may contain archived/inactive content",
+      "features": "Future Phase 3B/4 only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "season_races",
+      "url": "https://cf.nascar.com/cacher/2026/race_list_basic.json",
+      "category": "schedule_reference",
+      "purpose": "Global season race and embedded session list",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2026,
+        "series_id": null,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1,
+        2,
+        3
+      ],
+      "behavior_intent": "cached season/reference path; content age unverified",
+      "features": "Schedules, calendars, next race (Phases 1/2)",
+      "synthetic_fixture": "tests/fixtures/nascar/schedule.json",
+      "related": [
+        "cup_schedule",
+        "series2_schedule",
+        "trucks_schedule",
+        "cup_races"
+      ]
+    },
+    {
+      "id": "drivers",
+      "url": "https://cf.nascar.com/cacher/drivers.json",
+      "category": "schedule_reference",
+      "purpose": "Driver reference directory",
+      "owner_report": "working",
+      "url_context": {
+        "season": null,
+        "series_id": null,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1,
+        2,
+        3
+      ],
+      "behavior_intent": "cached season/reference path; content age unverified",
+      "features": "Favorite metadata (Phase 2)",
+      "synthetic_fixture": "tests/fixtures/nascar/drivers.json",
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "tracks",
+      "url": "https://cf.nascar.com/cacher/tracks.json",
+      "category": "schedule_reference",
+      "purpose": "Track reference directory",
+      "owner_report": "working",
+      "url_context": {
+        "season": null,
+        "series_id": null,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1,
+        2,
+        3
+      ],
+      "behavior_intent": "cached season/reference path; content age unverified",
+      "features": "Optional track/calendar metadata (Phase 2)",
+      "synthetic_fixture": "tests/fixtures/nascar/tracks.json",
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "cup_schedule",
+      "url": "https://cf.nascar.com/cacher/2026/1/schedule-feed.json",
+      "category": "schedule_reference",
+      "purpose": "Cup session schedule",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2026,
+        "series_id": 1,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "cached season/reference path; content age unverified",
+      "features": "Schedules, calendars, next race (Phases 1/2)",
+      "synthetic_fixture": "tests/fixtures/nascar/session_schedule.json",
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "series2_schedule",
+      "url": "https://cf.nascar.com/cacher/2026/2/schedule-feed.json",
+      "category": "schedule_reference",
+      "purpose": "Series 2 session schedule",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2026,
+        "series_id": 2,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        2
+      ],
+      "behavior_intent": "cached season/reference path; content age unverified",
+      "features": "Schedules, calendars, next race (Phases 1/2)",
+      "synthetic_fixture": "tests/fixtures/nascar/session_schedule.json",
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "trucks_schedule",
+      "url": "https://cf.nascar.com/cacher/2026/3/schedule-feed.json",
+      "category": "schedule_reference",
+      "purpose": "Truck session schedule",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2026,
+        "series_id": 3,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        3
+      ],
+      "behavior_intent": "cached season/reference path; content age unverified",
+      "features": "Schedules, calendars, next race (Phases 1/2)",
+      "synthetic_fixture": "tests/fixtures/nascar/session_schedule.json",
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "cup_races",
+      "url": "https://cf.nascar.com/cacher/2026/1/race_list_basic.json",
+      "category": "schedule_reference",
+      "purpose": "Cup basic season race list",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2026,
+        "series_id": 1,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "cached season/reference path; content age unverified",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "weekend",
+      "url": "https://cf.nascar.com/cacher/2024/1/5392/weekend-feed.json",
+      "category": "historical",
+      "purpose": "Historical race weekend sessions/results",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2024,
+        "series_id": 1,
+        "race_id": 5392,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "race-specific historical path",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "lap_times",
+      "url": "https://cf.nascar.com/cacher/2024/1/5392/lap-times.json",
+      "category": "historical",
+      "purpose": "Historical lap timing",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2024,
+        "series_id": 1,
+        "race_id": 5392,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "race-specific historical path",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "lap_notes",
+      "url": "https://cf.nascar.com/cacher/2024/1/5392/lap-notes.json",
+      "category": "historical",
+      "purpose": "Historical lap notes",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2024,
+        "series_id": 1,
+        "race_id": 5392,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "race-specific historical path",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "loop_stats",
+      "url": "https://cf.nascar.com/loopstats/prod/2024/1/5392.json",
+      "category": "historical",
+      "purpose": "Historical loop statistics",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2024,
+        "series_id": null,
+        "race_id": 5392,
+        "run_id": null
+      },
+      "applicable_series": [
+        1,
+        2,
+        3
+      ],
+      "behavior_intent": "race-specific historical path",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "lap_averages",
+      "url": "https://cf.nascar.com/cacher/2024/1/5392/lap-averages.json",
+      "category": "historical",
+      "purpose": "Historical lap averages",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2024,
+        "series_id": 1,
+        "race_id": 5392,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "race-specific historical path",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "archived_pits",
+      "url": "https://cf.nascar.com/cacher/2026/1/5626/live-pit-data.json",
+      "category": "historical",
+      "purpose": "Archived race pit activity",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2026,
+        "series_id": 1,
+        "race_id": 5626,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "race-specific historical path",
+      "features": "Future Phase 3B/4 only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "archived_stages",
+      "url": "https://cf.nascar.com/cacher/2024/1/5392/live-stage-points.json",
+      "category": "historical",
+      "purpose": "Archived race stage points",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2024,
+        "series_id": 1,
+        "race_id": 5392,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "race-specific historical path",
+      "features": "Future Phase 3B/4 only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "video_metadata",
+      "url": "https://cf.nascar.com/cacher/2024/1/5392/snappytv.json",
+      "category": "historical",
+      "purpose": "Video metadata only; no media requests",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2024,
+        "series_id": 1,
+        "race_id": 5392,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "race-specific historical path",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "legacy_live",
+      "url": "https://cf.nascar.com/live/feeds/series_1/5170/live_feed.json",
+      "category": "legacy",
+      "purpose": "Legacy race-specific live context",
+      "owner_report": "working",
+      "url_context": {
+        "season": null,
+        "series_id": 1,
+        "race_id": 5170,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "legacy race-specific path; current-session coverage unverified",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "legacy_points",
+      "url": "https://cf.nascar.com/live/feeds/series_1/5170/live_points.json",
+      "category": "legacy",
+      "purpose": "Legacy race-specific points",
+      "owner_report": "working",
+      "url_context": {
+        "season": null,
+        "series_id": 1,
+        "race_id": 5170,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "legacy race-specific path; current-session coverage unverified",
+      "features": "Future Phase 3B/4 only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "legacy_pits",
+      "url": "https://cf.nascar.com/cacher/live/series_1/5170/live-pit-data.json",
+      "category": "legacy",
+      "purpose": "Legacy race-specific pit activity",
+      "owner_report": "working",
+      "url_context": {
+        "season": null,
+        "series_id": 1,
+        "race_id": 5170,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "legacy race-specific path; current-session coverage unverified",
+      "features": "Future Phase 3B/4 only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "legacy_practice_averages",
+      "url": "https://cf.nascar.com/cacher/2019/2/4817/lapAvg_nxs_practice_1.json",
+      "category": "legacy",
+      "purpose": "Legacy series 2 practice lap averages",
+      "owner_report": "working",
+      "url_context": {
+        "season": 2019,
+        "series_id": 2,
+        "race_id": 4817,
+        "run_id": null
+      },
+      "applicable_series": [
+        2
+      ],
+      "behavior_intent": "legacy race-specific path; current-session coverage unverified",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "driver_recap",
+      "url": "https://cf.nascar.com/cacher/2024/1/5392/driver-recap.json",
+      "category": "excluded",
+      "purpose": "Driver recap (non-core, previously error/login)",
+      "owner_report": "error_login",
+      "url_context": {
+        "season": 2024,
+        "series_id": 1,
+        "race_id": 5392,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "excluded; behavior unverified",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "drive_cup",
+      "url": "https://cf.nascar.com/drive/1/configs-ng.json",
+      "category": "excluded",
+      "purpose": "Drive configuration (excluded; no token or playback investigation)",
+      "owner_report": "error_login",
+      "url_context": {
+        "season": null,
+        "series_id": 1,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        1
+      ],
+      "behavior_intent": "excluded; behavior unverified",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "drive_series2",
+      "url": "https://cf.nascar.com/drive/2/configs-ng.json",
+      "category": "excluded",
+      "purpose": "Drive configuration (excluded; no token or playback investigation)",
+      "owner_report": "error_login",
+      "url_context": {
+        "season": null,
+        "series_id": 2,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        2
+      ],
+      "behavior_intent": "excluded; behavior unverified",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    },
+    {
+      "id": "drive_trucks",
+      "url": "https://cf.nascar.com/drive/3/configs-ng.json",
+      "category": "excluded",
+      "purpose": "Drive configuration (excluded; no token or playback investigation)",
+      "owner_report": "error_login",
+      "url_context": {
+        "season": null,
+        "series_id": 3,
+        "race_id": null,
+        "run_id": null
+      },
+      "applicable_series": [
+        3
+      ],
+      "behavior_intent": "excluded; behavior unverified",
+      "features": "Reference only; no production consumer",
+      "synthetic_fixture": null,
+      "related": [
+        "live_feed",
+        "season_races"
+      ]
+    }
+  ]
+}

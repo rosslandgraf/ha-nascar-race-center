@@ -5,7 +5,7 @@ Read the complete [project brief](NASCAR_Race_Center_Codex_Brief.md) before maki
 ## Scope and delivery
 
 - Work on a feature branch and open a reviewable pull request. Do not merge to `main`, deploy to the owner's production Home Assistant, or publish a release without explicit authorization.
-- Phase 1 is foundation and feasibility. Do not start Phase 2 or later until Phase 1 has been reviewed. The roadmap describes future design; it is not a claim of implemented features.
+- Phases 1 and 2 are reviewed and merged. Phase 3A covers live timing/leaderboards only; do not begin Phase 3B/3C, pits, stages, points or automation events without a new assignment. The roadmap distinguishes delivered features from future design.
 - Preserve the existing MIT code license. NASCAR data, trademarks, imagery, and video have separate, unresolved rights. Do not imply that the code license grants data-use permission.
 - Record completed features, actual checks, known gaps, endpoint evidence, and data-use assumptions in every PR. Never report an unexecuted check as passing.
 
@@ -23,6 +23,15 @@ That activation path belongs to the prepared cloud environment, not the installe
 
 ## Provider and data boundaries
 
+- Before API-related work, read [docs/api/README.md](docs/api/README.md), the
+  [endpoint catalog](docs/api/ENDPOINT_CATALOG.md), field reference, fixture
+  provenance and latest API audit. Distinguish blocked transport from origin
+  responses, synthetic contracts from observed schemas, and HTTP freshness from
+  active-race evidence. Follow the library's feature-validation workflow.
+- Manual authorized checks use `scripts/nascar_reference.py`; keep raw captures
+  in ignored `work/`, review schema differences, and never automatically replace
+  fixtures. Routine CI stays offline. Neither production nor demonstration mode
+  may silently consume bundled fixtures as live data.
 - Use only the documented `https://cf.nascar.com` endpoint catalog. Never require employee credentials, use the restricted Swagger API, guess tokens, scrape video, or infer playback rights.
 - Keep demonstration mode usable without network access. CF mode requires explicit data-use authorization in configuration; permission to develop does not establish permission to distribute or poll NASCAR data.
 - Inspect the managed environment network policy before network work. Do not bypass a denied destination or disable TLS verification.

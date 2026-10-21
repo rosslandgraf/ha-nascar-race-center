@@ -1,6 +1,6 @@
 # Phase 2 schedule fixture provenance
 
-`session_schedule.json` is a handmade structural example. Race names, IDs,
+[`nascar/session_schedule.json`](nascar/session_schedule.json) is a handmade structural example. Race names, IDs,
 venue, dates, and values are fictional. It is not a captured NASCAR payload.
 
 The per-series `schedule-feed.json` array and field spellings are supported by

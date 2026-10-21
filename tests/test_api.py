@@ -218,6 +218,20 @@ async def test_malformed_or_empty_json_is_not_a_schedule(body):
         await client.async_get_json(SCHEDULE)
 
 
+@pytest.mark.parametrize(
+    "body",
+    [
+        b'{"series_id":1,"series_id":2,"race_id":99001}',
+        b'{"vehicles":[{"driver":{"driver_id":99001,"driver_id":99002}}]}',
+    ],
+)
+async def test_duplicate_source_keys_cannot_silently_replace_reported_identity(body):
+    """Conflicting series or driver identities must not route to the last key."""
+    client, _ = client_with(Response(body=body))
+    with pytest.raises(SchemaError, match="valid JSON"):
+        await client.async_get_json(SCHEDULE)
+
+
 async def test_response_size_is_bounded():
     client, _ = client_with(Response(body=b" " * (2 * 1024 * 1024 + 1)))
     with pytest.raises(SchemaError, match="size limit"):

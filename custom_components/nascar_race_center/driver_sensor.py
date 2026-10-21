@@ -1,4 +1,4 @@
-"""Compact favorite-driver reference metadata; no premature live race metrics."""
+"""Compact favorite-driver reference metadata and shared stable device identity."""
 
 from typing import Any
 
@@ -32,6 +32,21 @@ async def async_setup_favorites(
     )
 
 
+def favorite_device(entry: NascarConfigEntry, driver_id: int) -> DeviceInfo:
+    """Reference and live metrics share the existing Phase 2 driver device."""
+    provider = entry.options.get(
+        CONF_PROVIDER, entry.data.get(CONF_PROVIDER, PROVIDER_DEMO)
+    )
+    suffix = " (Demo)" if provider == PROVIDER_DEMO else ""
+    return DeviceInfo(
+        identifiers={(DOMAIN, f"{entry.entry_id}_driver_{driver_id}")},
+        name=f"NASCAR driver {driver_id}{suffix}",
+        entry_type=DeviceEntryType.SERVICE,
+        manufacturer="NASCAR Race Center community project",
+        model="Favorite driver reference",
+    )
+
+
 class NascarFavoriteDriverSensor(CoordinatorEntity[ReferenceCoordinator], SensorEntity):
     """Resolve reference metadata by NASCAR ID independently of series changes."""
 
@@ -45,17 +60,7 @@ class NascarFavoriteDriverSensor(CoordinatorEntity[ReferenceCoordinator], Sensor
         self.driver_id = driver_id
         self.registry = entry.runtime_data.favorites
         self._attr_unique_id = f"{entry.entry_id}_driver_{driver_id}_metadata"
-        provider = entry.options.get(
-            CONF_PROVIDER, entry.data.get(CONF_PROVIDER, PROVIDER_DEMO)
-        )
-        suffix = " (Demo)" if provider == PROVIDER_DEMO else ""
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, f"{entry.entry_id}_driver_{driver_id}")},
-            name=f"NASCAR driver {driver_id}{suffix}",
-            entry_type=DeviceEntryType.SERVICE,
-            manufacturer="NASCAR Race Center community project",
-            model="Favorite driver reference",
-        )
+        self._attr_device_info = favorite_device(entry, driver_id)
 
     @property
     def driver(self) -> Driver | None:

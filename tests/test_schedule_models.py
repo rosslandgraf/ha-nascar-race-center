@@ -25,7 +25,9 @@ from custom_components.nascar_race_center.provider import CFProvider, DemoProvid
 
 def _rows() -> list[dict[str, object]]:
     return json.loads(
-        (Path(__file__).parent / "fixtures" / "session_schedule.json").read_text()
+        (
+            Path(__file__).parent / "fixtures" / "nascar" / "session_schedule.json"
+        ).read_text()
     )
 
 

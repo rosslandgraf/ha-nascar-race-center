@@ -1,5 +1,10 @@
 # Handmade structural fixtures
 
+JSON files are now organized under [`nascar/`](nascar/README.md), with per-file
+[provenance](nascar/PROVENANCE.json). All six were moved without changing their
+bytes. The [API library](../../docs/api/README.md) records fresh request attempts
+and explicitly separates these handmade contracts from real captures.
+
 These tiny JSON examples are authored for this project. The names, race IDs,
 dates, laps, and values are fictional; they are **not NASCAR response captures**
 or evidence of current anonymous access or live freshness. They contain no
@@ -27,3 +32,8 @@ and normalized canceled status cases are structural test scenarios. In
 particular, synthetic status cases do not claim a verified CF cancellation
 field. No naive timestamp timezone, missing duration or unpublished session is
 invented. The evidence document records exact fields and pinned source links.
+
+Phase 3A adds `live_timing.json`; its exact community references, supported
+fields, defensive limits and unresolved semantics are in
+[PHASE3A_LIVE.md](PHASE3A_LIVE.md). Replays mutate these fictional records;
+no live field, driver directory, race result or timing capture is redistributed.

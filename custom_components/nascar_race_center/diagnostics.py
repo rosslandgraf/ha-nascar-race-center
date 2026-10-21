@@ -97,6 +97,49 @@ async def async_get_config_entry_diagnostics(
             "source_updated_at": snapshot.source_updated_at.isoformat()
             if snapshot and snapshot.source_updated_at
             else None,
+            "run_id": snapshot.run_id if snapshot else None,
+            "session_progress": live.view(snapshot.series_id).session_status
+            if snapshot
+            else None,
+            "timing": {
+                "status": "invalid"
+                if snapshot.leaderboard_failed
+                else "reported"
+                if snapshot.leaderboard is not None
+                else "unknown",
+                "normalized_count": len(snapshot.leaderboard.drivers)
+                if snapshot.leaderboard is not None
+                else None,
+                "reported_count": snapshot.leaderboard.reported_count
+                if snapshot.leaderboard is not None
+                else None,
+                "omitted_count": snapshot.leaderboard.omitted_count
+                if snapshot.leaderboard is not None
+                else None,
+                "field_counts": {
+                    key: sum(
+                        getattr(driver, key) is not None
+                        for driver in snapshot.leaderboard.drivers
+                    )
+                    for key in (
+                        "position",
+                        "last_lap_time",
+                        "best_lap_time",
+                        "gap",
+                        "last_lap_speed",
+                        "best_lap_speed",
+                        "average_speed",
+                        "laps_completed",
+                        "laps_led",
+                        "status_code",
+                    )
+                }
+                if snapshot.leaderboard is not None
+                else {},
+            }
+            if snapshot
+            else {},
+            "timestamp_policy": "explicit_offset_required",
             "field_availability": {
                 key: getattr(snapshot, key) is not None
                 for key in ("status", "flag", "lap", "source_updated_at")

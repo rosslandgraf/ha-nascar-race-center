@@ -17,6 +17,7 @@ from .const import (
     LIVE_STALE_AFTER,
     SCHEDULE_INTERVAL,
 )
+from .live_view import FeedHealth, LiveView
 from .models import LiveSnapshot, ProviderError, Race
 from .provider import RaceProvider
 
@@ -293,6 +294,27 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
             return None
         return age > LIVE_STALE_AFTER
 
+    def view(self, series_id: int) -> LiveView:
+        """Provide one series' health and scoring without duplicating global data."""
+        snapshot = self.data
+        matching = (
+            snapshot is not None
+            and snapshot.series_id == series_id
+            and series_id in self.schedule.series
+        )
+        health: FeedHealth
+        if not self.last_update_success:
+            health = "denied" if self.last_error_status in {401, 403} else "offline"
+        elif snapshot is None:
+            health = "no_active_session"
+        elif not matching:
+            health = "not_reported"
+        elif self.source_is_stale is None:
+            health = "freshness_unknown"
+        else:
+            health = "stale" if self.source_is_stale else "ok"
+        return LiveView(snapshot if matching else None, health)
+
     def _next_interval(self, snapshot: LiveSnapshot | None) -> timedelta:
         """Use faster polling only for source-confirmed activity or a race window."""
         now = dt_util.utcnow()
@@ -303,7 +325,7 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
             and -timedelta(minutes=5)
             <= now - snapshot.source_updated_at
             <= LIVE_STALE_AFTER
-            and snapshot.flag != "checkered"
+            and snapshot.flag in {"green", "yellow", "red", "white"}
             and snapshot.lap is not None
             and snapshot.lap > 0
         ):

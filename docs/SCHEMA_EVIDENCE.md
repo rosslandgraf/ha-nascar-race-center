@@ -1,5 +1,11 @@
 # Provider schema evidence
 
+Current follow-up: the [API reference library](api/README.md) records October 21
+attempts for all 28 URLs. Every attempt was proxy-blocked before an origin
+response; there are no new observed real schemas. The field dictionary labels
+synthetic types/examples separately from community interpretations. The older
+statements below describe the original phase work, not this follow-up attempt.
+
 Evidence reviewed on October 20, 2026. No NASCAR CF endpoint was requested in
 this task: the cloud network policy does not allow that host. Owner-reported
 browser success remains separate from field-shape references and synthetic
@@ -173,3 +179,12 @@ earliest end, then a date notice/weekend, and updates locally at boundaries.
 Future-season envelope/slug changes, publication timing, removal semantics and
 cross-year source revisions remain live compatibility hypotheses. Passing
 handmade fixtures does not close these gates or authorize provider access.
+
+## Phase 3A live timing contract
+
+The existing pinned live model and enhanced live-feed community document above
+were reread before development. The exact supported fields, handmade fixture,
+units/status limitations and timestamp policy are recorded in
+[PHASE3A_LIVE.md](../tests/fixtures/PHASE3A_LIVE.md). No CF host was requested;
+anonymous current schema, source timestamps, permitted cadence and data-use
+rights remain unverified. This extends the experimental adapter only.

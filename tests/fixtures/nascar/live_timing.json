@@ -1,0 +1,50 @@
+{
+  "series_id": 1,
+  "race_id": 99001,
+  "run_id": 7,
+  "run_name": "Synthetic Race",
+  "run_type": 3,
+  "flag_state": 1,
+  "lap_number": 42,
+  "laps_in_race": 100,
+  "laps_to_go": 58,
+  "elapsed_time": 1234,
+  "time_of_day_os": "2026-10-20T20:00:00Z",
+  "vehicles": [
+    {
+      "driver": {"driver_id": 99002, "full_name": "Synthetic Driver B"},
+      "vehicle_number": "07",
+      "vehicle_manufacturer": "Tyt",
+      "running_position": 2,
+      "starting_position": 5,
+      "laps_completed": 41,
+      "last_lap_time": 31.25,
+      "best_lap_time": 30.5,
+      "last_lap_speed": 172.8,
+      "best_lap_speed": 177.0,
+      "average_speed": 170.0,
+      "delta": 0.75,
+      "status": 1,
+      "is_on_track": true,
+      "laps_led": [{"start_lap": 5, "end_lap": 10}]
+    },
+    {
+      "driver": {"driver_id": 99001, "full_name": "Synthetic Driver A"},
+      "vehicle_number": 9,
+      "running_position": 1,
+      "starting_position": 2,
+      "laps_completed": 42,
+      "last_lap_time": 31.0,
+      "best_lap_time": 30.0,
+      "delta": 0.0,
+      "status": 1,
+      "laps_led": []
+    },
+    {
+      "driver": {"driver_id": 99003, "full_name": "Synthetic Driver C"},
+      "vehicle_number": "00",
+      "running_position": 3,
+      "status": 99
+    }
+  ]
+}

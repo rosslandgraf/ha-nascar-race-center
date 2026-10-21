@@ -9,7 +9,7 @@
           "provider": "Data source",
           "series": "Series to monitor",
           "data_use_authorized": "I have confirmed permission to access and poll NASCAR CF data",
-          "live_interval": "Minimum live polling interval (seconds; 300–3600)",
+          "live_interval": "Minimum live polling interval (seconds; 300\u20133600)",
           "favorite_drivers": "Favorite drivers (NASCAR IDs)"
         },
         "data_description": {
@@ -37,7 +37,7 @@
           "provider": "Data source",
           "series": "Series to monitor",
           "data_use_authorized": "I have confirmed permission to access and poll NASCAR CF data",
-          "live_interval": "Minimum live polling interval (seconds; 300–3600)",
+          "live_interval": "Minimum live polling interval (seconds; 300\u20133600)",
           "favorite_drivers": "Favorite drivers (NASCAR IDs)"
         },
         "data_description": {
@@ -81,6 +81,39 @@
       },
       "driver_metadata": {
         "name": "Driver metadata"
+      },
+      "leader": {
+        "name": "Leader NASCAR driver ID"
+      },
+      "total_laps": {
+        "name": "Reported total laps"
+      },
+      "laps_remaining": {
+        "name": "Reported laps remaining"
+      },
+      "session_status": {
+        "name": "Session progress"
+      },
+      "field_size": {
+        "name": "Reported field size"
+      },
+      "driver_live_position": {
+        "name": "Live position"
+      },
+      "driver_live_last_lap": {
+        "name": "Last lap time"
+      },
+      "driver_live_best_lap": {
+        "name": "Best lap time"
+      },
+      "driver_live_gap": {
+        "name": "Reported gap to leader"
+      },
+      "driver_live_running_status": {
+        "name": "Running status"
+      },
+      "driver_live_position_change": {
+        "name": "Positions gained from start"
       }
     },
     "binary_sensor": {

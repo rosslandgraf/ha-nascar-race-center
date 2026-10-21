@@ -1,6 +1,6 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phase 1 was reviewed and squash-merged into `main` with 113 passing tests. Phase 2 continues from that merged foundation on its own feature branch. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 and 2 were reviewed and squash-merged into `main`, with 243 passing tests at the Phase 2 baseline. Phase 3A starts from `fb88120` on its own feature branch. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
 
@@ -16,23 +16,53 @@ The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target produ
 
 ## Phase 2 — Complete schedules and favorite drivers
 
-**Status:** implemented for review, with structural mocks and community-supported adapter contracts. See [VALIDATION.md](docs/VALIDATION.md) for executed checks. Current anonymous CF response shapes and source semantics are not independently verified.
+**Status:** reviewed and merged, with structural mocks and community-supported adapter contracts. See [VALIDATION.md](docs/VALIDATION.md) for executed checks. Current anonymous CF response shapes and source semantics are not independently verified.
 
 **Delivered:** immutable race/session models; full retained season schedules across all three series; optional practice/qualifying/race enrichment; per-series native calendars with date-range weekend entries and explicit unknown-duration notices; rescheduling and season rollover; typed driver/track references; multiple favorites keyed by NASCAR driver ID; searchable UI selectors and metadata entities; isolated slow reference updates; backward-compatible entry defaults and Phase 1 identifiers.
 
 **Acceptance:** fixtures cover all three series, ambiguous/missing times, DST, year boundary, postponed sessions, overlapping weekends and driver/car changes. Calendar times and entity availability are exercised through HA. Driver IDs survive display-name and car-number changes. Failures of reference feeds do not disable core schedules.
 
-**Evidence limits:** no source timezone is inferred from naive timestamps, including fields named `start_time_utc`. CF cancellation/postponement status fields and authoritative session IDs are not supported by current community evidence. Normalized status handling is available for providers that can identify it; current CF adapters apply published schedule revisions without claiming explicit cancellation detection. Internal session IDs survive time/order changes but may change when the source renames a session. General driver directories do not establish an active roster, and media URLs are not manufacturer metadata. No live favorite-driver positions, timing, event automations, production installation or release is included.
+**Evidence limits:** no source timezone is inferred from naive timestamps, including fields named `start_time_utc`. CF cancellation/postponement status fields and authoritative session IDs are not supported by current community evidence. Normalized status handling is available for providers that can identify it; current CF adapters apply published schedule revisions without claiming explicit cancellation detection. Internal session IDs survive time/order changes but may change when the source renames a session. General driver directories do not establish an active roster, and media URLs are not manufacturer metadata. Phase 2 itself delivered no live favorite-driver positions or timing; Phase 3A adds those below. Event automations, production installation and release remain deferred.
 
-## Phase 3 — Live Race Center and automation events
+## Phase 3A — Live race timing and leaderboards
 
-**Depends on:** validated active-session feeds and documented allowed polling behavior.
+**Status:** implemented on its own review branch. See
+[Phase 3A validation](docs/PHASE3A_VALIDATION.md) for actual checks and evidence
+limits. Direct active-session validation and documented provider polling/data-use
+permission remain open gates; synthetic development does not close them.
 
-**Work:** live standings, driver movement/gaps/speeds/last and best laps; race/session detection; current/remaining laps; flags/cautions; pit activity; stage results; reported championship points/deltas; favorite-driver timing/status; data-source capability indicators. Treat concurrent live sessions as experimental until directly observed.
+**Delivered:** typed normalized reported field with ordered traversal and driver-ID
+lookup; driver identities, positions, starting-position change, last/best laps,
+reported gap and speed fields, laps completed and laps-led intervals; run context,
+leader, reported current/total/remaining laps, flags and evidence-limited progress;
+compact favorite metrics on stable Phase 2 driver devices; per-series routing of
+one global source; diagnostic field counts and scoring-failure isolation.
 
-**Automation work:** opt-in session/flag/lead/top-N/pit/retirement/stage/race/result/points events; stable event IDs; debounce; persistent deduplication ledger; initial-baseline suppression; restart/replay recovery. Add notification and optional scene-restoring light blueprints independent of vendor integrations.
+**Reliability:** the existing shared live coordinator/transport and minimum
+polling bounds remain. No new CF endpoint or per-driver/series polling loop.
+Stale/failed fields cannot supply current scoring. Unknown source time or flag
+cannot establish active/completed progress. Favorite position alone is enabled
+by default. Full fields stay in bounded runtime memory. Actual Recorder checks
+measure unchanged samples and a changed favorite, alongside actual HA lifecycle
+and synthetic transition/error/cache tests.
 
-**Acceptance:** replay scenarios prove exactly-once user-visible transitions across repeated polls/restarts/replays and no false event from first data. Feed omissions, clock changes, stale CDN snapshots and series switches are explicit. Optional pit/stage/points failure leaves schedule/flag essentials usable. Recorder write volume is measured.
+**Limits:** community structural contracts only; timestamp, status, gap and
+laps-led aggregation semantics remain evidence gates. Completion means a fresh
+checkered observation, not final official classification. Only status 1 maps
+to running. The in-memory normalized leaderboard has no custom dashboard/API.
+No pits, stages, points, automation events, historical storage, public release
+or production deployment is included.
+
+## Remaining Phase 3 assignments — not started
+
+Pit-stop tracking, stage scoring, championship points and automation events
+remain for later assignments (3B/3C). Their implementation requires per-endpoint
+evidence and appropriately sourced structural/replay fixtures. Later event work
+must implement opt-in delivery, persistent deduplication, initial-baseline
+suppression and restart/replay protection before exposing any events or
+notification/light blueprints. The Phase 3A `LiveView`/reported run identity
+boundary is available for reuse; it contains no hidden event ledger or inferred
+pit/stage/points behavior.
 
 ## Phase 4 — History and analytical views
 
