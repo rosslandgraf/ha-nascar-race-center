@@ -143,7 +143,7 @@ Prepared environment reused without onboarding/dependency reinstall: Python
 | Prepared independent HA runtime REST/state/service test | Passed; one test |
 | Prepared `hass --script check_config` | Passed; exit zero |
 | `git diff --check` | Passed |
-| Hosted CI for this follow-up | Pending push/check execution; final result will be recorded in PR #3 |
+| Hosted CI for implementation commit `205ca61` | [Tests/Ruff/mypy passed](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39585099229/job/119171927801); [Hassfest passed](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39585099196/job/119171927432). Latest-head results are recorded in PR #3. |
 | HACS | Private-repository skip and temporary brands exception remain; not full HACS approval |
 | Current-origin / active-race validation | Blocked; zero real bodies |
 | Manual frontend/card review | Not run; no frontend changes |

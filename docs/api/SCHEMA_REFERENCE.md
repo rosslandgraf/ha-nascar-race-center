@@ -22,7 +22,7 @@ The following exhaustive tables describe **only the six existing handmade JSON
 fixtures** now located in `tests/fixtures/nascar/`. They document exact spellings,
 nested JSON bracket paths, literal JSON types, synthetic examples and what the
 current software does. `[*]` unions every array element; boolean is distinct from
-integer, and integer from nonintegral number. These are observation types in the
+integer, and integer tokens from decimal/exponent number tokens. These are observation types in the
 fictional file, not all types accepted by a parser or permitted by the provider.
 
 Missing/null markers refer **only to the synthetic file**. “Not observed” never
