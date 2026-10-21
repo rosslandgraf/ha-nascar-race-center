@@ -2,6 +2,9 @@
 
 BASE_URL = "https://cf.nascar.com"
 LIVE_FEED = "/live/feeds/live-feed.json"
+LIVE_PITS = "/live/feeds/live-pit-data.json"
+LIVE_STAGES = "/live/feeds/live-stage-points.json"
+LIVE_POINTS = "/live/feeds/live-points.json"
 DRIVERS = "/cacher/drivers.json"
 TRACKS = "/cacher/tracks.json"
 

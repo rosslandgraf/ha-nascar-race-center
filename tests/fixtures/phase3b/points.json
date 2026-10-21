@@ -1,0 +1,3 @@
+[
+  {"series_id": 0, "race_id": 0, "run_id": 0, "driver_id": 99002, "membership_id": 123456, "points_position": 3, "points": 2040, "points_earned_this_race": 31, "bonus_points": null, "stage_1_points": 9, "stage_2_points": 0, "stage_3_points": null, "stage_1_winner": false, "stage_2_winner": false, "stage_3_winner": null, "delta_leader": -12, "delta_next": -2, "is_points_eligible": true, "wins": "2", "top_5": "4", "top_10": 8, "poles": 0, "is_fastest_lap_point": false}
+]

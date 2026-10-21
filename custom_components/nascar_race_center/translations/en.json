@@ -114,6 +114,33 @@
       },
       "driver_live_position_change": {
         "name": "Positions gained from start"
+      },
+      "current_stage": {
+        "name": "Current stage"
+      },
+      "pits_capability": {
+        "name": "Standalone pit data status"
+      },
+      "stages_capability": {
+        "name": "Stage results status"
+      },
+      "points_capability": {
+        "name": "Championship points status"
+      },
+      "driver_scoring_pit_lap": {
+        "name": "Last reported pit lap"
+      },
+      "driver_scoring_stage_position": {
+        "name": "Reported stage position"
+      },
+      "driver_scoring_championship_position": {
+        "name": "Provisional championship position"
+      },
+      "scored_stages": {
+        "name": "Reported stage result sets"
+      },
+      "championship_leader": {
+        "name": "Provisional championship leader"
       }
     },
     "binary_sensor": {

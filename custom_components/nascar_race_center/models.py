@@ -8,6 +8,7 @@ from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from hashlib import sha256
 
+from .scoring import CurrentStage, parse_current_stage
 from .timing import Leaderboard, parse_leaderboard
 
 
@@ -92,6 +93,8 @@ class LiveSnapshot:
     elapsed_seconds: int | None = None
     leaderboard: Leaderboard | None = None
     leaderboard_failed: bool = False
+    stage: CurrentStage | None = None
+    stage_failed: bool = False
 
     @property
     def session_key(self) -> tuple[int, int, int | None]:
@@ -367,6 +370,13 @@ def parse_live(payload: object) -> LiveSnapshot | None:
         except ValueError:
             # Optional scoring drift cannot discard independent flag/lap data.
             leaderboard_failed = True
+    stage = None
+    stage_failed = False
+    if "stage" in payload:
+        try:
+            stage = parse_current_stage(payload["stage"])
+        except ValueError:
+            stage_failed = True
     return LiveSnapshot(
         series_id=series_id,
         race_id=race_id,
@@ -381,4 +391,6 @@ def parse_live(payload: object) -> LiveSnapshot | None:
         elapsed_seconds=_integer(payload.get("elapsed_time")),
         leaderboard=leaderboard,
         leaderboard_failed=leaderboard_failed,
+        stage=stage,
+        stage_failed=stage_failed,
     )
