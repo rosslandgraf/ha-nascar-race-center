@@ -17,7 +17,14 @@ async def async_get_config_entry_diagnostics(
     live = entry.runtime_data.live
     reference = entry.runtime_data.reference
     snapshot = live.data
+    provider = entry.runtime_data.provider
     return {
+        "cf_pipeline": {
+            "transport": provider.api.diagnostics(),
+            "parsers": dict(provider.parse_results),
+        }
+        if isinstance(provider, CFProvider)
+        else {},
         "provider": entry.options.get(
             CONF_PROVIDER, entry.data.get(CONF_PROVIDER, PROVIDER_DEMO)
         ),
@@ -138,6 +145,20 @@ async def async_get_config_entry_diagnostics(
             if snapshot and snapshot.source_updated_at
             else None,
             "run_id": snapshot.run_id if snapshot else None,
+            "run_type_code": snapshot.run_type_code if snapshot else None,
+            "flag_state_code": snapshot.flag_state_code if snapshot else None,
+            "retained_last_good": snapshot is not None and not live.last_update_success,
+            "selected_series_match": snapshot.series_id in schedule.series
+            if snapshot
+            else None,
+            "series_health": {
+                str(series): live.view(series).health for series in schedule.series
+            },
+            "usable_timing": {
+                str(series): (board := live.view(series).leaderboard) is not None
+                and bool(board.drivers)
+                for series in schedule.series
+            },
             "session_progress": live.view(snapshot.series_id).session_status
             if snapshot
             else None,

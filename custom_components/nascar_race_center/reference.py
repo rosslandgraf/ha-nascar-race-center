@@ -30,6 +30,8 @@ class DriverAssociation:
     car_number: str | None = None
     team: str | None = None
     manufacturer: str | None = None
+    # Numeric Team strings have no verified display-name or join semantics.
+    team_raw: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,6 +84,12 @@ def _manufacturer(value: object) -> str | None:
     if text is None or "://" in text or text.startswith(("/", "www.")):
         return None
     return text
+
+
+def _team_name(value: object) -> str | None:
+    """Keep textual labels; numeric strings are not verified team names."""
+    text = _text(value)
+    return text if text is not None and not text.isdecimal() else None
 
 
 def _car_number(value: object) -> str | None:
@@ -138,7 +146,8 @@ def parse_drivers(payload: object) -> tuple[Driver, ...]:
             series_id=_SERIES_SLUGS.get(label) if label else None,
             series_label=label,
             car_number=_car_number(row.get("Badge")),
-            team=_text(row.get("Team")),
+            team=_team_name(row.get("Team")),
+            team_raw=_text(row.get("Team")),
             manufacturer=_manufacturer(row.get("Manufacturer")),
         )
         associations = grouped.setdefault(driver_id, [])

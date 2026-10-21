@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "track_id": 99081,
+      "track_name": "Synthetic Speedway",
+      "track_surface": "Asphalt",
+      "track_type": "Synthetic Oval",
+      "city": "Example City",
+      "state": "Example State",
+      "length": 1.5,
+      "races": null
+    }
+  ]
+}

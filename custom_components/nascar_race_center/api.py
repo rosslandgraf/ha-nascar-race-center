@@ -8,7 +8,7 @@ import re
 import time
 from collections import OrderedDict
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 
@@ -34,6 +34,11 @@ _SESSION_PATH = re.compile(r"/cacher/[0-9]{4}/[123]/schedule-feed\.json")
 _monotonic = time.monotonic
 
 
+def _invalid_constant(value: str) -> object:
+    """JSON has no NaN/Infinity literals; never label those documents valid."""
+    raise ValueError("Non-JSON numeric constant")
+
+
 def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
     """Reject ambiguous keys before they can overwrite series/driver identity."""
     result: dict[str, object] = {}
@@ -42,6 +47,17 @@ def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
             raise ValueError("Duplicate JSON object key")
         result[key] = value
     return result
+
+
+@dataclass(frozen=True, slots=True)
+class _RequestDiagnostic:
+    """Last endpoint read and network outcome; contains no provider values."""
+
+    delivery: str = "network"
+    transport: str = "not_attempted"
+    http_status: int | None = None
+    json_status: str = "not_checked"
+    response_at: str | None = None
 
 
 @dataclass(slots=True)
@@ -129,9 +145,21 @@ class NascarApiClient:
         self._max_cache_entries = max_cache_entries
         self._cache: OrderedDict[str, _CacheEntry] = OrderedDict()
         self._request_lock = asyncio.Lock()
+        self._diagnostics: OrderedDict[str, _RequestDiagnostic] = OrderedDict()
         self._retry_at = 0.0
         self._failures: OrderedDict[str, int] = OrderedDict()
         self._cooldowns: OrderedDict[str, tuple[float, int | None]] = OrderedDict()
+
+    def _record(self, path: str, result: _RequestDiagnostic) -> None:
+        """Bound diagnostics separately from cached bodies and retry metadata."""
+        self._diagnostics[path] = result
+        self._diagnostics.move_to_end(path)
+        while len(self._diagnostics) > 24:
+            self._diagnostics.popitem(last=False)
+
+    def diagnostics(self) -> dict[str, dict[str, object]]:
+        """Return only allowlisted paths and fixed outcome metadata, never bodies."""
+        return {path: asdict(result) for path, result in self._diagnostics.items()}
 
     def _failure(
         self, path: str, message: str, status: int | None, hint: float = 0
@@ -166,12 +194,27 @@ class NascarApiClient:
             cached = self._cache.get(path)
             if cached is not None and cached.expires_at > _monotonic():
                 self._cache.move_to_end(path)
+                self._record(
+                    path,
+                    replace(
+                        self._diagnostics.get(path, _RequestDiagnostic()),
+                        delivery="cache",
+                        json_status="valid",
+                    ),
+                )
                 return cached.payload
             retry_at, status = self._cooldowns.get(path, (0.0, None))
             if self._retry_at >= retry_at:
                 retry_at, status = self._retry_at, 429
             remaining = retry_at - _monotonic()
             if remaining > 0:
+                self._record(
+                    path,
+                    replace(
+                        self._diagnostics.get(path, _RequestDiagnostic()),
+                        delivery="cooldown",
+                    ),
+                )
                 cooldown_error = (
                     RateLimitedError
                     if status == 429
@@ -190,6 +233,7 @@ class NascarApiClient:
                     headers["If-None-Match"] = cached.etag
                 if cached.last_modified is not None:
                     headers["If-Modified-Since"] = cached.last_modified
+            result = _RequestDiagnostic()
             try:
                 async with self._session.get(
                     f"{BASE_URL}{path}",
@@ -197,9 +241,17 @@ class NascarApiClient:
                     timeout=ClientTimeout(total=15),
                     allow_redirects=False,
                 ) as response:
+                    result = _RequestDiagnostic(
+                        transport="response",
+                        http_status=response.status,
+                        response_at=datetime.now(UTC).isoformat(),
+                    )
+                    self._record(path, result)
                     if response.status == 304:
                         if cached is None:
-                            raise SchemaError("Received 304 without a cached response")
+                            raise SchemaError(
+                                "Received 304 without a cached response", status=304
+                            )
                         cache_headers = dict(cached.cache_headers)
                         for name in ("Cache-Control", "Expires", "Age"):
                             if name in response.headers:
@@ -215,6 +267,12 @@ class NascarApiClient:
                             del self._cache[path]
                         self._failures.pop(path, None)
                         self._cooldowns.pop(path, None)
+                        self._record(
+                            path,
+                            replace(
+                                result, delivery="revalidated", json_status="valid"
+                            ),
+                        )
                         return cached.payload
                     if response.status in (401, 403):
                         error = self._failure(
@@ -244,15 +302,22 @@ class NascarApiClient:
                     async for chunk in response.content.iter_chunked(65536):
                         body.extend(chunk)
                         if len(body) > _MAX_RESPONSE_BYTES:
-                            raise SchemaError("CF response exceeded the size limit")
+                            self._record(path, replace(result, json_status="too_large"))
+                            raise SchemaError(
+                                "CF response exceeded the size limit", status=200
+                            )
                     try:
                         payload: object = json.loads(
-                            body, object_pairs_hook=_unique_object
+                            body,
+                            object_pairs_hook=_unique_object,
+                            parse_constant=_invalid_constant,
                         )
-                    except (ValueError, UnicodeDecodeError) as err:
+                    except (ValueError, UnicodeDecodeError, RecursionError) as err:
+                        self._record(path, replace(result, json_status="invalid"))
                         raise SchemaError(
-                            "CF endpoint did not return valid JSON"
+                            "CF endpoint did not return valid JSON", status=200
                         ) from err
+                    self._record(path, replace(result, json_status="valid"))
                     store, ttl = _cache_policy(response.headers, minimum_ttl)
                     if store:
                         self._cache[path] = _CacheEntry(
@@ -274,7 +339,11 @@ class NascarApiClient:
                     self._failures.pop(path, None)
                     self._cooldowns.pop(path, None)
                     return payload
+            except asyncio.CancelledError:
+                self._record(path, replace(result, delivery="cancelled"))
+                raise
             except (ClientError, TimeoutError) as err:
+                self._record(path, replace(result, transport="connection_error"))
                 raise self._failure(
                     path, "Unable to reach the CF endpoint", None
                 ) from err

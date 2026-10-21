@@ -100,3 +100,15 @@ unresolved. Every direct-verification status in this matrix remains unchanged.
 No new probe was made in Phase 3B. Permitted data use/cadence, official-finality
 semantics and active-session behavior remain unresolved. A successful HTTP request
 or a global live path does not prove shared context or current content.
+
+
+## Phase 3D-A structural compatibility review
+
+[The compatibility report](PHASE3DA_VALIDATION.md) compares current production
+parsers with observed field profiles, distinguishing confirmed numeric-team
+assumptions from synthetic robustness fixes and unchanged matching fields.
+Seven-digit offset timestamps already parse; naive schedule clocks remain
+unknown. No endpoint, polling frequency, cache TTL or retry policy changed.
+No new NASCAR request was made, so prior direct-probe statuses above are
+historical and unchanged. The [HA OS procedure](CF_LIVE_VALIDATION.md) remains
+future authorized work; permission and active-session gates stay open.

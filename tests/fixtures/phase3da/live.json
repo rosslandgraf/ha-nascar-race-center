@@ -1,0 +1,60 @@
+{
+  "series_id": 1,
+  "race_id": 99051,
+  "run_id": 17,
+  "run_type": 3,
+  "run_name": "Synthetic Race",
+  "flag_state": 2,
+  "lap_number": 42,
+  "laps_in_race": 100,
+  "laps_to_go": 58,
+  "elapsed_time": 1560,
+  "time_of_day": 123456789,
+  "time_of_day_os": "2026-10-21T08:04:25.1234567-04:00",
+  "stage": {
+    "stage_num": 2,
+    "finish_at_lap": 60,
+    "laps_in_stage": 30
+  },
+  "vehicles": [
+    {
+      "driver": {
+        "driver_id": 99011,
+        "full_name": "Synthetic Driver",
+        "first_name": "Synthetic",
+        "last_name": "Driver"
+      },
+      "vehicle_number": "07",
+      "vehicle_manufacturer": "Example",
+      "running_position": 1,
+      "starting_position": 3,
+      "laps_completed": 41,
+      "last_lap_time": 30.5,
+      "best_lap_time": 30.0,
+      "last_lap_speed": 175.5,
+      "best_lap_speed": 178.0,
+      "average_speed": 160.0,
+      "delta": 0.0,
+      "status": 3,
+      "is_on_track": false,
+      "is_on_dvp": true,
+      "laps_led": [
+        {
+          "start_lap": 40,
+          "end_lap": 41
+        }
+      ],
+      "pit_stops": [
+        {
+          "pit_in_lap_count": 35,
+          "pit_in_leader_lap": 35,
+          "pit_in_elapsed_time": 1050.5,
+          "pit_out_elapsed_time": 0.0,
+          "pit_in_rank": 3,
+          "pit_out_rank": 0,
+          "positions_gained_lossed": -2
+        }
+      ]
+    }
+  ]
+}
