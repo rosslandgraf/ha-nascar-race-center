@@ -594,6 +594,21 @@ async def test_cancelling_actual_transport_read_releases_cache_and_lock():
     assert await client.async_get_json(LIVE_FEED) == {}
 
 
+async def test_shutdown_before_scheduled_children_start_prevents_late_io():
+    provider = DemoHistoryProvider()
+    provider.async_get_history = AsyncMock()
+    service = HistoryService(provider, (1,))
+    consumer = asyncio.create_task(service.async_get(KEY, tuple(Kind)))
+    # async_get has scheduled gather's children; none has registered a flight.
+    await asyncio.sleep(0)
+    assert not service._flights
+    await service.async_close()
+    with pytest.raises(asyncio.CancelledError):
+        await consumer
+    provider.async_get_history.assert_not_awaited()
+    assert not service._flights
+
+
 @pytest.mark.parametrize(
     "kind", [Kind.LAPS, Kind.WEEKEND, Kind.LOOP, Kind.AVERAGES, Kind.STAGES]
 )

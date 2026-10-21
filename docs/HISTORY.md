@@ -22,7 +22,12 @@ response = await entry.runtime_data.history.async_get(
     (HistoryDataset.WEEKEND, HistoryDataset.LAPS),
 )
 weekend = response.dataset(HistoryDataset.WEEKEND)
-if weekend is not None and weekend.status == HistoryStatus.AVAILABLE:
+if (
+    weekend is not None
+    and weekend.status == HistoryStatus.AVAILABLE
+    and weekend.data is not None
+    and weekend.data.weekend is not None
+):
     reported_results = weekend.data.weekend.results  # None differs from ()
 ```
 

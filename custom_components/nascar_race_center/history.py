@@ -73,6 +73,10 @@ class HistoryService:
     async def _async_one(
         self, key: HistoricalRaceKey, dataset: HistoryDataset
     ) -> HistoryResult:
+        # async_get yields while scheduling gather's children. Entry shutdown
+        # can complete in that gap, before a child has registered its flight.
+        if self._closed:
+            raise asyncio.CancelledError
         flight_key = (key, dataset)
         flight = self._flights.get(flight_key)
         if flight is None:

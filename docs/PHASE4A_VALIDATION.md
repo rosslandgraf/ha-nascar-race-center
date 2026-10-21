@@ -3,7 +3,7 @@
 October 21, 2026 (America/New_York). Branch `phase4a-historical-foundation`
 starts from latest merged main **3d1e6d31413736dc787332a1917918b79b9ce037**,
 including Phase 3D-B / PR #8. Remote main was checked before implementation.
-The inherited 615-test baseline remains in the full suite; **194 new cases**
+The inherited 615-test baseline remains in the full suite; **195 new cases**
 exercise history. No separate untouched-baseline run is claimed for this task.
 
 The project brief, AGENTS, roadmap, architecture, endpoint/field/provenance/audit
@@ -46,9 +46,9 @@ official final classification.
 
 | Check | Executed result |
 | --- | --- |
-| Full `pytest -q` | **809 passed**, including all existing 615 cases and 194 new history cases |
+| Full `pytest -q` | **810 passed**, including all existing 615 cases and 195 new history cases |
 | `ruff check .` | Passed |
-| `ruff format --check .` | Passed; 115 Python files |
+| `ruff format --check .` | Passed (complete checkout) |
 | `mypy custom_components/nascar_race_center` | Passed; 33 integration source files |
 | Official HA 2026.10.2 Hassfest | Passed; one integration, zero invalid |
 | Independent prepared HA runtime smoke | **1 passed**; authenticated REST/state/service dispatch, separate from integration behavior |
@@ -104,6 +104,7 @@ demo. These are integration tests, not just calls to parsing helpers.
   diagnostics contain no driver name, lap fields or raw historical response.
 - One cancelled shared waiter leaves the other's read usable. Last-waiter
   cancellation aborts an actual blocked transport stream and releases its lock.
+  Shutdown before queued child tasks start prevents late I/O.
   Entry unload, reload and HA stop cancel/drain in-flight reads and close the old
   service. Failed/cancelled setup closes history; process-state loss restores no
   historical body/validator/result. The HA shared session remains caller-owned.
