@@ -117,15 +117,15 @@ frontend cannot cancel an individual `callWS` request and discards a late result
 Each page requests at most 200 rows and trusts the server's explicit next offset,
 including byte-budget-shortened pages. `PageView` retains at most eight pages
 (1,600 records); source-order assembly sorts page offsets and never merges
-changed snapshots. Previous pages use cached state or replay the same immutable
+changed snapshots. Driver/scoring detail pages must also match the open series, race and timing-run identity; historical page headers must match the explicit race key. Previous pages use cached state or replay the same immutable
 token/offset if evicted. Only the current history page (200 rows) is rendered;
 charts/accessibility tables use at most the retained 1,600 rows, with visible
 loaded-page scope. Null values and missing lap numbers break lines. The browser
 never reconstructs absent observations or interpolates chart gaps.
 
-At most two history/analytics selections are retained per card. Submitting the
+At most two active history/analytics selection entries are retained per card. Submitting the
 same exact selection reuses it; rendering and tab switching create no snapshots.
-A different third selection explains capacity and asks the user to reuse/wait.
+A different third selection explains capacity and asks the user to reuse/wait. Expired cached current-view records can remain until replaced, with a conservative bound of four page stores across the registry and two view references.
 The actual **two-per-user/four-global** server budget applies across all cards,
 users/entries and browser tabs; local state cannot override it. Snapshots expire
 five minutes after server construction; the card also bounds local continuation

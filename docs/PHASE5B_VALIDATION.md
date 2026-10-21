@@ -12,7 +12,7 @@ views, an in-UI editor/entry picker, stable sortable timing rows and favorites,
 requested driver/scoring detail pages, retained schedules, manual historical
 keys/datasets and backend analytics charts/summary comparisons. Authenticated
 HA requests/subscriptions consume API v1; no separate socket/token manager exists.
-The local versioned module builds independently from the Python integration.
+The local versioned module builds independently from the Python integration; bundled MIT/BSD license notices accompany the standalone JS artifact.
 [Installation, architecture, browser targets and detailed limits](FRONTEND.md)
 provide a reproducible review path.
 
@@ -33,26 +33,26 @@ checks is mocked. **Zero real NASCAR requests** were performed.
 | --- | --- |
 | Full existing Python suite before additions | **1,006 passed**, 55.88 s |
 | Final full Python suite including frontend contract export/check | **1,007 passed**, 54.84 s |
-| Ruff check / format | Passed; 140 Python files formatted |
+| Ruff check / format | Passed; latest check covered 144 Python files |
 | mypy integration | Passed; 44 source files |
 | Official Hassfest, HA 2026.10.2 source | Passed; 1 integration, 0 invalid |
 | Independent prepared actual-HA REST/state/service runtime test | **1 passed** |
 | Prepared `hass --script check_config` | Passed, exit 0 |
 | Frontend ESLint / Prettier | Passed |
 | Frontend strict TypeScript | Passed |
-| Vitest frontend unit/component tests | **52 passed**, 3 files |
+| Vitest frontend unit/component tests | **54 passed**, 3 files |
 | Playwright actual-card browser scenarios | **19 passed** |
 | Axe WCAG 2 A/AA and applicable 2.1 AA checks | Zero reported violations in tested overview/timing/weekend/history/analytics and light-theme states |
 | Versioned bundle build / size / no external imports or test-data checks | Passed |
 | Production bundle actual browser render | Passed; 100 keyed timing rows, local-only preview requests |
-| Committed bundle reproducibility | CI checks clean rebuild against tracked artifact |
+| Committed bundle reproducibility | Passed locally after clean lockfile install, SHA-256 comparison and clean build-diff; also passed hosted CI |
 | Git whitespace check | Passed |
 | HACS integration validation | Existing private-repository skip and temporary brands exception retained; not full HACS approval |
 
 Hassfest used official source `8d7fd8b68677c2585be36ec86043308f403875b8`
 (HA tag 2026.10.2) in ignored `work/home-assistant-core`. Actual installed frontend
 20260930.4 and its matching custom-card/entry-discovery source were inspected.
-Hosted workflow results are recorded below after the review branch is pushed.
+Executed hosted workflow results for the final implementation are recorded below.
 
 ## Automated coverage and actual API grounding
 
@@ -66,7 +66,7 @@ WebSocket/pagination tests continue to exercise native authentication, all eight
 commands, 50,028-history/79,324-analytics-row streams, zero continuation GETs,
 snapshot slots, expiry, revocation, cancellation and Recorder boundaries.
 
-The 52 frontend tests cover configuration/picker/editor/sizing, entry selection,
+The 54 frontend tests cover configuration/picker/editor/sizing, entry selection,
 required envelopes/entry/version, HA result/event wrappers, IDs/car strings,
 null/partial fields, safe errors, selected-series/freshness gates, favorites,
 live updates, subscription disposal and delayed acknowledgement, race/session
@@ -74,7 +74,7 @@ changes, rapid switching and late callbacks, stable sorting, reconnect/bootstrap
 independent cards sharing one HA connection, disconnect cleanup, pagination/
 source order/token/offset reuse, eight-page eviction/replay, changed/expired
 snapshots, pacing/cancelled timers, date/number/DST formatting, null chart gaps,
-position/delta/windows, backend summary bases, and conflict/sentinel exclusions.
+position/delta/windows, backend summary bases, and conflict/sentinel exclusions. Final review added direct regressions preventing cross-race/run detail publication and substituted historical race keys.
 
 Browser scenarios exercise the implemented card (source and committed production
 bundle), meaningful navigation, historical selection, analytics queries and
@@ -122,16 +122,16 @@ The synthetic Chromium measurement mounts the production module, then renders
 It includes no NASCAR latency. The first data-ready time includes the deliberate
 370 ms client pacing interval and local test harness.
 
-The current module is approximately **121 kB raw / 32 kB gzip**, including Lit;
+The current module is **129,262 bytes raw / 33,286 bytes gzip**, including Lit;
 the bundle budget is 180,000 raw / 50,000 gzip bytes. `check:bundle` reports exact
 bytes and rejects remote module imports, provider URLs or preview-data leakage.
-Observed initial render was about 5–10 ms; 100-driver updates averaged about 2 ms
-with observed maximum under 35 ms in these local runs. Exact values from the
+The final recorded initial render was 5.5 ms; 100-driver updates averaged 1.825 ms
+with a maximum of 27.9 ms. Other local runs varied with browser scheduling. Exact values from the
 final run remain in the JSON artifact; these are not device/service guarantees.
 
 Rows are keyed by string NASCAR ID. Unrelated HA entity updates do not request a
 render. History renders at most one 200-record page; chart/source assembly retains
-at most eight pages/1,600 records per open view. Two snapshots/card are retained
+at most eight pages/1,600 records per open view. Two active selections/card are retained
 without tab-triggered recreation. Server two-per-user/four-global slots remain
 authoritative across all cards/tabs. Page offsets follow byte-budget-shortened
 responses; previous evicted pages replay the same token. Changed stateless pages
@@ -200,5 +200,13 @@ new public repository or NASCAR network request occurred in this phase.
 
 ## Hosted checks
 
-Pending initial review-branch push; replace this note with actual workflow URLs
-and results after completion. The private-repository HACS skip remains intentional.
+The final implementation commit `39e524c` passed all three hosted PR workflows:
+
+- [Python tests, Ruff and mypy](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39691960830): **success**.
+- [Frontend lint, types, 54 tests, reproducible bundle and 19 browser scenarios](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39691960824): **success**, with uploaded browser artifacts.
+- [Official Hassfest](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39691960833): **success**; the HACS job is **skipped** because repository visibility remains private.
+
+These links pin executed implementation validation. Subsequent documentation/
+screenshot-only commits run the same workflows; the current head's status is
+visible in [PR #12 checks](https://github.com/rosslandgraf/ha-nascar-race-center/pull/12/checks).
+No implementation check is inferred from configuration alone.

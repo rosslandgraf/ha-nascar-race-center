@@ -29,7 +29,7 @@ with a future [authorized HA OS CF test procedure](docs/CF_LIVE_VALIDATION.md).
 - Race leader, reported lap totals/remaining laps and evidence-limited session progress; favorite-driver live sensors independent of the reference directory.
 - Mocked provider and Home Assistant lifecycle tests, Ruff/mypy checks, Hassfest and HACS validation workflows.
 
-Phase 3B adds embedded pit/current-stage observations and conservative standalone scoring adapters; live association of standalone feeds remains blocked where identity/freshness is unproven. Phase 3C adds opt-in racing events and user-enabled notification/lighting blueprints. Phases 4A/4B add bounded on-demand historical data and evidence-limited analytics. Phase 5A adds the [authenticated dashboard API v1](docs/DASHBOARD_API.md) for cached bootstrap, schedule navigation, live subscriptions and paged history/analytics. It requires an active Home Assistant administrator. The visual dashboard and separate custom card remain Phase 5B/5C work. The [validation report](docs/VALIDATION.md) records precisely which checks ran; configured CI is not a claim that every check passed. Real CF response schemas, cancellation/status fields and timestamp semantics remain unverified; [schema evidence](docs/SCHEMA_EVIDENCE.md) distinguishes community references from current service validation.
+Phase 3B adds embedded pit/current-stage observations and conservative standalone scoring adapters; live association of standalone feeds remains blocked where identity/freshness is unproven. Phase 3C adds opt-in racing events and user-enabled notification/lighting blueprints. Phases 4A/4B add bounded on-demand historical data and evidence-limited analytics. Phase 5A adds the [authenticated dashboard API v1](docs/DASHBOARD_API.md) for cached bootstrap, schedule navigation, live subscriptions and paged history/analytics. It requires an active Home Assistant administrator. Phase 5A is reviewed and merged in PR #11 (`fb8d8d0`). Phase 5B adds the [separate custom card](docs/FRONTEND.md); Phase 5C retains additional device and interaction polish. The [validation report](docs/VALIDATION.md) records precisely which checks ran; configured CI is not a claim that every check passed. Real CF response schemas, cancellation/status fields and timestamp semantics remain unverified; [schema evidence](docs/SCHEMA_EVIDENCE.md) distinguishes community references from current service validation.
 
 ## Development installation
 
@@ -47,7 +47,7 @@ The existing [MIT license](LICENSE) applies to project code; NASCAR data and med
 
 ## HACS status
 
-The repository uses a HACS-compatible integration layout and includes `hacs.json` and validation workflows. It is not yet release-ready or approved for the HACS default catalog. The official HACS action rejects private repositories, so its job is conditional on public visibility and is skipped during private development. When available, it temporarily skips the brands check while authorized branding is pending. Full HACS validation, branding and all permission/release gates must be resolved before public distribution. The optional frontend card will be packaged separately in a later phase.
+The repository uses a HACS-compatible integration layout and includes `hacs.json` and validation workflows. It is not yet release-ready or approved for the HACS default catalog. The official HACS action rejects private repositories, so its job is conditional on public visibility and is skipped during private development. When available, it temporarily skips the brands check while authorized branding is pending. Full HACS validation, branding and all permission/release gates must be resolved before public distribution. The optional frontend card has a separate local build in Phase 5B; its future HACS dashboard-plugin release remains separately reviewed.
 
 ## Development
 
@@ -89,7 +89,7 @@ Adding/removing favorites reloads the entry. Existing favorites retain their uni
 | Calendar | Per selected series | Read-only race weekends and supplied sessions; explicit time policy above |
 | Favorite-driver metadata | Per selected NASCAR driver ID | Name and reliable reference facts only |
 
-Existing Phase 1 entries require no manual migration: omitted favorites default to an empty selection, and source, authorization, selected series and polling settings retain their meanings. No full season list, directory or leaderboard is placed into Recorder attributes. The future dashboard consumes normalized models through the dedicated, versioned [dashboard WebSocket API](docs/DASHBOARD_API.md). Phases 3A/3B add metrics without changing existing unique IDs or config version.
+Existing Phase 1 entries require no manual migration: omitted favorites default to an empty selection, and source, authorization, selected series and polling settings retain their meanings. No full season list, directory or leaderboard is placed into Recorder attributes. The optional dashboard consumes normalized models through the dedicated, versioned [dashboard WebSocket API](docs/DASHBOARD_API.md). Phases 3A/3B add metrics without changing existing unique IDs or config version.
 
 ## Experimental live timing and favorites
 
