@@ -10,6 +10,10 @@ does not enable it in the integration.
 
 ## Evidence and data boundaries
 
+The imported observed package is now the primary structural source for Phase 3B.
+Its redacted samples are documentation, not original captures or replay inputs.
+The following inventory describes the earlier development audit.
+
 - Owner browser reports: 24 working, four error/login on October 20, 2026.
 - Fresh anonymous direct attempts: see [probe evidence](probes/2026-10-21.json).
   All 28 were blocked at proxy CONNECT, before an origin response. This does not
@@ -91,5 +95,9 @@ Never copy a browser session's cookies or NASCAR credentials into this project.
    and separate. Production continues using the real network adapters/polling;
    test fixtures must never supply a silent live fallback.
 
-Phase 3B remains paused until the owner reviews this audit and the outstanding
-real-response and active-session validation gaps are resolved or scoped explicitly.
+The subsequent Phase 3B assignment explicitly scopes evidence-limited implementation.
+Read [Phase 3B evidence](../PHASE3B_EVIDENCE.md) and [validation](../PHASE3B_VALIDATION.md).
+The separately [imported observed package](../nascar-api-reference/START_HERE.md)
+corroborates structural fields; it does not resolve live identity, freshness,
+scoring/finality semantics or permissions. Earlier proxy observations below
+remain historical and are not a claim that no other source obtained responses.

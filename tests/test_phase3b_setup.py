@@ -503,3 +503,23 @@ async def test_recorder_suppresses_timestamp_and_other_driver_scoring_changes(
     updated = await hass.async_add_executor_job(counts)
     assert updated[watched[0]] == baseline[watched[0]] + 1
     assert updated[watched[1]] == baseline[watched[1]]
+
+
+async def test_unexpected_optional_coordinator_error_keeps_core_features(
+    hass, live_setup
+):
+    entry, _ = await live_setup(payload=embedded_payload())
+    await enable_scoring(hass, entry)
+    await scoring_refresh(hass, entry, points=trusted_feed("points"))
+    coordinator = entry.runtime_data.scoring
+    coordinator.provider.async_get_scoring.side_effect = RuntimeError("synthetic bug")
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+    assert state(hass, entry, "1_points_capability").state == "offline"
+    assert (
+        state(hass, entry, "driver_99002_scoring_championship_position").state
+        == STATE_UNAVAILABLE
+    )
+    assert state(hass, entry, "driver_99002_scoring_pit_lap").state == "40"
+    assert state(hass, entry, "1_current_stage").state == "2"
+    assert state(hass, entry, "driver_99002_live_position").state == "2"

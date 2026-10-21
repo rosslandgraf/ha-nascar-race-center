@@ -189,8 +189,10 @@ They are not real observations and are not newly invented feed contracts.
 Detailed local `start_time`/`end_time`, arbitrary cancellation/status fields, media
 and unsupported fields are intentionally ignored. The historical `weekend-feed`
 schema is not interchangeable with embedded/detailed season sessions. There is
-no observed contract for historical, legacy, flag/pit/stage/points, recap or Drive
-payloads; leave those schemas undocumented rather than inventing fields.
+no observed contract for those feeds in that earlier audit. The later imported
+package provides structural evidence for historical, legacy and pit/stage/points
+payloads. Current Phase 3B consumption and limits are recorded below; populated
+recap/Drive payloads and semantic contracts remain unverified.
 
 ## Cross-series, season and session-state limits
 
@@ -212,3 +214,29 @@ The production JSON decoder now rejects duplicate object keys rather than lettin
 the last conflicting series/race/driver key silently overwrite earlier identity.
 This is an independently reproduced malformed-input fix, not a discovered NASCAR
 schema change. All normal samples and live network routing remain unchanged.
+
+
+## Phase 3B observed structural contracts
+
+The immutable [imported dictionary](../nascar-api-reference/Documentation/schema_reference.md)
+and [relationship checks](../nascar-api-reference/Documentation/verified_relationships.json)
+are primary evidence for the narrow parsers in `scoring.py`. Minimal handmade
+[fixtures](../../tests/fixtures/phase3b/README.md) preserve only documented keys.
+No redacted scalar is promoted to a real value, ID, code meaning or score rule.
+
+| Exact fields | Normalized use | Conservative rule |
+| --- | --- | --- |
+| `vehicles[].pit_stops[].pit_in_lap_count`, `pit_in_leader_lap` | Embedded pit lap descriptors | Nonpositive/invalid unknown; identity comes only from parent NASCAR driver |
+| `pit_in_elapsed_time`, `pit_out_elapsed_time` | Reported clocks | Positive finite values only; no unit, subtraction or completion assumption |
+| `pit_in_rank`, `pit_out_rank`, `positions_gained_lossed` | Embedded ranks and reported signed gain | Zero ranks unknown; preserve signed gain, including zero |
+| `stage.stage_num`, `finish_at_lap`, `laps_in_stage` | Current stage | No completed-stage calculation or boundary event |
+| Standalone pit fields (03/18), including tire Booleans and durations | Separate `PitActivity` rows | No source context/driver ID; no name/car join; nonpositive physical values unknown |
+| Stage array `race_id`, `run_id`, `stage_number`, `results[].driver_id/position/stage_points` | Reported `StageClassification` | Keep `stage_run` namespace; absent series/time cannot come from leaderboard; zero score valid |
+| Points `series_id/race_id/run_id`, `driver_id`, `membership_id` | Explicit context and distinct identity namespaces | Zero IDs unknown; never substitute membership ID |
+| `points_position`, `points`, `points_earned_this_race`, `bonus_points`, stage fields | Reported scores | Missing/negative/sentinel values unknown; no total/bonus formula |
+| `delta_leader`, `delta_next` | Signed reported fields | No inferred units or championship position-change calculation |
+
+All standalone CF feeds lack an evidenced source clock; local adapter reads,
+ETag/304 and fresh peer feeds cannot establish their content age. Their normalized
+data remains separate from active scoring. No unobserved JSON series/time/finality
+fields are accepted to defeat these gates. All results remain provisional.

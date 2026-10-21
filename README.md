@@ -1,6 +1,6 @@
 # NASCAR Race Center
 
-A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phase 3A remains private development, with live source validation and release gates outstanding.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
+A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phase 3B remains private development, with live source validation and release gates outstanding.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
 
 The long-term target includes race-weekend schedules, timing/scoring, favorite drivers, championship points, historical analytics, automations and an optional responsive dashboard. See the complete [specification](NASCAR_Race_Center_Codex_Brief.md) and [phased roadmap](ROADMAP.md).
 
@@ -8,8 +8,9 @@ Development reference: [API library](docs/api/README.md),
 [all 28 endpoints](docs/api/ENDPOINT_CATALOG.md),
 [field dictionary and evidence limits](docs/api/SCHEMA_REFERENCE.md), and
 [October 21 API audit](docs/api/AUDIT_REPORT.md). All 28 fresh attempts were
-blocked at proxy CONNECT, before any NASCAR response. No current real JSON schema
-or active-session behavior was verified. Phase 3B remains paused for review.
+blocked at proxy CONNECT, before any NASCAR response. The separately supplied [observed package](docs/nascar-api-reference/START_HERE.md)
+corroborates structures but exposes conflicting contexts; active-session behavior
+and permission remain unverified. See [Phase 3B evidence](docs/PHASE3B_EVIDENCE.md).
 
 ## Available features
 
@@ -23,7 +24,7 @@ or active-session behavior was verified. Phase 3B remains paused for review.
 - Race leader, reported lap totals/remaining laps and evidence-limited session progress; favorite-driver live sensors independent of the reference directory.
 - Mocked provider and Home Assistant lifecycle tests, Ruff/mypy checks, Hassfest and HACS validation workflows.
 
-Pit/stage/points tracking, automation events, history/analytics and custom cards remain future phases. The normalized leaderboard is available to integration consumers in memory; a user-facing full-field dashboard/data endpoint is a later deliverable. The [validation report](docs/VALIDATION.md) records precisely which checks ran; configured CI is not a claim that every check passed. Real CF response schemas, cancellation/status fields and timestamp semantics remain unverified; [schema evidence](docs/SCHEMA_EVIDENCE.md) distinguishes community references from current service validation.
+Phase 3B adds embedded pit/current-stage observations and conservative standalone scoring adapters; live association of standalone feeds remains blocked where identity/freshness is unproven. Automation events, history/analytics and custom cards remain future phases. The normalized leaderboard is available to integration consumers in memory; a user-facing full-field dashboard/data endpoint is a later deliverable. The [validation report](docs/VALIDATION.md) records precisely which checks ran; configured CI is not a claim that every check passed. Real CF response schemas, cancellation/status fields and timestamp semantics remain unverified; [schema evidence](docs/SCHEMA_EVIDENCE.md) distinguishes community references from current service validation.
 
 ## Development installation
 
@@ -65,7 +66,7 @@ Choose up to 50 favorites through **Configure** at any time. The selector suppor
 
 Demonstration options are explicitly marked **Demo** and use fictional driver IDs. Switching data sources preserves selected IDs without matching by name or car number; review favorites when moving from demonstration to CF mode, because a fictional ID does not identify a real NASCAR driver.
 
-Each selected driver gets one metadata sensor, whose state is the known driver name and whose compact attributes include the NASCAR ID, reported series associations and available car number, team and manufacturer. Up to three `series_metadata` records preserve unambiguous series-specific car/team/manufacturer facts. Live observations use their own sensors, described below. No pit value is supplied. Multiple series records share one driver identity; ambiguous car/team details are not flattened into a guessed current value. The general directory does not prove an active entry or current roster. Source manufacturer-logo URLs are ignored.
+Each selected driver gets one metadata sensor, whose state is the known driver name and whose compact attributes include the NASCAR ID, reported series associations and available car number, team and manufacturer. Up to three `series_metadata` records preserve unambiguous series-specific car/team/manufacturer facts. Live observations use their own sensors, described below. Opt-in pit and scoring summaries are described below. Multiple series records share one driver identity; ambiguous car/team details are not flattened into a guessed current value. The general directory does not prove an active entry or current roster. Source manufacturer-logo URLs are ignored.
 
 Adding/removing favorites reloads the entry. Existing favorites retain their unique IDs across reference changes and series changes. A missing, failed or more-than-seven-days-old driver reference makes its metadata sensor unavailable while preserving the selection. Track reference metadata enriches calendar descriptions when available; losing the track feed leaves schedule-supplied track names usable. References refresh daily, independently of the six-hour schedule refresh, so a driver or track outage does not disable race calendars. These intervals describe the integration's conservative policy, not an independently approved NASCAR polling allowance.
 
@@ -83,7 +84,7 @@ Adding/removing favorites reloads the entry. Existing favorites retain their uni
 | Calendar | Per selected series | Read-only race weekends and supplied sessions; explicit time policy above |
 | Favorite-driver metadata | Per selected NASCAR driver ID | Name and reliable reference facts only |
 
-Existing Phase 1 entries require no manual migration: omitted favorites default to an empty selection, and source, authorization, selected series and polling settings retain their meanings. No full season list, directory or leaderboard is placed into Recorder attributes. A future dashboard will consume normalized models through its own data interface. Phase 3A adds metrics without changing existing unique IDs or config version.
+Existing Phase 1 entries require no manual migration: omitted favorites default to an empty selection, and source, authorization, selected series and polling settings retain their meanings. No full season list, directory or leaderboard is placed into Recorder attributes. A future dashboard will consume normalized models through its own data interface. Phases 3A/3B add metrics without changing existing unique IDs or config version.
 
 ## Experimental live timing and favorites
 
@@ -146,3 +147,34 @@ records community evidence and unsupported semantics; no direct CF request or
 active-session verification was possible. Offline demonstration still supplies
 fictional schedules/references and an empty live feed. Synthetic live replay is
 exercised through mocked provider and actual Home Assistant tests.
+
+
+## Phase 3B pits, stages and championship points
+
+Current stage uses the live feed's embedded stage descriptor. Each favorite can
+opt into **Last reported pit lap**, which includes a small set of reported entry/
+exit clocks, lap/ranks and signed movement from that driver's embedded records.
+Clock units, completed-stop counts and pit durations are not inferred. Empty or
+ambiguous pit records cannot invent a last stop. All values require a fresh
+matching monitored race source; there is no per-driver request.
+
+Three per-series diagnostic sensors explain standalone pit, stage-result and
+championship-point capability. The observed global pits lack race/driver IDs,
+stages reference a different race and lack series/source time, and points have
+zero context IDs. These datasets remain separate in memory and **cannot currently
+supply active-race scores**. Fresh HTTP responses cannot resolve those blockers.
+No name/car/membership-ID or numeric cross-namespace join is attempted.
+
+Reported stage position/points and provisional championship position/totals/race
+points are opt-in favorite summaries. Reported stage-result-set count and
+provisional championship leader are opt-in race summaries. These remain
+unavailable unless a provider establishes the required identity and source time;
+CF currently cannot. No totals, completed stages, scoring rules, championship
+rank changes or official finality are calculated from incomplete evidence.
+Checkered never promotes provisional scores to official results.
+
+One shared optional refresh reads the three global feeds, at least 15 minutes
+apart during supported active racing and six hours otherwise. Failures remain
+independent; server backoff and cache validators apply. These defaults do not
+establish NASCAR polling permission. See [Phase 3B validation](docs/PHASE3B_VALIDATION.md)
+for executed checks, measured request/Recorder budgets and remaining work.

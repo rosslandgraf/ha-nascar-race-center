@@ -78,6 +78,8 @@ class ScoringCoordinator(DataUpdateCoordinator[ScoringData]):
             return view.health
         if view.snapshot is None or view.snapshot.status != "race":
             return "not_race_session"
+        if not self.last_update_success:
+            return "offline"
         if kind in self.data.failed:
             return "denied" if self.data.errors.get(kind) in {401, 403} else "offline"
         feed = self.data.feeds.get(kind)

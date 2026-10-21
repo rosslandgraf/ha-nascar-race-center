@@ -276,3 +276,15 @@ def test_imported_structures_ground_fixture_keys_without_using_redacted_values()
     assert set(fixture("embedded")["pit_stops"][0]) <= set(
         structure["vehicles"][0]["pit_stops"][0]
     )
+
+
+def test_zero_time_pit_placeholders_do_not_become_reported_stop_laps():
+    rows = [
+        {
+            "pit_in_lap_count": 0,
+            "pit_in_leader_lap": 0,
+            "pit_in_elapsed_time": 0,
+            "pit_out_elapsed_time": 0,
+        }
+    ]
+    assert latest_pit(parse_embedded_pits(rows)) is None
