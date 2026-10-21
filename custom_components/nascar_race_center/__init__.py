@@ -34,6 +34,7 @@ from .const import (
     PROVIDER_DEMO,
 )
 from .coordinator import LiveCoordinator, ScheduleCoordinator
+from .dashboard import DashboardRuntime
 from .event_runtime import EventRuntime
 from .events import EventPreferences
 from .favorites import FavoriteDriverRegistry
@@ -49,6 +50,7 @@ from .reference_provider import (
 )
 from .scoring_coordinator import ScoringCoordinator
 from .scoring_provider import CFScoringProvider, DemoScoringProvider, ScoringProvider
+from .websocket import async_register
 
 
 @dataclass(frozen=True)
@@ -64,6 +66,7 @@ class RuntimeData:
     events: EventRuntime
     history: HistoryService
     analytics: AnalyticsService
+    dashboard: DashboardRuntime
 
 
 type NascarConfigEntry = ConfigEntry[RuntimeData]
@@ -165,13 +168,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
     # Register before first refresh so failed/cancelled setup drains requests too.
     entry.async_on_unload(history.async_close)
     entry.async_on_unload(
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, history.async_close)
+        hass.bus.async_listen(EVENT_HOMEASSISTANT_STOP, history.async_close)
     )
     analytics = AnalyticsService(hass, history)
     entry.async_on_unload(analytics.async_close)
     entry.async_on_unload(
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, analytics.async_close)
+        hass.bus.async_listen(EVENT_HOMEASSISTANT_STOP, analytics.async_close)
     )
+    dashboard = DashboardRuntime(hass, entry)
+    entry.async_on_unload(dashboard.async_close)
+    entry.async_on_unload(
+        hass.bus.async_listen(EVENT_HOMEASSISTANT_STOP, dashboard.async_close)
+    )
+    async_register(hass)
     entry.runtime_data = RuntimeData(
         provider=provider,
         schedule=schedule,
@@ -182,6 +191,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
         events=events,
         history=history,
         analytics=analytics,
+        dashboard=dashboard,
     )
     # DataUpdateCoordinator registers each async_shutdown override with
     # entry.async_on_unload during construction, before either first refresh.
