@@ -1,6 +1,6 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 3D-B are reviewed and merged into `main`, including PR #8 and the observed API reference package. Phase 4A starts from `3d1e6d3` (PR #8) and preserves its 615-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 4A are reviewed and merged into `main`, including PR #9 (`907e5bb`) and the observed API reference package. Phase 4B starts from that merge and preserves its 810-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
 
@@ -126,7 +126,7 @@ standalone scoring requests, history or dashboard work.
 
 ## Phase 4A — Historical data foundation
 
-**Status:** implemented for review from merged PR #8. See the [internal contract](docs/HISTORY.md) and [actual validation](docs/PHASE4A_VALIDATION.md).
+**Status:** reviewed and squash-merged in PR #9, `907e5bba46d5017836a074197e68fd26a3093b69`. See the [internal contract](docs/HISTORY.md) and [actual validation](docs/PHASE4A_VALIDATION.md).
 
 **Delivered:** typed immutable, evidence-limited weekend/results/sessions, laps/flags,
 object-keyed notes, loop metrics, lap averages and archived pit/stage data; independent
@@ -142,12 +142,22 @@ remain open. No NASCAR requests, persistent raw archive, dashboard or analytics.
 
 ## Phase 4B — Historical analytics and comparisons
 
-**Depends on:** reviewed Phase 4A interface and evidence supporting each formula.
+**Status:** implemented and synthetically validated for review from merged PR #9.
+See the [internal API/formulas](docs/ANALYTICS.md) and
+[actual validation](docs/PHASE4B_VALIDATION.md).
 
-**Planned:** defensible reported-versus-derived statistics, comparisons and navigation
-using `entry.runtime_data.history`; document formulas, sample limits and provenance.
-No implementation in Phase 4A. Do not infer tire strategy, pace units, rating formulas,
-official classification or missing results from unsupported fields.
+**Delivered:** immutable recorded-lap/time/position series, coverage/gaps, exact
+mean/median/extrema, population consistency, contiguous rolling windows, explicit
+all-available/common-valid-lap comparison bases, pairwise numerical differences,
+reported result/stage/loop/average/session rows and independent provenance/failure
+states. `entry.runtime_data.analytics` reuses HistoryService on demand and bounds
+executor work, concurrent requests and output. No startup/periodic history work,
+extra Recorder rows, frontend or authenticated transport is introduced.
+
+**Gates:** source units, conditions, sentinel meanings, official classification,
+cross-context historical coverage and NASCAR data-use remain unverified. No tire
+strategy, pit-driver join, rating formula, invented score or championship standings.
+Phase 5 remains deferred until separately assigned.
 
 ## Phase 5 — Premium Dashboard and dedicated data interface
 
@@ -172,7 +182,7 @@ official classification or missing results from unsupported fields.
 | Data rights and polling limits | Unresolved | Owner review and documented permission where required |
 | Anonymous endpoint and active-session access | Supplied single-snapshot observations; this environment blocked | Authorized current-session observation with identity/time provenance |
 | Live race/session behavior | Unverified | Authorized active-session observation and replay fixtures |
-| Historical source coverage and analytics | Phase 4A observed-shape foundation; cross-context coverage unverified, Phase 4B deferred | Authorized per-context evidence and defensible formulas/tests |
+| Historical source coverage and analytics | Phase 4A merged; Phase 4B numerical analytics validated for review, cross-context coverage unverified | Authorized per-context source/units/conditions evidence; retain formula/sample/provenance limits |
 | Dashboard/card packaging | Planned | Separate frontend artifact and compatibility validation |
 | Full HACS validation | Action rejects private repositories | Validate after an explicitly approved public-distribution decision; do not change visibility merely to pass CI |
 | HACS brands requirement | Deferred | Authorized neutral branding submission; remove CI exception |
@@ -196,8 +206,9 @@ source/live/data-use and release gates above still apply.
 - [x] Adaptive polling capability and synthetic request/Recorder budgets (Phase 3D-B, merged PR #8).
 - [ ] Independently verify permitted CF cadence and real active-session latency before faster CF activation.
 - [ ] Validate active-session event semantics and physical-device automation behavior.
-- [x] On-demand historical results/laps/notes/loop/average/pit/stage foundation with bounded memory and provenance (Phase 4A, for review).
-- [ ] Historical coverage/semantics acceptance and defensible derived analytics/comparisons (Phase 4B).
+- [x] On-demand historical results/laps/notes/loop/average/pit/stage foundation with bounded memory and provenance (Phase 4A, merged PR #9).
+- [x] Defensible derived analytics/comparisons and bounded internal consumer API (Phase 4B, for review).
+- [ ] Historical cross-context coverage, source units/conditions and semantic acceptance.
 - [ ] Premium Dashboard: dedicated data interface, responsive accessible views and separate frontend package (Phase 5).
 - [ ] Beta & Release Readiness: compatibility matrix, beta feedback, translations, diagnostics and release workflows (Phase 6).
 - [ ] HACS-ready distribution: permission/asset review, branding, no validation exceptions, distinct integration/card artifacts and explicit release authorization (Phase 6).

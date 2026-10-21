@@ -17,6 +17,10 @@ flowchart TD
     Entry --> Reference[Reference coordinator / favorites registry]
     Entry --> Live[Live coordinator]
     Entry --> History[On-demand history service]
+    Entry --> Analytics[On-demand analytics service]
+    Analytics --> History
+    Analytics --> Calculations[Pure validation and calculations in HA executor]
+    Calculations --> AnalyticsModels[Immutable analytics result contract v1]
     History --> HistoryProvider[Independent historical provider]
     HistoryProvider --> HTTP
     History --> HistoryModels[Immutable reported historical models]
@@ -42,6 +46,7 @@ flowchart TD
 | HTTP transport | Shared session, cancellation, timeouts, cache validators, errors and bounded backoff | No domain interpretation or entity creation |
 | Provider | Parse supported field shapes and return typed models | Swap provider without changing entities |
 | Models | Stable IDs, timezone-aware times, explicit optional values | Add documented facts without exposing raw JSON |
+| Analytics | Validate immutable historical identities, calculate bounded deterministic statistics and preserve provenance | Pure calculations; entry-owned on-demand executor service for Phase 5 |
 | Coordinators | Deduplicate polling, select seasons, manage freshness and failures | Separate schedules, driver/track references and live sessions; history has an independent on-demand broker |
 | Entities | Render compact state and availability | No direct HTTP calls or full leaderboard attributes |
 | Config entry | Selected series, source, authorization and options lifecycle | Version/migrate persisted configuration as needed |
@@ -91,7 +96,7 @@ The timestamp of a successful HTTP request is transport freshness. It cannot pro
 
 - Phase 2 supplies session-aware calendars and favorite-driver metadata behind evidence-limited schedule/reference adapters. Remaining direct schema, timestamp/status and data-use gates are recorded in the evidence documents. Schedule/reference caches remain separate from live timing.
 - Phase 3A supplies evidence-limited timing and session progress. Later Phase 3 assignments own pits, stages, points and automation events. A persistent event ledger and baseline/restart/replay suppression are required before events are enabled.
-- Phase 4A supplies bounded on-demand history keyed by season/series/race/dataset. Phase 4B will add derived statistics with formulas, source availability and provenance; they never overwrite reported facts.
+- Phase 4A supplies bounded on-demand history keyed by season/series/race/dataset. Phase 4B supplies pure derived statistics and an on-demand executor service with formulas, source availability and provenance; they never overwrite reported facts.
 - Phase 5 adds an authenticated Home Assistant data view for larger leaderboards/history and a separate optional card package. It must avoid huge entity attributes and unnecessary Recorder writes.
 - Phase 6 closes compatibility, translation, diagnostics, data-use, branding, replay and release gates. Dashboard and integration releases have distinct artifacts and compatibility checks.
 
@@ -347,3 +352,34 @@ field establishes official finality or publication state. All three series and
 multiple years are exercised synthetically; actual cross-context CF coverage
 remains unverified. Read [HISTORY.md](docs/HISTORY.md) for the exact fields, status
 contract, resource/retention/request budgets, lifecycle and remaining limitations.
+
+## Phase 4B analytics boundary
+
+`analytics_models.py` defines frozen/slots query/result contract v1.
+`analytics_validation.py` aligns response/provenance/race/driver/lap/stage/run
+identities and source bounds, independently rejecting invalid peers.
+`analytics_laps.py` calculates recorded series, exact descriptive statistics,
+population consistency, gaps, position progression and contiguous windows.
+`analytics.py` assembles same-race comparisons and selected reported
+result/stage/loop/average/session rows. These modules perform no I/O, use no HA
+APIs and read no clocks. Their output never infers conditions or officiality.
+
+`analytics_runtime.py` exposes `entry.runtime_data.analytics.async_get(query,
+datasets)` and delegates explicit retrieval once to the existing HistoryService.
+Calculations run through HA's executor, with two distinct in-flight selections;
+identical selections share one task. Pure workers are drained even after
+cancellation before releasing a slot. Setup registers entry/HA-stop cleanup
+before refreshes; unload/reload/failed setup closes the service. No scheduler,
+completed result cache, endpoint, entity, Recorder or storage change is added.
+History's request/cache/backoff ownership remains intact.
+
+Eight selected drivers, 5,000 selected lap numbers, 60,000 projected rolling
+points and 28 pairs bound work/output; source history limits remain. Position
+observations and official-unverified reported laps-led values remain separate.
+All-available and common-valid-numbered-lap bases are explicit; missing laps
+break windows. Stage disagreements retain both sources with conflict flags.
+Timing/weekend/results/stage run namespaces remain separate, and pits remain
+race-scoped. Formula, field, unit, availability, sample and retention contracts
+are documented in [ANALYTICS.md](docs/ANALYTICS.md), with executed checks in
+[Phase 4B validation](docs/PHASE4B_VALIDATION.md). Phase 5 owns future authenticated
+transport, visualization and client-specific presentation.
