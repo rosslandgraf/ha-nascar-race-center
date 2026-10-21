@@ -1,0 +1,23 @@
+{
+  "id": "19",
+  "url": "https://cf.nascar.com/cacher/2024/1/5392/live-stage-points.json",
+  "retrieved_at": "2026-10-21T11:05:04.562195+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 7297,
+  "sha256": "93b7a08658e7a355ede9f12b8857777dc32f792983c680a1c4a1ef9809bacddc",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "list",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:06 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 7297",
+    "date: Wed, 21 Oct 2026 11:05:07 GMT",
+    "last-modified: Fri, 22 Mar 2024 19:14:26 GMT",
+    "etag: \"2019b062fee2b67802c2d00c3e30cb39\""
+  ]
+}

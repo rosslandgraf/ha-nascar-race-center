@@ -1,0 +1,85 @@
+{
+  "09_schedule_to_06": {
+    "rows": 111,
+    "unmatched_race_ids": [
+      5696
+    ],
+    "unmatched_track_ids": []
+  },
+  "10_schedule_to_06": {
+    "rows": 91,
+    "unmatched_race_ids": [],
+    "unmatched_track_ids": []
+  },
+  "11_schedule_to_06": {
+    "rows": 72,
+    "unmatched_race_ids": [],
+    "unmatched_track_ids": []
+  },
+  "06_series_1_equals_12": true,
+  "01_driver_to_07": {
+    "total": 37,
+    "unmatched_driver_ids": []
+  },
+  "01_race_in_06": true,
+  "01_track_in_08": true,
+  "historical_driver_sets": {
+    "13_results_count": 36,
+    "14_lap_driver_count": 36,
+    "14_missing_from_results": [],
+    "16_missing_from_results": [],
+    "19_missing_from_results": []
+  },
+  "historical_race_context": {
+    "13": 5392,
+    "16": 5392,
+    "19": [
+      5392
+    ],
+    "20_event": 5392
+  },
+  "session_identity": {
+    "13_race_timing_run_id": 10,
+    "13_runs": [
+      {
+        "weekend_run_id": 5497,
+        "timing_run_id": 6,
+        "race_id": 5392,
+        "run_type": 1
+      },
+      {
+        "weekend_run_id": 5498,
+        "timing_run_id": 9,
+        "race_id": 5392,
+        "run_type": 2
+      }
+    ],
+    "19_stage_run_ids": [
+      10
+    ]
+  },
+  "live_context": {
+    "01": {
+      "race_id": 5633,
+      "series_id": 1,
+      "run_id": 8,
+      "run_type": 3,
+      "flag_state": 9,
+      "time_of_day_os": "2026-10-21T04:04:25.0191231-07:00"
+    },
+    "04_context_values": {
+      "race_id": [
+        0
+      ],
+      "series_id": [
+        0
+      ],
+      "run_id": [
+        0
+      ]
+    },
+    "05_race_ids": [
+      5168
+    ]
+  }
+}

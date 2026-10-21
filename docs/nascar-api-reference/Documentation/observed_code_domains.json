@@ -1,0 +1,510 @@
+{
+  "01": {
+    "$.flag_state": [
+      9
+    ],
+    "$.vehicles[].status": [
+      1,
+      3
+    ],
+    "$.series_id": [
+      1
+    ],
+    "$.run_type": [
+      3
+    ]
+  },
+  "02": {
+    "$[].flag_state": [
+      1,
+      2,
+      4,
+      8
+    ]
+  },
+  "03": {
+    "$[].pit_in_flag_status": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "$[].pit_out_flag_status": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "$[].pit_stop_type": [
+      "FOUR_WHEEL_CHANGE",
+      "OTHER",
+      "TWO_WHEEL_CHANGE_LEFT",
+      "TWO_WHEEL_CHANGE_RIGHT"
+    ]
+  },
+  "04": {
+    "$[].series_id": [
+      0
+    ]
+  },
+  "05": {
+    "$[].stage_number": [
+      1,
+      2
+    ]
+  },
+  "06": {
+    "$.series_2[].series_id": [
+      2
+    ],
+    "$.series_2[].schedule[].run_type": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "$.series_3[].series_id": [
+      3
+    ],
+    "$.series_3[].schedule[].run_type": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "$.series_1[].series_id": [
+      1
+    ],
+    "$.series_1[].schedule[].run_type": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "07": {
+    "$.status": [
+      200
+    ]
+  },
+  "08": {},
+  "09": {
+    "$[].series_id": [
+      1
+    ],
+    "$[].run_type": [
+      1,
+      2,
+      3
+    ]
+  },
+  "10": {
+    "$[].series_id": [
+      2
+    ],
+    "$[].run_type": [
+      1,
+      2,
+      3
+    ]
+  },
+  "11": {
+    "$[].series_id": [
+      3
+    ],
+    "$[].run_type": [
+      1,
+      2,
+      3
+    ]
+  },
+  "12": {
+    "$[].series_id": [
+      1
+    ],
+    "$[].schedule[].run_type": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "13": {
+    "$.weekend_race[].series_id": [
+      1
+    ],
+    "$.weekend_race[].results[].series_id": [
+      1
+    ],
+    "$.weekend_race[].caution_segments[].flag_state": [
+      2
+    ],
+    "$.weekend_race[].schedule[].run_type": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "$.weekend_race[].stage_results[].stage_number": [
+      1,
+      2
+    ],
+    "$.weekend_runs[].run_type": [
+      1,
+      2
+    ]
+  },
+  "14": {
+    "$.flags[].FlagState": [
+      1,
+      2,
+      4,
+      8
+    ]
+  },
+  "15": {
+    "$.laps.0[].FlagState": [
+      1
+    ],
+    "$.laps.1[].FlagState": [
+      1
+    ],
+    "$.laps.3[].FlagState": [
+      1
+    ],
+    "$.laps.14[].FlagState": [
+      1
+    ],
+    "$.laps.19[].FlagState": [
+      1
+    ],
+    "$.laps.20[].FlagState": [
+      1
+    ],
+    "$.laps.23[].FlagState": [
+      1
+    ],
+    "$.laps.25[].FlagState": [
+      2
+    ],
+    "$.laps.31[].FlagState": [
+      1
+    ],
+    "$.laps.33[].FlagState": [
+      2
+    ],
+    "$.laps.39[].FlagState": [
+      1
+    ],
+    "$.laps.41[].FlagState": [
+      1
+    ],
+    "$.laps.53[].FlagState": [
+      1
+    ],
+    "$.laps.54[].FlagState": [
+      1
+    ],
+    "$.laps.61[].FlagState": [
+      1
+    ],
+    "$.laps.62[].FlagState": [
+      1
+    ],
+    "$.laps.65[].FlagState": [
+      1
+    ],
+    "$.laps.68[].FlagState": [
+      1
+    ],
+    "$.laps.70[].FlagState": [
+      1
+    ],
+    "$.laps.71[].FlagState": [
+      2
+    ],
+    "$.laps.74[].FlagState": [
+      2
+    ],
+    "$.laps.80[].FlagState": [
+      1
+    ],
+    "$.laps.83[].FlagState": [
+      1
+    ],
+    "$.laps.89[].FlagState": [
+      1
+    ],
+    "$.laps.107[].FlagState": [
+      1
+    ],
+    "$.laps.111[].FlagState": [
+      1
+    ],
+    "$.laps.116[].FlagState": [
+      1
+    ],
+    "$.laps.120[].FlagState": [
+      1
+    ],
+    "$.laps.124[].FlagState": [
+      1
+    ],
+    "$.laps.125[].FlagState": [
+      2
+    ],
+    "$.laps.130[].FlagState": [
+      2
+    ],
+    "$.laps.131[].FlagState": [
+      2
+    ],
+    "$.laps.141[].FlagState": [
+      1
+    ],
+    "$.laps.146[].FlagState": [
+      1
+    ],
+    "$.laps.150[].FlagState": [
+      1
+    ],
+    "$.laps.154[].FlagState": [
+      1
+    ],
+    "$.laps.157[].FlagState": [
+      1
+    ],
+    "$.laps.159[].FlagState": [
+      1
+    ],
+    "$.laps.171[].FlagState": [
+      1
+    ],
+    "$.laps.176[].FlagState": [
+      1
+    ],
+    "$.laps.177[].FlagState": [
+      2
+    ],
+    "$.laps.181[].FlagState": [
+      2
+    ],
+    "$.laps.186[].FlagState": [
+      2
+    ],
+    "$.laps.190[].FlagState": [
+      1
+    ],
+    "$.laps.200[].FlagState": [
+      1
+    ],
+    "$.laps.202[].FlagState": [
+      1
+    ],
+    "$.laps.206[].FlagState": [
+      1
+    ],
+    "$.laps.224[].FlagState": [
+      1
+    ],
+    "$.laps.228[].FlagState": [
+      1
+    ],
+    "$.laps.229[].FlagState": [
+      2
+    ],
+    "$.laps.234[].FlagState": [
+      2
+    ],
+    "$.laps.240[].FlagState": [
+      1
+    ],
+    "$.laps.244[].FlagState": [
+      1
+    ],
+    "$.laps.249[].FlagState": [
+      1
+    ],
+    "$.laps.251[].FlagState": [
+      1
+    ],
+    "$.laps.252[].FlagState": [
+      2
+    ],
+    "$.laps.256[].FlagState": [
+      2
+    ],
+    "$.laps.261[].FlagState": [
+      2
+    ],
+    "$.laps.265[].FlagState": [
+      1
+    ],
+    "$.laps.285[].FlagState": [
+      1
+    ],
+    "$.laps.310[].FlagState": [
+      1
+    ],
+    "$.laps.311[].FlagState": [
+      2
+    ],
+    "$.laps.316[].FlagState": [
+      2
+    ],
+    "$.laps.323[].FlagState": [
+      1
+    ],
+    "$.laps.359[].FlagState": [
+      1
+    ],
+    "$.laps.361[].FlagState": [
+      1
+    ],
+    "$.laps.365[].FlagState": [
+      1
+    ],
+    "$.laps.368[].FlagState": [
+      1
+    ],
+    "$.laps.369[].FlagState": [
+      2
+    ],
+    "$.laps.373[].FlagState": [
+      2
+    ],
+    "$.laps.380[].FlagState": [
+      1
+    ],
+    "$.laps.395[].FlagState": [
+      1
+    ],
+    "$.laps.399[].FlagState": [
+      1
+    ],
+    "$.laps.426[].FlagState": [
+      1
+    ],
+    "$.laps.431[].FlagState": [
+      1
+    ],
+    "$.laps.435[].FlagState": [
+      1
+    ],
+    "$.laps.440[].FlagState": [
+      1
+    ],
+    "$.laps.444[].FlagState": [
+      1
+    ],
+    "$.laps.446[].FlagState": [
+      1
+    ],
+    "$.laps.447[].FlagState": [
+      1
+    ],
+    "$.laps.448[].FlagState": [
+      1
+    ],
+    "$.laps.449[].FlagState": [
+      1
+    ],
+    "$.laps.451[].FlagState": [
+      1
+    ],
+    "$.laps.483[].FlagState": [
+      1
+    ],
+    "$.laps.484[].FlagState": [
+      1
+    ],
+    "$.laps.500[].FlagState": [
+      4
+    ]
+  },
+  "16": {
+    "$[].series_id": [
+      1
+    ]
+  },
+  "17": {},
+  "18": {
+    "$[].pit_in_flag_status": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "$[].pit_out_flag_status": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "$[].pit_stop_type": [
+      "FOUR_WHEEL_CHANGE",
+      "OTHER",
+      "TWO_WHEEL_CHANGE_RIGHT"
+    ]
+  },
+  "19": {
+    "$[].stage_number": [
+      1,
+      2
+    ]
+  },
+  "20": {
+    "$.tracks.0[].status": [
+      "active"
+    ]
+  },
+  "21": {
+    "$.flag_state": [
+      9
+    ],
+    "$.vehicles[].pit_stops[].pit_stop_type": [
+      "",
+      "FOUR_WHEEL_CHANGE",
+      "OTHER",
+      "TWO_WHEEL_CHANGE_LEFT",
+      "TWO_WHEEL_CHANGE_RIGHT"
+    ],
+    "$.vehicles[].status": [
+      1,
+      3
+    ],
+    "$.series_id": [
+      1
+    ],
+    "$.run_type": [
+      3
+    ]
+  },
+  "22": {
+    "$[].series_id": [
+      0
+    ]
+  },
+  "23": {
+    "$[].pit_in_flag_status": [
+      1,
+      2
+    ],
+    "$[].pit_out_flag_status": [
+      1,
+      2
+    ],
+    "$[].pit_stop_type": [
+      "FOUR_WHEEL_CHANGE",
+      "OTHER",
+      "TWO_WHEEL_CHANGE_LEFT",
+      "TWO_WHEEL_CHANGE_RIGHT"
+    ]
+  },
+  "24": {},
+  "25": {
+    "$.status": [
+      200
+    ]
+  }
+}

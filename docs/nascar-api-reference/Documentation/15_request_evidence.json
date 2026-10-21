@@ -1,0 +1,23 @@
+{
+  "id": "15",
+  "url": "https://cf.nascar.com/cacher/2024/1/5392/lap-notes.json",
+  "retrieved_at": "2026-10-21T11:05:00.340888+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 11368,
+  "sha256": "9759b08254858460576c01f9961e8242f25ce9cac6353901b4505075cd616c82",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "dict",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:02 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 11368",
+    "date: Wed, 21 Oct 2026 11:05:03 GMT",
+    "last-modified: Fri, 22 Mar 2024 19:14:40 GMT",
+    "etag: \"f48a43ae1214c96a66fe98705841dc39\""
+  ]
+}

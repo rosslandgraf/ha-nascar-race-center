@@ -1,0 +1,16 @@
+[
+  {
+    "race_id": 0,
+    "run_id": 0,
+    "stage_number": 0,
+    "results": [
+      {
+        "position": 0,
+        "vehicle_number": "<redacted>",
+        "driver_id": 0,
+        "full_name": "<redacted>",
+        "stage_points": 0
+      }
+    ]
+  }
+]

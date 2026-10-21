@@ -1,0 +1,23 @@
+{
+  "id": "18",
+  "url": "https://cf.nascar.com/cacher/2026/1/5626/live-pit-data.json",
+  "retrieved_at": "2026-10-21T11:05:02.468141+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 191417,
+  "sha256": "82e48a754fc794619b3a1a40c2246bec4b137db0db00c793da280198ad7095cd",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "list",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:04 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 191417",
+    "date: Wed, 21 Oct 2026 11:05:05 GMT",
+    "last-modified: Thu, 24 Sep 2026 13:47:43 GMT",
+    "etag: \"0790aa12ce58ce2ce16df0e04c03f7f8\""
+  ]
+}

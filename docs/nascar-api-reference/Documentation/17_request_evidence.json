@@ -1,0 +1,23 @@
+{
+  "id": "17",
+  "url": "https://cf.nascar.com/cacher/2024/1/5392/lap-averages.json",
+  "retrieved_at": "2026-10-21T11:05:02.443947+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 15264,
+  "sha256": "2cb8dcae57fd5ae04e8236e5320628a4085872577bac61b44b0cd7a8973ac7f5",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "list",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:04 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 15264",
+    "date: Wed, 21 Oct 2026 11:05:05 GMT",
+    "last-modified: Sat, 16 Mar 2024 21:46:43 GMT",
+    "etag: \"fedce0d8e76aa4994c6c2ddd26db34e6\""
+  ]
+}

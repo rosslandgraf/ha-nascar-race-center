@@ -1,0 +1,23 @@
+{
+  "id": "07",
+  "url": "https://cf.nascar.com/cacher/drivers.json",
+  "retrieved_at": "2026-10-21T11:04:49.283054+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 1385555,
+  "sha256": "d42b6ddb846b50d7d5fea38c3a96defdcd41b5707c9bcd1542baf55a19680999",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "dict",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:04:51 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 1385555",
+    "last-modified: Wed, 21 Oct 2026 11:01:00 GMT",
+    "date: Wed, 21 Oct 2026 11:04:52 GMT",
+    "etag: \"2c928e8e9e1dc14cfa116227ae0385c1\""
+  ]
+}

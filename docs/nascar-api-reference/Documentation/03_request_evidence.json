@@ -1,0 +1,23 @@
+{
+  "id": "03",
+  "url": "https://cf.nascar.com/live/feeds/live-pit-data.json",
+  "retrieved_at": "2026-10-21T11:04:43.802031+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 222128,
+  "sha256": "c53f864f370bcc8ffcb95c8dc07df955f762310fe8240e2f06c52219e891046b",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "list",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:04:46 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 222128",
+    "last-modified: Mon, 19 Oct 2026 19:22:27 GMT",
+    "date: Wed, 21 Oct 2026 11:04:47 GMT",
+    "etag: \"d7b0c15cf29c6d527825ca48123aee6a\""
+  ]
+}

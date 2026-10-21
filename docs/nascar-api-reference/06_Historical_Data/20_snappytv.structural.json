@@ -1,0 +1,77 @@
+{
+  "event": 0,
+  "external_id": "<redacted>",
+  "mr": null,
+  "social_volume": {
+    "total": 0,
+    "current10": 0,
+    "peak10": 0,
+    "current60": 0,
+    "peak60": 0
+  },
+  "tracks": {
+    "0": [
+      {
+        "type": "<redacted>",
+        "url_spec": "<redacted>"
+      },
+      {
+        "type": "<redacted>",
+        "id": 0,
+        "title": "<redacted>",
+        "description": "<redacted>",
+        "snaptype": "<redacted>",
+        "thumb_320x180": "<redacted>",
+        "thumb_640x360": "<redacted>",
+        "original_asset_url": null,
+        "friendly_id": "<redacted>",
+        "embedable": false,
+        "embed_code": null,
+        "youtube_id": null,
+        "twitter_post_id": null,
+        "fb_post_id": null,
+        "expired": false,
+        "share_url_full": null,
+        "short_url": null,
+        "oembed_url_xml": "<redacted>",
+        "tweet_text": "<redacted>",
+        "created_at": 0,
+        "updated_at": 0,
+        "duration": 0,
+        "video_duration": 0,
+        "event_id": 0,
+        "hash_tags": "<redacted>",
+        "tags": [
+          "<redacted>"
+        ],
+        "tweet_vol": 0,
+        "trending_score": 0,
+        "event_episode_title": "<redacted>",
+        "event_episode_subtitle": "<redacted>",
+        "event_time": "<redacted>",
+        "event_duration_in_seconds": 0,
+        "channel_friendly_name": "<redacted>",
+        "username": "<redacted>",
+        "user_avatar_url": null,
+        "show_id": 0,
+        "show_title": "<redacted>",
+        "featured": false,
+        "inpoint_percent": 0,
+        "outpoint_percent": 0,
+        "status": "<redacted>",
+        "downloads": [
+          {
+            "resolution": "<redacted>",
+            "bitrate": "<redacted>",
+            "url": "<redacted>"
+          }
+        ]
+      }
+    ],
+    "1": []
+  },
+  "start_time": 0,
+  "end_time": 0,
+  "title": "<redacted>",
+  "live_enabled": false
+}

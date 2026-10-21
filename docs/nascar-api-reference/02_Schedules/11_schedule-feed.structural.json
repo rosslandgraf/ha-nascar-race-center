@@ -1,0 +1,15 @@
+[
+  {
+    "start_time": "<redacted>",
+    "end_time": "<redacted>",
+    "event_name": "<redacted>",
+    "race_id": 0,
+    "track_id": 0,
+    "track_name": "<redacted>",
+    "race_name": "<redacted>",
+    "series_id": 0,
+    "run_type": 0,
+    "start_time_utc": "<redacted>",
+    "end_time_utc": "<redacted>"
+  }
+]

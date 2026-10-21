@@ -1,0 +1,23 @@
+{
+  "id": "02",
+  "url": "https://cf.nascar.com/live/feeds/live-flag-data.json",
+  "retrieved_at": "2026-10-21T11:04:40.840679+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 2586,
+  "sha256": "27919ae46c875d7578ffd9cc0f6484db794da7bdbd4e9a83cf7b0808d117343c",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "list",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:04:43 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 2586",
+    "last-modified: Tue, 20 Oct 2026 11:23:56 GMT",
+    "date: Wed, 21 Oct 2026 11:04:44 GMT",
+    "etag: \"72e52c19494d2daee97bc96f6397eb1a\""
+  ]
+}

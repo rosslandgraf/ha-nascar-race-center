@@ -1,0 +1,23 @@
+{
+  "id": "20",
+  "url": "https://cf.nascar.com/cacher/2024/1/5392/snappytv.json",
+  "retrieved_at": "2026-10-21T11:05:04.677765+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 16444,
+  "sha256": "2a4ba9c86da4c0fae0816b9ddb50017bd4e76f7d8f139b6a12ee6f799ab183ec",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "dict",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:06 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 16444",
+    "date: Wed, 21 Oct 2026 11:05:07 GMT",
+    "last-modified: Sun, 17 Mar 2024 23:30:31 GMT",
+    "etag: \"ecd59c7fc2f009d5e84486e473dd3d47\""
+  ]
+}

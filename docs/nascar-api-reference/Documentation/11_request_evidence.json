@@ -1,0 +1,23 @@
+{
+  "id": "11",
+  "url": "https://cf.nascar.com/cacher/2026/3/schedule-feed.json",
+  "retrieved_at": "2026-10-21T11:04:54.348959+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 22544,
+  "sha256": "cd639866c541b3cbc64681217d71b50aaaafc71fd18367fa586ae9c0bea0bc8c",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "list",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:04:56 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 22544",
+    "last-modified: Wed, 21 Oct 2026 07:46:01 GMT",
+    "date: Wed, 21 Oct 2026 11:04:57 GMT",
+    "etag: \"ed7bedc202e7f8227fc6b6d9a9465001\""
+  ]
+}

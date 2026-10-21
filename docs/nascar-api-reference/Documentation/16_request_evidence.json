@@ -1,0 +1,23 @@
+{
+  "id": "16",
+  "url": "https://cf.nascar.com/loopstats/prod/2024/1/5392.json",
+  "retrieved_at": "2026-10-21T11:05:00.464331+00:00",
+  "http_status": 200,
+  "curl_exit": 0,
+  "error": "",
+  "bytes": 9875,
+  "sha256": "e145fbebaf591d8f2aa87a7ab5720cffc1bcc73ceda88053e99940a190edc49b",
+  "provenance": "Anonymous curl GET; no cookies, credentials or retries; redirects not followed",
+  "usable_json": true,
+  "root_type": "list",
+  "safe_response_headers": [
+    "HTTP/1.1 200 OK",
+    "date: Wed, 21 Oct 2026 11:05:02 GMT",
+    "HTTP/2 200 ",
+    "content-type: application/json",
+    "content-length: 9875",
+    "date: Wed, 21 Oct 2026 11:05:03 GMT",
+    "last-modified: Wed, 01 Jan 2025 04:57:41 GMT",
+    "etag: \"0a009a70cb8b430c7499058296a05d32\""
+  ]
+}
