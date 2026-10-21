@@ -151,8 +151,84 @@ Recorder test verifies ten timestamp/other-driver refreshes add zero rows for
 unchanged favorite position, current lap and leader, then one position change
 adds exactly one favorite row. There is no persisted timing cache/history.
 
-The CF provider still requests only the original global live endpoint, once per
+At Phase 3A delivery, the CF provider requested only the original global live endpoint, once per
 shared refresh. No pit/flag-history/stage/points endpoint, faster minimum
 interval, alternate-series polling, network permission or data-use grant was
 introduced. Existing HTTP cache/backoff/cancellation and entry-owned coordinator
 shutdown remain the sole polling/resource owners.
+
+## Phase 3B optional scoring and provenance
+
+`scoring.py` adds immutable `RaceContext`, `Provenance`, `PitStop`,
+`PitActivity`, `CurrentStage`, `StageClassification`, `StageResult`,
+`DriverPoints` and `ScoringFeed`. These are bounded in-memory reported facts,
+independent of HA entities and suitable for future dashboard consumers. Pit
+clock units and raw points-delta meanings are deliberately unspecified. Signed
+pit movement comes from the source, not a rank subtraction. Zero/negative pit
+clocks/laps stay unknown; zero points remain reported scores. A pit-record array
+is never a completed-stop count. Stages never imply `number - 1` completed stages.
+
+Embedded pit records belong to their parent `LiveDriver` NASCAR identity;
+embedded stage descriptors belong to `LiveSnapshot`. These additions preserve
+existing constructor positions/defaults and the Phase 3A parser's failure
+isolation: invalid pits do not invalidate driver timing, invalid stages do not
+invalidate flags. The existing live view's known-fresh, monitored-series gate
+and race-session requirement apply to every new embedded sensor. No per-driver
+request or field-wide entity creation is introduced.
+
+A fourth entry-owned `ScoringCoordinator` uses `CFScoringProvider` on the same
+`NascarApiClient`, fetching only provider-declared `polling_kinds` independently.
+CF declares none until identity/source-time evidence supports live association;
+its capability sensors report `unsupported_association`, including during a
+primary outage. Normalized parsers and direct adapter reads remain available.
+The coordinator keeps whole last-good datasets for diagnostics, replacing each successful snapshot
+rather than merging missing rows from old polls. Each feed has independent
+failure/status/retry state; cancellation propagates to HA. Transport negative
+cooldowns, server retry hints and host-wide 429 pauses still apply. Optional
+schema/network failures cannot invalidate schedule/reference/live coordinator
+state. The 16-entry LRU retains room for future scoring sources; unsupported CF
+feeds consume no cache slots or requests.
+
+Polling of eligible optional feeds is at least 15 minutes during a supported
+active race and six hours otherwise; the configured live interval can only lengthen the
+active minimum. The initial refresh samples each eligible source once, independent
+of favorite/series count. CF makes zero standalone scoring requests at setup or
+on later refreshes; its three-series startup budget remains seven GETs in the
+mocked single-season case with unavailable references. A transition from idle
+can wait until the existing optional refresh deadline; no extra transition poll or alternate/historical URL
+fallback is scheduled. Source cache fallback is 15 minutes, honoring upstream
+cache directives/validators. These are engineering defaults, not NASCAR-approved
+polling rates. The default demo returns no live scoring and performs no requests.
+
+The scoring consumer boundary is `capability(kind, series_id)` / `feed(...)`.
+It requires healthy fresh primary context, a race session, a healthy optional
+feed, a single complete matching positive series/race/run identity, comparable
+run namespaces and the optional source's own fresh content clock. Historical
+scope, conflicting contexts, mismatches, unknown IDs, unverified namespaces and
+stale/unknown source times remain separate capability states. There is no
+car/name/membership-ID match, receipt-time join or copied active ID. Season
+conflicts are rejected when supplied; no year is invented from receipt time.
+`Provenance.retrieved_at` is the local adapter-read time, including cache hits;
+it does not claim that a new HTTP request or source update occurred.
+
+**Actual CF boundary:** global pits supply no context or NASCAR driver IDs;
+stages supply race/run but no series or source clock and have an unverified run
+namespace; points observed zero context IDs and no source clock. None is attached
+to active live scoring or automatically requested. Normalized parsers/models and
+bounded diagnostics remain available for future evidenced provider integration.
+Synthetic trusted-provider tests exercise the available path without inventing CF fields or enabling a manual
+association override. All scoring feeds remain provisional; checkered cannot
+make them official. Standings movement, official results and scoring formulas
+remain unavailable where unsupported by evidence.
+
+Current stage is enabled per series, alongside three diagnostic capabilities.
+Race stage-result-set count and championship-leader summaries are opt-in. Each
+favorite registers three opt-in summaries (last reported pit lap, highest
+numbered reported stage position with its reported points, provisional
+championship position with supplied totals/race points). Ambiguous same-lap pit
+records cannot supply a latest pit. No full datasets enter state attributes;
+no advancing timestamps enter these new sensor states. Recorder tests measure
+unchanged samples and one meaningful pit update. Existing IDs, favorite device
+ownership and configuration version remain unchanged; removal recognizes only
+owned metric suffixes. HA unload owns all polling, the live listener and optional
+source-expiry timer, including failed/cancelled setup and late completion.

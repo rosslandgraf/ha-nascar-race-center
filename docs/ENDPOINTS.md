@@ -1,6 +1,11 @@
 # Endpoint compatibility and evidence
 
-**Current evidence (October 21, 2026):** all 28 original URLs were attempted by
+The later [supplied observed package](nascar-api-reference/START_HERE.md) records
+24 populated responses, an empty article response and three origin Drive denials.
+It is the primary Phase 3B structural source. Those snapshots are separate from
+the environment-specific proxy audit below. See [Phase 3B evidence](PHASE3B_EVIDENCE.md).
+
+**Earlier development audit (October 21, 2026):** all 28 original URLs were attempted by
 anonymous HTTPS GET. Every request received proxy CONNECT 403, before a NASCAR
 origin response. Origin HTTP statuses and response types remain unknown; zero
 real JSON bodies were obtained. This does not establish NASCAR/Cloudflare denial
@@ -80,3 +85,18 @@ no additional endpoint requests and never queries alternate series live paths
 for concurrent coverage. Live pit/stage/points/flag-history URLs remain unused.
 No CF URL was probed: network policy excludes the host, and data-use gates remain
 unresolved. Every direct-verification status in this matrix remains unchanged.
+
+
+## Phase 3B production adapters
+
+| Source | Network support | Active-race use |
+| --- | --- | --- |
+| Global live feed (01) | Existing shared live request | Embedded NASCAR-ID pits and stage descriptor inherit parent race/run/time |
+| `/live/feeds/live-pit-data.json` (03) | No automatic request; parser/direct adapter retained | Separate activity only; absent race/driver identity and source time block joining |
+| `/live/feeds/live-stage-points.json` (05) | No automatic request; parser/direct adapter retained | Separate results; conflicting observed race, absent series/time and unverified run namespace block joining |
+| `/live/feeds/live-points.json` (04) | No automatic request; parser/direct adapter retained | Separate reported points; observed zero IDs and absent source time block joining |
+| Archived pit/stage shapes (18/19) | Structural evidence only; no historical request added | Never a current live fallback |
+
+No new probe was made in Phase 3B. Permitted data use/cadence, official-finality
+semantics and active-session behavior remain unresolved. A successful HTTP request
+or a global live path does not prove shared context or current content.

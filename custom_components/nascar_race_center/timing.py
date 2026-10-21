@@ -8,6 +8,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from math import isfinite
 from types import MappingProxyType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .scoring import PitStop
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +42,9 @@ class LiveDriver:
     status_code: int | None = None
     is_on_track: bool | None = None
     laps_led: tuple[LedInterval, ...] | None = None
+
+    pit_stops: tuple[PitStop, ...] | None = None
+    pits_failed: bool = False
 
     @property
     def running_status(self) -> str | None:
@@ -129,6 +136,8 @@ def parse_leaderboard(payload: object) -> Leaderboard:
     """Normalize only the documented vehicles array, tolerating optional gaps."""
     if not isinstance(payload, list) or len(payload) > 100:
         raise ValueError("Unexpected live vehicles envelope")
+    from .scoring import parse_embedded_pits
+
     drivers: list[LiveDriver] = []
     for row in payload:
         if not isinstance(row, dict) or not isinstance(row.get("driver"), dict):
@@ -146,6 +155,13 @@ def parse_leaderboard(payload: object) -> Leaderboard:
         manufacturer = _text(row.get("vehicle_manufacturer"))
         if manufacturer and ("/" in manufacturer or ":" in manufacturer):
             manufacturer = None
+        pits = None
+        pits_failed = False
+        if "pit_stops" in row:
+            try:
+                pits = parse_embedded_pits(row["pit_stops"])
+            except ValueError:
+                pits_failed = True
         drivers.append(
             LiveDriver(
                 driver_id=driver_id,
@@ -166,6 +182,8 @@ def parse_leaderboard(payload: object) -> Leaderboard:
                 if isinstance(row.get("is_on_track"), bool)
                 else None,
                 laps_led=_intervals(row.get("laps_led")),
+                pit_stops=pits,
+                pits_failed=pits_failed,
             )
         )
     if payload and not drivers:

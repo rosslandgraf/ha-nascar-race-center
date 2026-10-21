@@ -14,7 +14,15 @@ from email.utils import parsedate_to_datetime
 
 from aiohttp import ClientError, ClientSession, ClientTimeout
 
-from .endpoints import BASE_URL, DRIVERS, LIVE_FEED, TRACKS
+from .endpoints import (
+    BASE_URL,
+    DRIVERS,
+    LIVE_FEED,
+    LIVE_PITS,
+    LIVE_POINTS,
+    LIVE_STAGES,
+    TRACKS,
+)
 from .models import AccessDeniedError, ProviderError, RateLimitedError, SchemaError
 
 _MAX_RESPONSE_BYTES = 2 * 1024 * 1024
@@ -148,7 +156,8 @@ class NascarApiClient:
     async def async_get_json(self, path: str, *, minimum_ttl: float = 0) -> object:
         """Fetch an allowlisted CF JSON document, with one in-flight request."""
         if (
-            path not in {LIVE_FEED, DRIVERS, TRACKS}
+            path
+            not in {LIVE_FEED, DRIVERS, TRACKS, LIVE_PITS, LIVE_STAGES, LIVE_POINTS}
             and _SCHEDULE_PATH.fullmatch(path) is None
             and _SESSION_PATH.fullmatch(path) is None
         ):

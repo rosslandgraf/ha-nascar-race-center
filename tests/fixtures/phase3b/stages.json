@@ -1,0 +1,9 @@
+[
+  {"race_id": 99005, "run_id": 4, "stage_number": 1, "results": [
+    {"driver_id": 99002, "vehicle_number": "07", "position": 2, "stage_points": 9},
+    {"driver_id": 99001, "vehicle_number": "1", "position": 1, "stage_points": 10}
+  ]},
+  {"race_id": 99005, "run_id": 4, "stage_number": 2, "results": [
+    {"driver_id": 99002, "vehicle_number": "07", "position": 12, "stage_points": 0}
+  ]}
+]

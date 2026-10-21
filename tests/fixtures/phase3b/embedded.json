@@ -1,0 +1,7 @@
+{
+  "stage": {"stage_num": 2, "finish_at_lap": 80, "laps_in_stage": 40},
+  "pit_stops": [
+    {"pit_in_lap_count": 20, "pit_in_leader_lap": 21, "pit_in_elapsed_time": 650.5, "pit_out_elapsed_time": 680.2, "pit_in_rank": 5, "pit_out_rank": 2, "positions_gained_lossed": 3},
+    {"pit_in_lap_count": 40, "pit_in_leader_lap": 41, "pit_in_elapsed_time": 1280.5, "pit_out_elapsed_time": 0, "pit_in_rank": 2, "pit_out_rank": 0, "positions_gained_lossed": 0}
+  ]
+}

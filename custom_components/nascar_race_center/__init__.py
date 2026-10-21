@@ -19,6 +19,7 @@ from .const import (
     DEFAULT_SERIES,
     DOMAIN,
     FAVORITE_LIVE_METRICS,
+    FAVORITE_SCORING_METRICS,
     MAX_LIVE_INTERVAL,
     MIN_LIVE_INTERVAL,
     PLATFORMS,
@@ -34,6 +35,8 @@ from .reference_provider import (
     DemoReferenceProvider,
     ReferenceProvider,
 )
+from .scoring_coordinator import ScoringCoordinator
+from .scoring_provider import CFScoringProvider, DemoScoringProvider, ScoringProvider
 
 
 @dataclass(frozen=True)
@@ -45,6 +48,7 @@ class RuntimeData:
     live: LiveCoordinator
     reference: ReferenceCoordinator
     favorites: FavoriteDriverRegistry
+    scoring: ScoringCoordinator
 
 
 type NascarConfigEntry = ConfigEntry[RuntimeData]
@@ -88,22 +92,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
         raise ConfigEntryError("Select valid NASCAR driver IDs") from err
     provider: RaceProvider
     reference_provider: ReferenceProvider
+    scoring_provider: ScoringProvider
     if provider_name == PROVIDER_CF:
         cf_provider = CFProvider(async_get_clientsession(hass))
         provider = cf_provider
         reference_provider = CFReferenceProvider(cf_provider.api)
+        scoring_provider = CFScoringProvider(cf_provider.api)
     else:
         provider = DemoProvider()
         reference_provider = DemoReferenceProvider()
+        scoring_provider = DemoScoringProvider()
     schedule = ScheduleCoordinator(hass, entry, provider, series)
     live = LiveCoordinator(hass, entry, provider, schedule, live_interval)
     reference = ReferenceCoordinator(hass, entry, reference_provider)
+    scoring = ScoringCoordinator(hass, entry, scoring_provider, live)
     entry.runtime_data = RuntimeData(
         provider=provider,
         schedule=schedule,
         live=live,
         reference=reference,
         favorites=favorites,
+        scoring=scoring,
     )
     # DataUpdateCoordinator registers each async_shutdown override with
     # entry.async_on_unload during construction, before either first refresh.
@@ -113,6 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bo
     await schedule.async_refresh()
     await live.async_refresh()
     await reference.async_refresh()
+    await scoring.async_refresh()
     _remove_deselected_favorite_entities(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
@@ -133,7 +143,16 @@ def _remove_deselected_favorite_entities(
         for driver_id in entry.runtime_data.favorites.ids
         for key in FAVORITE_LIVE_METRICS
     )
-    suffixes = ("_metadata", *(f"_live_{key}" for key in FAVORITE_LIVE_METRICS))
+    selected.update(
+        f"{entry.entry_id}_driver_{driver_id}_scoring_{key}"
+        for driver_id in entry.runtime_data.favorites.ids
+        for key in FAVORITE_SCORING_METRICS
+    )
+    suffixes = (
+        "_metadata",
+        *(f"_live_{key}" for key in FAVORITE_LIVE_METRICS),
+        *(f"_scoring_{key}" for key in FAVORITE_SCORING_METRICS),
+    )
     prefix = f"{entry.entry_id}_driver_"
     for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
         if (

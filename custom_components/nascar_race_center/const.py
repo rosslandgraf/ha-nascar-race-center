@@ -41,3 +41,5 @@ FAVORITE_LIVE_METRICS = (
     "running_status",
     "position_change",
 )
+
+FAVORITE_SCORING_METRICS = ("pit_lap", "stage_position", "championship_position")

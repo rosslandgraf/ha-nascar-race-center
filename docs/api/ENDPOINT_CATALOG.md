@@ -1,6 +1,10 @@
 # Endpoint catalog — all 28 original URLs
 
-Audit date: **October 21, 2026 (America/New_York)**. Exact request times below
+Historical development audit date: **October 21, 2026 (America/New_York)**.
+The later [supplied observed package](../nascar-api-reference/START_HERE.md) records
+separate successful snapshots and is the primary Phase 3B structural source.
+See [current adapter boundaries](../PHASE3B_EVIDENCE.md); the request outcomes
+below remain unchanged historical evidence. Exact request times below
 are UTC. Source: the root [brief](../../NASCAR_Race_Center_Codex_Brief.md).
 The prior 24-working/four-error browser reports remain owner evidence, not
 current origin statuses.

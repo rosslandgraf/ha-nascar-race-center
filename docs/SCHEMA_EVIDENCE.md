@@ -188,3 +188,16 @@ units/status limitations and timestamp policy are recorded in
 [PHASE3A_LIVE.md](../tests/fixtures/PHASE3A_LIVE.md). No CF host was requested;
 anonymous current schema, source timestamps, permitted cadence and data-use
 rights remain unverified. This extends the experimental adapter only.
+
+
+## Phase 3B primary evidence
+
+The imported [observed archive](nascar-api-reference/START_HERE.md), field profiles
+and verified relationships supersede community hypotheses as the primary
+structural source for new pit/stage/points adapters. The archive remains byte-for-byte
+unchanged. Its placeholders are not original response fixtures, scoring rules or
+race facts. See [Phase 3B evidence](PHASE3B_EVIDENCE.md) for field-specific rules,
+[fixture provenance](../tests/fixtures/phase3b/README.md) for handmade values, and
+[validation](PHASE3B_VALIDATION.md) for actual offline checks. Conflicting global
+races, zero IDs, missing context/time and distinct run namespaces prevent automatic
+live joins. No new network observation or data/polling permission is claimed.

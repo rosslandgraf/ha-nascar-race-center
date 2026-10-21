@@ -1,6 +1,6 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 and 2 were reviewed and squash-merged into `main`, with 243 passing tests at the Phase 2 baseline. Phase 3A starts from `fb88120` on its own feature branch. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1, 2 and 3A and the observed API package are merged into `main`. Phase 3B starts from `54d7d34`; its 330-test baseline is preserved. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
 
@@ -26,7 +26,7 @@ The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target produ
 
 ## Phase 3A — Live race timing and leaderboards
 
-**Status:** implemented on its own review branch. See
+**Status:** reviewed and squash-merged in PR #3. See
 [Phase 3A validation](docs/PHASE3A_VALIDATION.md) for actual checks and evidence
 limits. Direct active-session validation and documented provider polling/data-use
 permission remain open gates; synthetic development does not close them.
@@ -53,16 +53,32 @@ to running. The in-memory normalized leaderboard has no custom dashboard/API.
 No pits, stages, points, automation events, historical storage, public release
 or production deployment is included.
 
-## Remaining Phase 3 assignments — not started
+## Phase 3B — Live pits, stages and reported championship points
 
-Pit-stop tracking, stage scoring, championship points and automation events
-remain for later assignments (3B/3C). Their implementation requires per-endpoint
-evidence and appropriately sourced structural/replay fixtures. Later event work
-must implement opt-in delivery, persistent deduplication, initial-baseline
-suppression and restart/replay protection before exposing any events or
-notification/light blueprints. The Phase 3A `LiveView`/reported run identity
-boundary is available for reuse; it contains no hidden event ledger or inferred
-pit/stage/points behavior.
+**Status:** evidence-limited implementation ready for review. See
+[validation](docs/PHASE3B_VALIDATION.md) and [field/association blockers](docs/PHASE3B_EVIDENCE.md).
+
+**Delivered:** embedded NASCAR-ID pit observations and current stage; normalized
+standalone pit activity, stage results/points, championship positions and reported
+race/championship scores; source provenance and strict race/run/namespace/time
+validation; independently failing shared optional feeds; compact race/favorite
+sensors; offline demo and stable configuration/IDs; synthetic and real-HA coverage.
+
+**Evidence boundary:** global pits lack race/driver identity; stages report another
+race and lack series/source time; points report zero IDs. Those datasets remain
+unavailable for live association and are not automatically requested. Capability
+is `unsupported_association`; parsers/models and future integration interfaces
+remain available. No fabricated totals, scoring formulas, completed-stage/stop
+counts, pit time units, rank movement or official finality.
+Live permission/cadence and active-session acceptance remain open. Readiness for
+code review does not mean those data gates are satisfied.
+
+## Phase 3C — Automation events and notifications — not started
+
+Future work must implement opt-in delivery, persistent deduplication,
+initial-baseline suppression and restart/replay protection before exposing events
+or notification/light blueprints. Phase 3B adds no events or hidden event ledger.
+Historical collection remains Phase 4.
 
 ## Phase 4 — History and analytical views
 
@@ -93,7 +109,7 @@ pit/stage/points behavior.
 | Gate | Current state | Resolution required |
 | --- | --- | --- |
 | Data rights and polling limits | Unresolved | Owner review and documented permission where required |
-| Anonymous direct endpoint access | Owner browser reports only | Controlled unauthenticated probe with evidence |
+| Anonymous endpoint and active-session access | Supplied single-snapshot observations; this environment blocked | Authorized current-session observation with identity/time provenance |
 | Live race/session behavior | Unverified | Authorized active-session observation and replay fixtures |
 | Historical schemas and derived analytics | Planned | Per-endpoint source evidence and numerical tests |
 | Dashboard/card packaging | Planned | Separate frontend artifact and compatibility validation |

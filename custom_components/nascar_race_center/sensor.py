@@ -10,10 +10,17 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import NascarConfigEntry
-from .const import FAVORITE_LIVE_METRICS
+from .const import FAVORITE_LIVE_METRICS, FAVORITE_SCORING_METRICS
 from .driver_sensor import async_setup_favorites
 from .entity import LiveEntity, ScheduleEntity
 from .live_driver_sensor import NascarFavoriteLiveSensor
+from .scoring_provider import SCORING_KINDS
+from .scoring_sensor import (
+    NascarCurrentStageSensor,
+    NascarFavoriteScoringSensor,
+    NascarRaceScoringSensor,
+    NascarScoringCapabilitySensor,
+)
 
 
 async def async_setup_entry(
@@ -43,6 +50,20 @@ async def async_setup_entry(
                 "field_size",
             )
         )
+        entities.append(NascarCurrentStageSensor(entry, series_id))
+        entities.extend(
+            NascarRaceScoringSensor(entry, series_id, key)
+            for key in ("scored_stages", "championship_leader")
+        )
+        entities.extend(
+            NascarScoringCapabilitySensor(entry, series_id, kind)
+            for kind in SCORING_KINDS
+        )
+    entities.extend(
+        NascarFavoriteScoringSensor(entry, driver_id, key)
+        for driver_id in entry.runtime_data.favorites.ids
+        for key in FAVORITE_SCORING_METRICS
+    )
     entities.extend(
         NascarFavoriteLiveSensor(entry, driver_id, key)
         for driver_id in entry.runtime_data.favorites.ids

@@ -81,6 +81,42 @@ async def async_get_config_entry_diagnostics(
             "last_http_status": reference.last_error_status,
             "favorite_count": len(entry.runtime_data.favorites.ids),
         },
+        "scoring": {
+            "feeds": {
+                kind: {
+                    "failed": kind in entry.runtime_data.scoring.data.failed,
+                    "http_status": entry.runtime_data.scoring.data.errors.get(kind),
+                    "classification": feed.classification,
+                    "scope": feed.provenance.scope,
+                    "source_updated_at": feed.provenance.source_updated_at.isoformat()
+                    if feed.provenance.source_updated_at
+                    else None,
+                    "retrieved_at": feed.provenance.retrieved_at.isoformat(),
+                    "contexts": [
+                        {
+                            "series_id": context.series_id,
+                            "race_id": context.race_id,
+                            "run_id": context.run_id,
+                            "run_namespace": context.run_namespace,
+                        }
+                        for context in feed.contexts[:5]
+                    ],
+                    "context_count": len(feed.contexts),
+                    "pit_record_count": len(feed.pits),
+                    "stage_result_sets": len(feed.stages),
+                    "points_rows": len(feed.points),
+                }
+                for kind, feed in entry.runtime_data.scoring.data.feeds.items()
+            },
+            "failed_feeds": sorted(entry.runtime_data.scoring.data.failed),
+            "capabilities": {
+                str(series): {
+                    kind: entry.runtime_data.scoring.capability(kind, series)
+                    for kind in ("pits", "stages", "points")
+                }
+                for series in schedule.series
+            },
+        },
         "live": {
             "last_update_success": live.last_update_success,
             "last_successful_update": live.last_successful_update.isoformat()
@@ -136,6 +172,23 @@ async def async_get_config_entry_diagnostics(
                 }
                 if snapshot.leaderboard is not None
                 else {},
+            }
+            if snapshot
+            else {},
+            "embedded_scoring": {
+                "stage_invalid": snapshot.stage_failed,
+                "stage_reported": snapshot.stage is not None,
+                "drivers_with_pit_records": sum(
+                    driver.pit_stops is not None
+                    for driver in snapshot.leaderboard.drivers
+                )
+                if snapshot.leaderboard
+                else None,
+                "invalid_pit_lists": sum(
+                    driver.pits_failed for driver in snapshot.leaderboard.drivers
+                )
+                if snapshot.leaderboard
+                else None,
             }
             if snapshot
             else {},
