@@ -50,6 +50,13 @@ async function analyze(page: Page) {
   await expect(page.locator("nrc-chart").getByRole("img")).toBeVisible();
 }
 async function noOverflow(page: Page) {
+  // A viewport change and native disclosure layout may settle on separate frames.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth),
   ).toBeLessThanOrEqual(page.viewportSize()!.width);
@@ -67,19 +74,47 @@ async function noOverflow(page: Page) {
         for (const item of [...nodes])
           if (item.shadowRoot)
             nodes.push(...item.shadowRoot.querySelectorAll<HTMLElement>("*"));
-        return nodes
-          .filter(
-            (item) =>
-              !item.closest(
-                "svg,.table-scroll,.chart-scroll,.comparison-scroll",
-              ) && item.getBoundingClientRect().right > edge + 1,
-          )
-          .map((item) => ({
-            tag: item.tagName,
-            class: String(item.className),
-            width: item.getBoundingClientRect().width,
-            text: item.textContent?.slice(0, 70),
-          }));
+        const visible = nodes.filter(
+          (item) =>
+            !item.closest("svg,.table-scroll,.chart-scroll,.comparison-scroll"),
+        );
+        return {
+          elements: visible
+            .filter((item) => item.getBoundingClientRect().right > edge + 1)
+            .map((item) => ({
+              tag: item.tagName,
+              class: String(item.className),
+              width: item.getBoundingClientRect().width,
+              text: item.textContent?.slice(0, 70),
+            })),
+          text: visible.flatMap((item) =>
+            [...item.childNodes].flatMap((node) => {
+              if (node.nodeType !== Node.TEXT_NODE || !node.textContent?.trim())
+                return [];
+              const range = document.createRange();
+              range.selectNode(node);
+              return [...range.getClientRects()]
+                .filter((rect) => rect.right > edge + 1)
+                .map((rect) => ({
+                  tag: item.tagName,
+                  text: node.textContent?.trim().slice(0, 80),
+                  right: rect.right,
+                }));
+            }),
+          ),
+          owners: nodes
+            .filter(
+              (item) =>
+                item.scrollWidth > item.clientWidth && item.clientWidth > 0,
+            )
+            .map((item) => ({
+              tag: item.tagName,
+              class: String(item.className),
+              client: item.clientWidth,
+              scroll: item.scrollWidth,
+              overflow: getComputedStyle(item).overflowX,
+            })),
+        };
       }),
     );
   }
