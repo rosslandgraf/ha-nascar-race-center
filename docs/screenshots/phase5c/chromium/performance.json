@@ -1,0 +1,12 @@
+{
+  "independent": true,
+  "stable": true,
+  "rowCount": 100,
+  "subscriptions": 2,
+  "idleRequests": 0,
+  "memory": 6797542,
+  "mean_ms": 2.1030000000004656,
+  "max_ms": 4.899999999906868,
+  "remaining_subscriptions": 0,
+  "remaining_listeners": 0
+}

@@ -1,6 +1,6 @@
-# Frontend: NASCAR Race Center card 0.5.0
+# Frontend: NASCAR Race Center card 0.5.1
 
-Phase 5B supplies a working custom Lovelace card, consuming the merged Phase 5A
+Phase 5C refines the existing custom Lovelace card, consuming the merged Phase 5A
 [dashboard API v1](DASHBOARD_API.md). The separately identified
 [`frontend/`](../frontend/) package owns its lockfile, source, tests and versioned
 local ES module. Python integration packaging, cadence, entities, Recorder,
@@ -14,13 +14,13 @@ repository installs files on HA OS or changes dashboards/resources automatically
 1. From a checkout containing Phase 5A and 5B, use Node 24 and `cd frontend &&
    npm ci && npm run build`. The committed bundle may also be used directly.
 2. Manually create `<HA config>/www/nascar-race-center/` and copy
-   `frontend/dist/nascar-race-center-card-0.5.0.js` into that directory. On HA OS,
+   `frontend/dist/nascar-race-center-card-0.5.1.js` into that directory. On HA OS,
    `<HA config>` is ordinarily `/config`; use the installation's supported file
    editor or file transfer method. Do not copy `node_modules`, `demo` or tests.
 3. With an administrator account, open **Settings → Dashboards → Resources**
    (enable Advanced Mode in the profile if necessary). Add a **JavaScript Module**
    resource with URL:
-   `/local/nascar-race-center/nascar-race-center-card-0.5.0.js`.
+   `/local/nascar-race-center/nascar-race-center-card-0.5.1.js`.
    YAML-managed resource users add that same URL with `type: module` to their
    existing resource list. Do not add the resource twice.
 4. Reload the browser, edit a dashboard and choose **NASCAR Race Center** from the
@@ -155,6 +155,7 @@ coalescing, cache, cancellation, upstream authorization and cadence ownership.
 | `src/api.ts` | Eight commands, envelope/selection checks, request pacing and errors |
 | `src/types.ts` | Typed v1 envelope/record unions; shared leaf-model imports |
 | `src/state.ts` | Immutable selection pages, token offsets, retention and generations |
+| `src/messages.ts` | Central English source labels for new controls; translation catalogs remain future work |
 | `src/format.ts` | Explicit-offset dates/countdowns, HA locale/time-zone/number-format support, stable sorting |
 | `src/components/leaderboard.ts` | Stable keyed timing rows, sorting, favorite/driver disclosure |
 | `src/components/chart.ts` | Bounded SVG charts, gaps, data-table equivalent |
@@ -168,7 +169,7 @@ reproducible commands. In the restricted prepared cloud environment use `npm ci 
 actual-card screenshots/measurements. Test adapter/fixtures live only in
 `frontend/demo`; a Python HA contract test exports/rechecks synthetic projections.
 
-Compatibility: card 0.5.0 ↔ dashboard API v1 from merged PR #11 (`fb8d8d0`).
+Compatibility: card 0.5.1 ↔ dashboard API v1 from merged PR #11 (`fb8d8d0`).
 Inspected installed HA **2026.10.2** / frontend **20260930.4**, including
 [custom-card interfaces](https://github.com/home-assistant/frontend/blob/20260930.4/src/panels/lovelace/types.ts)
 and [entry discovery](https://github.com/home-assistant/frontend/blob/20260930.4/src/data/config_entries.ts).
@@ -176,8 +177,7 @@ No private HA frontend imports or external helper dependency are used.
 
 Target current evergreen browsers with custom elements, Shadow DOM, ES2022,
 Resize/container CSS and `color-mix` (Chrome/Edge 111+, Firefox 113+, Safari 16.4+;
-actual validation uses installed Chromium, not a claim of tested coverage for
-every target). No legacy browser polyfill/download is supplied.
+local Phase 5C validation uses installed Chromium; hosted CI runs Chromium, Firefox and WebKit, with executed results recorded in PHASE5C_VALIDATION.md). No legacy browser polyfill/download is supplied.
 
 ## Accessibility, responsive behavior and distribution
 
@@ -190,7 +190,7 @@ status/alert regions and chart data tables support keyboard and assistive use.
 Reduced-motion disables animations/transitions. Container queries respond to the
 actual card width; phones prioritize position/car/driver/start/status and expose
 measurements by horizontal scrolling or driver disclosure. See validation for
-375/430/834/1440/1920 px screenshots and automated axe findings.
+320–1920 px viewport/container checks and screenshots and automated axe findings.
 
 This is manual development distribution, **not** a HACS dashboard-plugin release.
 The repository's existing `hacs.json` still describes the Python integration.
@@ -201,8 +201,54 @@ rules. No second repository, public release, resource auto-registration or
 visibility change is made here. MIT remains code-only; no NASCAR logos, photos,
 sponsor graphics, video, remote fonts or controlled media are included.
 
-Phase 5C follow-ups: physical-device/HA companion WebView and assistive-reader
-reviews; additional browsers/theme combinations; touch column preferences and
-wall-display density; richer record-specific presentation for rare datasets;
-chart cursor/zoom and page-coverage navigation; localization beyond English.
-These are polish/coverage tasks, not claims of completed Phase 5C work.
+## Phase 5C refinements
+
+Card **0.5.1** retains the five views and API v1. Choose **Display density →
+Compact** for tighter panels, schedules and timing rows; Comfortable remains the
+default. Density belongs to this card instance, survives view navigation, and
+is neither stored globally nor written into integration settings. On small cards,
+all five navigation buttons wrap into two rows. Wide overview cards add a
+five-driver reported-field strip, while compact layout reduces wall-display
+scrolling. The established charcoal surfaces remain theme-aware and use original
+CSS flag shapes with explicit text.
+
+On narrow timing towers the first view prioritizes position, car, driver,
+favorite, start/change/status context and reported gap. **All measurements**
+exposes additional columns inside the labeled scroll region. Position/car/driver
+stay pinned while measurements scroll, headers remain visible during vertical
+scrolling, and text is not reduced to fit a whole desktop table. Driver buttons
+and sort controls have 44 px minimum heights. Arrow Up/Down, Home/End move among
+drivers; Enter opens details, Escape/Close return focus. Sort changes are announced
+through a status region. Starting-position change remains derived and is never
+labeled an on-track pass. Context changes close details and recover focus to the
+current navigation control. Details remain an inline region, not a modal dialog.
+
+Charts provide selectable driver legends, an observation selector, previous/next
+buttons, pointer hover/tap inspection, a cursor and announced exact values.
+Missing observations remain selectable and are labeled; all-null loaded series
+retain an accessible table without drawing a fabricated plot. A single point is
+centered. Narrow charts scroll within their own labeled region to keep axes
+readable. Supported window choices follow the submitted backend query; no new
+formulas, units, interpolation or background downloads are added.
+
+History provides record-type filtering, reported finishing order, specialized
+lap-note/flag/pit/stage/loop/average summaries and metric tables. Full record
+wrappers remain available, including dataset, source index, run namespace and
+parent identifiers. Commentary IDs and archived pit names/car numbers never become
+NASCAR driver associations. Generic disclosure remains available for every kind.
+
+History/Analytics place paging controls before long results/charts. **Return to
+loaded page** reopens a retained immutable page without a command. **Return to a
+retained selection** switches to an existing history/analytics view without
+allocating a snapshot. Loaded record ranges explicitly include headers/metrics,
+not just lap samples. Five-minute expiry, two-user/four-global slots, eight-page
+retention, restart and reconnect semantics are unchanged. Clearing local state
+never claims to release a server slot.
+
+New controls use `messages.ts` as an English source catalog. Numeric timing,
+results, nested records, charts and metrics follow HA number-format preferences;
+confirmed instants honor HA language/timezone/12–24-hour choices. This is
+localization readiness, not completed translations.
+
+See [Phase 5C validation and manual acceptance](PHASE5C_VALIDATION.md) for actual
+checks, browser coverage, screenshots, performance and remaining Phase 6A gaps.

@@ -468,3 +468,26 @@ contract tests and remaining Phase 5C polish. Test-only rich fictional data is
 excluded from the runtime bundle; the real offline provider retains its honest
 empty live/lap states. No NASCAR requests, controlled assets, entities, Recorder
 rows, production installation, publication or release are introduced.
+
+## Phase 5C frontend refinement
+
+Card 0.5.1 preserves API v1 and the existing Lit component boundaries. Its density
+control is per-instance memory; narrow timing-column disclosure belongs to the
+tower instance. Container queries apply to actual card/tower widths. Keyed driver
+rows keep identity/focus through updates, and source-context invalidation recovers
+focus after closing the inline detail region. No global preferences, frontend
+polling or backend state are introduced.
+
+Chart inspection selects existing backend observations, including explicit nulls;
+it never recalculates metrics or bridges absent laps. A single active inspector
+and bounded native selectors avoid thousands of tab stops. Source-range coverage
+and existing 1,600-record retention remain visible. All-null series keep their
+table; record-specific summaries preserve complete wrappers/namespace evidence.
+PageView.jump reuses cached immutable offsets and retains previous navigation.
+The card's selection registry can restore either History or Analytics without a
+new command, while the server remains authoritative for snapshot expiry/capacity.
+
+[Frontend instructions](docs/FRONTEND.md) describe the controls and
+[Phase 5C validation](docs/PHASE5C_VALIDATION.md) records executed browser,
+accessibility, performance and device acceptance evidence. Python behavior,
+authentication, providers, entities, Recorder and event behavior are unchanged.
