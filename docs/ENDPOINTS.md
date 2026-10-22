@@ -1,5 +1,14 @@
 # Endpoint compatibility and evidence
 
+October 22 owner follow-up: genuine HA OS CF diagnostics reportedly show HTTP
+200/valid JSON for schedule/reference feeds but unusable normalized timestamps
+and an unavailable driver directory, plus a race-specific lap-averages HTTP 403.
+The raw attachments are unavailable here. [Evidence/source rules](REAL_CF_EVIDENCE.md)
+and [the correction report](REAL_CF_VALIDATION.md) distinguish reported facts,
+structural reproductions and independently published event times. **No CF request
+was made for this correction**; no alternate endpoint/access workaround is used.
+
+
 The later [supplied observed package](nascar-api-reference/START_HERE.md) records
 24 populated responses, an empty article response and three origin Drive denials.
 It is the primary Phase 3B structural source. Those snapshots are separate from

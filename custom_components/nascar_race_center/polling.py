@@ -64,6 +64,8 @@ def legacy_decision(
     races: tuple[Race, ...],
     now: datetime,
     minimum: int,
+    *,
+    schedules_known: bool = True,
 ) -> PollDecision:
     """Keep CF's conservative budget; on-track non-race runs need no race lap."""
     if (kind := active_kind(snapshot, now)) in {"practice", "qualifying"}:
@@ -79,16 +81,16 @@ def legacy_decision(
         and snapshot.lap > 0
     ):
         return PollDecision(minimum, "legacy_active")
-    seconds, reason = max(minimum, 21600), "off_season"
-    for race in races:
-        if race.start_time is None:
-            continue
-        delta = race.start_time - now
-        if -timedelta(hours=8) <= delta <= timedelta(hours=2):
-            seconds, reason = min(seconds, max(minimum, 900)), "legacy_race_window"
-        elif timedelta(0) <= delta <= timedelta(days=2) and seconds > 3600:
-            seconds, reason = min(seconds, max(minimum, 3600)), "idle"
-    return PollDecision(seconds, reason)
+    # Reuse the bounded schedule windows without enabling fast/adaptive CF.
+    # Practice/qualifying discovery must not depend on the later race start.
+    decision = adaptive_decision(
+        None,
+        races,
+        now,
+        schedules_known=schedules_known,
+        approaching_seconds=max(300, minimum),
+    )
+    return PollDecision(max(minimum, decision.seconds), decision.reason)
 
 
 def adaptive_decision(

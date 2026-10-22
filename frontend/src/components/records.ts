@@ -120,6 +120,8 @@ export function evidence(page: Page, hass?: Hass) {
             <dd>${date(e.provenance?.response_at, hass)}</dd>
             <dt>Delivery</dt>
             <dd>${label(e.provenance?.delivery)}</dd>
+            <dt>HTTP status</dt>
+            <dd>${e.provenance?.http_status ?? "Unknown"}</dd>
             <dt>Retry after</dt>
             <dd>${e.provenance?.retry_after ?? "Unknown"}</dd>
           </dl>

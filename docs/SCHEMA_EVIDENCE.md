@@ -43,11 +43,9 @@ that results are final. Unknown codes remain unknown. A fresh transport response
 does not prove fresh NASCAR data: the source timestamp remains separate from
 the local observation time.
 
-Only dates with an explicit timezone offset are normalized to UTC. A naive
-`date_scheduled`, missing time, or invalid optional time remains unknown rather
-than guessing a track timezone. Whether naive dates are actually UTC needs an
-authorized real response capture and official clarification. This can limit
-next-race entities with real feeds until the schema gate is resolved.
+Generic `date_scheduled` and live clocks require explicit offsets. Named schedule
+UTC fields now use the narrow [owner/publication-corroborated contract](REAL_CF_EVIDENCE.md).
+Local schedule fields are not interpreted as Eastern or the HA server timezone.
 
 Missing series envelopes, wrong/missing identities, duplicate race IDs, and
 unknown live envelopes raise a schema error; they do not become fabricated
@@ -91,7 +89,7 @@ details; it does not synthesize omitted practice or qualifying data.
 
 Detailed race-session timing takes precedence over an older basic-list start.
 If the detailed feed identifies a race-kind session but its start is unknown,
-naive or unpublished, the merged race start becomes unknown too. Multiple
+invalid or unpublished, the merged race start becomes unknown too. Multiple
 ambiguous race-kind sessions likewise cannot select a single race start. An old
 basic time is not reused to conceal a detailed TBD/postponement. Basic race-start
 fallback applies only when the detailed feed supplies no race-kind session.
@@ -102,17 +100,18 @@ are implementation protection limits, not claims about provider maximums.
 
 ### Timestamp behavior
 
-`date_scheduled` values with `Z` or an explicit numeric offset are converted to UTC. Date-only, timezone-free, missing, malformed, and out-of-range values become `None` without assigning a timezone. No current response or official source timezone contract has been obtained. A third-party datetime type alone cannot establish UTC or Eastern semantics.
+[Exact current rules, evidence and before/after examples](REAL_CF_EVIDENCE.md)
+supersede the earlier explicit-offset-only schedule restriction. Offset-free
+`start_time_utc` / `end_time_utc` are UTC; supplied offsets are honored. Generic
+`date_scheduled` still requires an offset, but a single valid UTC race session
+can supply its race start. Local `start_time` / `end_time` stay unused. Year-0001,
+missing/date-only/malformed inputs are unknown; invalid ends never become guessed
+durations. HA converts aware values to its configured timezone, including DST.
 
-The same rule applies to `start_time_utc` and `end_time_utc`: the field name alone
-does not authorize assigning UTC to a naive value. Invalid or nonpositive
-duration is never replaced with a guessed number of minutes. Calendars use a
-clearly labeled all-day notice when only a valid start is known, and omit events
-without a usable start. Weekend entries derive local date ranges from known
-sessions rather than assuming a Friday-to-Sunday schedule. Home Assistant
-performs local timezone display and DST conversion for known offset timestamps.
-
-These races retain identity/name/track and contribute to the schedule count, but cannot drive next-race selection, local race-boundary timers, or race-window polling. If all dates lack offsets, next-race name/start stay unknown. In mixed schedules the next-race entities select only among timestamped races, so they can skip a race whose time is unknown. The scheduled-races sensor exposes the bounded `unknown_start_times` count, and diagnostics expose per-series `unknown_start_time_counts` plus `timestamp_policy: explicit_offset_required`. These counts include all unknown starts (including omissions and invalid values); they do not claim every omission was a timezone error. Resolving source semantics requires evidence before changing this policy.
+Unknown starts still count as retained races but cannot drive next-race/calendar
+instants. Known starts with unknown duration use clearly labeled date notices.
+Diagnostics add per-feed field/reason counts; `live.timestamp_policy` stays
+explicit-offset-only. Shared parsing applies to all three national series.
 
 ## Driver and track reference contracts
 
@@ -164,9 +163,9 @@ is still no verified official/current NASCAR response schema in this project.
 | --- | --- |
 | Basic season | Requires an object with the selected `series_N` array and valid `race_id`, `series_id`, `race_name` per row. A bare list, absent series, duplicate ID or contradictory season fails explicitly. Missing optional track/time/session data preserves race identity. |
 | Weekend sessions | Reads embedded `schedule` and the per-series `schedule-feed.json` array; it does not fetch the separate historical `weekend-feed.json`. Detailed rows require race identity and `event_name`; malformed/ambiguous detail fails enrichment while usable basic races survive. Empty details cannot establish an empty season when the basic request failed. |
-| Time | The pinned NascarPicks consumer parses `start_time_utc` using `%Y-%m-%dT%H:%M:%S`, and its model explicitly assigns UTC to naive input. This is concrete evidence that a community consumer expects offset-free values, but does not establish current NASCAR timezone semantics. Our explicit-offset policy rejects those values. A structurally accepted feed can therefore populate race counts/names yet provide no usable calendar or next-race times. No timezone inference was added. |
+| Time | The pinned NascarPicks consumer parses `start_time_utc` using `%Y-%m-%dT%H:%M:%S`, and its model explicitly assigns UTC to naive input. This is concrete evidence that a community consumer expects offset-free values, but does not establish current NASCAR timezone semantics. The 0.2.1 correction accepts those named schedule UTC fields after owner evidence and independent published-time corroboration; generic/local naive timestamps remain unknown. |
 | Duration/status/identity | Embedded sessions have no supported end field. Missing/invalid detailed ends produce date notices, not timed sessions. No referenced authoritative session ID or cancellation/postponement status contract is implemented. Renames can change derived session IDs; indistinguishable kind/name duplicates fail enrichment. Timing revisions are supported, explicit CF cancellation detection is unverified. |
-| Drivers | Requires a `response` array and `Nascar_Driver_ID` plus `Full_Name` for usable rows. It never substitutes secondary ID or car number. Unknown `Driver_Series` slugs preserve names/IDs/labels but cannot populate numeric series associations. Missing optional facts and manufacturer image URLs remain unknown. Conflicting names for one ID fail the directory. |
+| Drivers | Requires a `response` array and `Nascar_Driver_ID` plus `Full_Name` for usable rows. It never substitutes secondary ID or car number. Unknown `Driver_Series` slugs preserve names/IDs/labels but cannot populate numeric series associations. Missing optional facts and manufacturer image URLs remain unknown. Conflicting non-cosmetic names quarantine that ID, with bounded counts/samples. |
 | Tracks | Requires an `items` array and `track_id` plus `track_name`. Missing locality/length/type/surface does not invalidate a venue. Schedule track names remain usable if the directory fails. No track timezone is inferred. |
 
 A known start with unknown duration creates a date notice in the configured HA
@@ -211,3 +210,9 @@ imported cold Cup structural observation. Generated Swagger targets a different
 host, not the production CF contract. No new NASCAR response was requested.
 All nine series/session regression combinations are explicitly synthetic;
 practice/qualifying active-source meanings still require authorized observation.
+
+Current driver evidence: [October 22 source/identity rules](REAL_CF_EVIDENCE.md).
+The current O'Reilly slug joins the legacy Xfinity series-2 mapping; only cosmetic
+name variants merge, draft metadata cannot overwrite published metadata, and
+independent valid IDs survive ambiguity. The full original files were unavailable
+here; synthetic aggregate counts do not claim full-file revalidation.

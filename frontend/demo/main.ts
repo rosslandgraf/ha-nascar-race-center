@@ -4,7 +4,7 @@ import type { Section } from "../src/types";
 const params = new URLSearchParams(location.search);
 const resource =
   params.get("bundle") === "true"
-    ? "/nascar-race-center-card-0.6.0.js"
+    ? "/nascar-race-center-card-0.6.1.js"
     : "/src/card.ts";
 if (params.get("bundle") === "true") {
   // Public artifacts must load as-is, without Vite source transforms.

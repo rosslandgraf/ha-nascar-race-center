@@ -17,6 +17,7 @@ MAX_TRACK_ROWS = 1000
 _SERIES_SLUGS = {
     "nascar-cup-series": 1,
     "nascar-xfinity-series": 2,
+    "nascar-oreilly-auto-parts-series": 2,
     "nascar-craftsman-truck-series": 3,
 }
 
@@ -120,28 +121,102 @@ def _consensus(values: Iterable[str | None]) -> str | None:
     return options.pop() if len(options) == 1 else None
 
 
-def parse_drivers(payload: object) -> tuple[Driver, ...]:
-    """Read documented rows, grouping multi-series records by NASCAR ID.
+def _merge_associations(
+    rows: Iterable[tuple[DriverAssociation, int]],
+) -> tuple[DriverAssociation, ...]:
+    """Prefer published rows per series; fill only compatible missing facts."""
+    groups: dict[
+        tuple[int | None, str | None], list[tuple[DriverAssociation, int]]
+    ] = {}
+    for association, rank in rows:
+        key = (
+            association.series_id,
+            None if association.series_id else association.series_label,
+        )
+        groups.setdefault(key, []).append((association, rank))
+    result: list[DriverAssociation] = []
+    for group in groups.values():
+        best = max(rank for _, rank in group)
+        candidates = {item for item, rank in group if rank == best}
+        facts = [
+            {value for item in candidates if (value := getattr(item, key)) is not None}
+            for key in ("car_number", "team", "manufacturer")
+        ]
+        if any(len(values) > 1 for values in facts):
+            # Preserve competing metadata; association_for refuses to pick one.
+            result.extend(candidates)
+            continue
+        labels = sorted(item.series_label for item in candidates if item.series_label)
+        raw = {item.team_raw for item in candidates if item.team_raw}
+        car, team, manufacturer = (next(iter(values), None) for values in facts)
+        result.append(
+            DriverAssociation(
+                series_id=next(iter(candidates)).series_id,
+                series_label=labels[0] if labels else None,
+                car_number=car,
+                team=team,
+                manufacturer=manufacturer,
+                team_raw=team or (next(iter(raw)) if len(raw) == 1 else None),
+            )
+        )
+    return tuple(
+        sorted(
+            result,
+            key=lambda item: (
+                item.series_id or 0,
+                item.series_label or "",
+                item.car_number or "",
+                item.team or "",
+                item.manufacturer or "",
+                item.team_raw or "",
+            ),
+        )
+    )
 
-    Records without a stable NASCAR ID/name cannot become entities. They are
-    ignored, but a nonempty directory with no usable identities is a schema
-    failure rather than a falsely empty database. Conflicting names for one
-    NASCAR ID fail explicitly. No secondary ID or car number substitutes for ID.
+
+def parse_drivers(
+    payload: object, *, diagnostics: dict[str, object] | None = None
+) -> tuple[Driver, ...]:
+    """Quarantine ambiguous NASCAR IDs, preserving independently usable drivers.
+
+    Case/whitespace variants are cosmetic; different spellings/initials are not
+    guessed to identify the same person. Driver_ID/car/name never replace ID.
+    Draft-only entries are directory facts, never proof of active participation.
     """
     rows = _rows(payload, "response", MAX_DRIVER_ROWS)
-    names: dict[int, str] = {}
-    grouped: dict[int, list[DriverAssociation]] = {}
+    names: dict[int, set[str]] = {}
+    grouped: dict[int, set[tuple[DriverAssociation, int]]] = {}
+    counts = dict.fromkeys(
+        (
+            "invalid_id_rows",
+            "missing_name_rows",
+            "non_object_rows",
+            "draft_rows",
+            "published_rows",
+            "unknown_series_rows",
+            "duplicate_association_rows",
+            "numeric_team_rows",
+        ),
+        0,
+    )
     for row in rows:
         if not isinstance(row, dict):
+            counts["non_object_rows"] += 1
             continue
         driver_id = _identity(row.get("Nascar_Driver_ID"))
         name = _text(row.get("Full_Name"))
-        if driver_id is None or name is None:
+        if driver_id is None or driver_id >= 10**20:
+            counts["invalid_id_rows"] += 1
             continue
-        if driver_id in names and names[driver_id] != name:
-            raise SchemaError("Conflicting reference driver identity")
-        names[driver_id] = name
+        if name is None:
+            counts["missing_name_rows"] += 1
+            continue
+        names.setdefault(driver_id, set()).add(" ".join(name.split()))
         label = _text(row.get("Driver_Series"))
+        status = (_text(row.get("Driver_Post_Status")) or "").casefold()
+        rank = {"publish": 2, "draft": 0}.get(status, 1)
+        if status in {"publish", "draft"}:
+            counts["published_rows" if status == "publish" else "draft_rows"] += 1
         association = DriverAssociation(
             series_id=_SERIES_SLUGS.get(label) if label else None,
             series_label=label,
@@ -150,29 +225,76 @@ def parse_drivers(payload: object) -> tuple[Driver, ...]:
             team_raw=_text(row.get("Team")),
             manufacturer=_manufacturer(row.get("Manufacturer")),
         )
-        associations = grouped.setdefault(driver_id, [])
-        if association not in associations:
-            associations.append(association)
-    if rows and not grouped:
-        raise SchemaError("Reference directory has no usable driver identities")
-    return tuple(
-        Driver(
-            driver_id=driver_id,
-            name=names[driver_id],
-            series_ids=tuple(
-                sorted({item.series_id for item in rows if item.series_id is not None})
-            ),
-            car_number=_consensus(item.car_number for item in rows),
-            team=_consensus(item.team for item in rows),
-            manufacturer=_consensus(item.manufacturer for item in rows),
-            associations=tuple(rows),
-            series_label=", ".join(
-                sorted({item.series_label for item in rows if item.series_label})
-            )
-            or None,
+        counts["unknown_series_rows"] += int(association.series_id is None)
+        counts["numeric_team_rows"] += int(
+            association.team_raw is not None and association.team_raw.isdecimal()
         )
-        for driver_id, rows in sorted(grouped.items())
+        ranked_rows = grouped.setdefault(driver_id, set())
+        if (association, rank) in ranked_rows:
+            counts["duplicate_association_rows"] += 1
+        else:
+            ranked_rows.add((association, rank))
+    ambiguous = sorted(
+        key
+        for key, values in names.items()
+        if len({value.casefold() for value in values}) > 1
     )
+    rejected = set(ambiguous)
+    drivers: list[Driver] = []
+    for driver_id, entries in sorted(grouped.items()):
+        if driver_id in rejected:
+            continue
+        associations = _merge_associations(entries)
+        drivers.append(
+            Driver(
+                driver_id=driver_id,
+                name=sorted(names[driver_id])[0],
+                series_ids=tuple(
+                    sorted(
+                        {
+                            item.series_id
+                            for item in associations
+                            if item.series_id is not None
+                        }
+                    )
+                ),
+                car_number=_consensus(item.car_number for item in associations),
+                team=_consensus(item.team for item in associations),
+                manufacturer=_consensus(item.manufacturer for item in associations),
+                associations=associations,
+                series_label=", ".join(
+                    sorted(
+                        {
+                            item.series_label
+                            for item in associations
+                            if item.series_label
+                        }
+                    )
+                )
+                or None,
+            )
+        )
+    if diagnostics is not None:
+        diagnostics.clear()
+        diagnostics.update(
+            status="parsed_with_rejections"
+            if ambiguous
+            or any(
+                counts[key]
+                for key in ("invalid_id_rows", "missing_name_rows", "non_object_rows")
+            )
+            else "parsed",
+            source_rows=len(rows),
+            candidate_driver_ids=len(grouped),
+            usable_driver_ids=len(drivers),
+            ambiguous_driver_id_count=len(ambiguous),
+            ambiguous_driver_ids_sample=ambiguous[:20],
+            usable_driver_ids_sample=[driver.driver_id for driver in drivers[:20]],
+            **counts,
+        )
+    if rows and not drivers:
+        raise SchemaError("Reference directory has no usable driver identities")
+    return tuple(drivers)
 
 
 def _positive_number(value: object) -> float | None:

@@ -18,6 +18,7 @@ from .models import (
     parse_live,
     parse_schedule,
     parse_schedule_feed,
+    schedule_quality,
 )
 from .polling import CF_LIMITS, OFFLINE_LIMITS
 
@@ -44,6 +45,24 @@ class CFProvider:
         self.api = NascarApiClient(session, max_cache_entries=16)
         self.parse_results: OrderedDict[str, str] = OrderedDict()
         self.schedule_details_failed: set[tuple[int, int]] = set()
+        self.schedule_diagnostics: OrderedDict[str, dict[str, object]] = OrderedDict()
+
+    def _parse_schedule(
+        self, payload: object, year: int, series_id: int, *, detailed: bool
+    ) -> tuple[Race, ...]:
+        key = f"{'sessions' if detailed else 'basic'}:{year}:{series_id}"
+        self.schedule_diagnostics.pop(key, None)
+        races = (
+            parse_schedule_feed(payload, series_id, year)
+            if detailed
+            else parse_schedule(payload, series_id, year=year)
+        )
+        self.schedule_diagnostics[key] = schedule_quality(
+            payload, races, series_id, detailed=detailed
+        )
+        while len(self.schedule_diagnostics) > 24:
+            self.schedule_diagnostics.popitem(last=False)
+        return races
 
     async def _read[T](
         self,
@@ -82,7 +101,9 @@ class CFProvider:
             basic = await self._read(
                 schedule_path(year),
                 3600,
-                lambda payload: parse_schedule(payload, series_id, year=year),
+                lambda payload: self._parse_schedule(
+                    payload, year, series_id, detailed=False
+                ),
                 key=f"basic:{year}:{series_id}",
             )
         except ProviderError as err:
@@ -95,7 +116,9 @@ class CFProvider:
             detailed = await self._read(
                 schedule_feed_path(year, series_id),
                 21600,
-                lambda payload: parse_schedule_feed(payload, series_id, year),
+                lambda payload: self._parse_schedule(
+                    payload, year, series_id, detailed=True
+                ),
                 key=f"sessions:{year}:{series_id}",
             )
             merged = merge_schedule(basic or (), detailed)

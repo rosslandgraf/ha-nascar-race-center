@@ -7,7 +7,9 @@ from homeassistant.core import HomeAssistant
 from . import NascarConfigEntry
 from .const import CONF_PROVIDER, PROVIDER_DEMO
 from .frontend import packaging_diagnostics
+from .history_provider import CFHistoryProvider
 from .provider import CFProvider
+from .reference_provider import CFReferenceProvider
 
 
 async def async_get_config_entry_diagnostics(
@@ -24,6 +26,7 @@ async def async_get_config_entry_diagnostics(
         "cf_pipeline": {
             "transport": provider.api.diagnostics(),
             "parsers": dict(provider.parse_results),
+            "schedule_normalization": dict(provider.schedule_diagnostics),
         }
         if isinstance(provider, CFProvider)
         else {},
@@ -56,7 +59,7 @@ async def async_get_config_entry_diagnostics(
                 str(key): sum(race.start_time is None for race in races)
                 for key, races in schedule.data.races.items()
             },
-            "timestamp_policy": "explicit_offset_required",
+            "timestamp_policy": "named_utc_schedule_fields; explicit_offsets_elsewhere",
             "session_detail_failures": [
                 {"season": year, "series_id": series_id}
                 for year, series_id in sorted(
@@ -93,6 +96,17 @@ async def async_get_config_entry_diagnostics(
             },
             "last_http_status": reference.last_error_status,
             "favorite_count": len(entry.runtime_data.favorites.ids),
+            "driver_normalization": reference.provider.driver_diagnostics
+            if isinstance(reference.provider, CFReferenceProvider)
+            else {},
+        },
+        "history": {
+            "recent_datasets": list(
+                entry.runtime_data.history.provider.dataset_diagnostics.values()
+            )
+            if isinstance(entry.runtime_data.history.provider, CFHistoryProvider)
+            else [],
+            "retained_summary_limit": 24,
         },
         "scoring": {
             "feeds": {

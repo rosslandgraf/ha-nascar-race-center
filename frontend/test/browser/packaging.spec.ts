@@ -3,6 +3,7 @@ import { test, expect } from "@playwright/test";
 import { spawn, type ChildProcess } from "node:child_process";
 import { once } from "node:events";
 import { resolve } from "node:path";
+import { mkdtemp, rm } from "node:fs/promises";
 const base = "http://127.0.0.1:18123";
 let process: ChildProcess | undefined;
 let output = "";
@@ -18,12 +19,17 @@ async function stop() {
   clearTimeout(timer);
   process = undefined;
 }
-async function start(version = "0.6.0") {
+async function start(version = "0.6.1", configDir?: string) {
   await stop();
   output = "";
   process = spawn(
     globalThis.process.env.NRC_PYTHON ?? "python",
-    [resolve("test/serve-bundled-ha.py"), "--card-version", version],
+    [
+      resolve("test/serve-bundled-ha.py"),
+      "--card-version",
+      version,
+      ...(configDir ? ["--config-dir", configDir] : []),
+    ],
     { stdio: ["ignore", "pipe", "pipe"] },
   );
   process.stdout?.on("data", (data) => {
@@ -69,18 +75,18 @@ test("bundled HA code loads once for aliases and multiple browser clients", asyn
       modules.push(r.url());
   });
   await page.goto(base + "/packaging-test");
-  await expect(page.getByText("Card 0.6.0 · API v1")).toBeVisible();
+  await expect(page.getByText("Card 0.6.1 · API v1")).toBeVisible();
   await page.evaluate(async () => {
     const alias = "/nascar_race_center/card.js?alias=second";
     await import(alias);
   });
   expect(modules).toHaveLength(1);
-  expect(modules[0]).toMatch(/0\.6\.0\.js\?v=[a-f0-9]{64}$/);
+  expect(modules[0]).toMatch(/0\.6\.1\.js\?v=[a-f0-9]{64}$/);
   const client = await browser.newContext();
   try {
     const second = await client.newPage();
     await second.goto(base + "/packaging-test");
-    await expect(second.getByText("Card 0.6.0 · API v1")).toBeVisible();
+    await expect(second.getByText("Card 0.6.1 · API v1")).toBeVisible();
     expect(
       await second.evaluate(
         () => customElements.get("nascar-race-center-card") !== undefined,
@@ -99,8 +105,8 @@ test("real HA restart upgrades and rolls back a warm browser at one resource URL
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   const loaderPath = base + "/nascar_race_center/card.js";
-  for (const [index, version] of ["0.6.0", "0.6.1", "0.6.0"].entries()) {
-    await start(version); // 0.6.1 is a labeled synthetic build-identity fixture.
+  for (const [index, version] of ["0.6.1", "0.6.2", "0.6.1"].entries()) {
+    await start(version); // 0.6.2 is a labeled synthetic build-identity fixture.
     if (index === 0) await page.goto(base + "/packaging-test");
     else await page.reload();
     await expect(page.getByText(`Card ${version} · API v1`)).toBeVisible();
@@ -148,7 +154,7 @@ test("one-time resource migration preserves existing card choices and unrelated 
     localStorage.setItem("test-resource", resources[0].url);
   });
   await page.reload();
-  await expect(page.getByText("Card 0.6.0 · API v1")).toBeVisible();
+  await expect(page.getByText("Card 0.6.1 · API v1")).toBeVisible();
   await expect(
     page.getByRole("heading", {
       name: "Existing NASCAR dashboard",
@@ -166,4 +172,29 @@ test("one-time resource migration preserves existing card choices and unrelated 
       () => JSON.parse(localStorage.getItem("test-resources")!)[1],
     ),
   ).toEqual({ url: "/local/household.js", type: "module" });
+});
+
+test("favorite IDs and entity identities persist through actual Core restart and bundled update", async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+  const configDir = await mkdtemp(resolve("../work/persistent-ha-"));
+  try {
+    let before: unknown;
+    for (const version of ["0.6.1", "0.6.2", "0.6.1"]) {
+      await start(version, configDir);
+      const response = await page.request.get(base + "/packaging-entry-test");
+      expect(response.status()).toBe(200);
+      const state = await response.json();
+      expect(state.favorites).toEqual(["99001", "99002"]);
+      expect(state.series).toEqual(["1", "2", "3"]);
+      expect(Object.keys(state.entities).length).toBeGreaterThan(20);
+      if (!before) before = state;
+      else expect(state).toEqual(before);
+      await stop();
+    }
+  } finally {
+    await stop();
+    await rm(configDir, { recursive: true, force: true });
+  }
 });

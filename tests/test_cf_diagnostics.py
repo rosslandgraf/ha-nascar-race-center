@@ -163,9 +163,9 @@ async def test_cf_pipeline_reaches_ha_entities_and_diagnostics_without_extra_req
         for series in (1, 2, 3)
     }
     assert diagnostics["schedule"]["unknown_start_time_counts"] == {
-        "1": 1,
-        "2": 1,
-        "3": 1,
+        "1": 0,
+        "2": 0,
+        "3": 0,
     }
     assert state(hass, entry, "driver_99011_live_position").state == "1"
     assert state(hass, entry, "driver_99011_metadata").attributes["team"] is None

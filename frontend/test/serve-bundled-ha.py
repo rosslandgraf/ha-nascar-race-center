@@ -11,6 +11,7 @@ import json
 import shutil
 import signal
 import tempfile
+from contextlib import nullcontext
 from importlib import import_module
 from pathlib import Path
 from unittest.mock import patch
@@ -20,6 +21,7 @@ from aiohttp import web
 from homeassistant import bootstrap, loader, setup
 from homeassistant.components.http import HomeAssistantView, StaticPathConfig
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from yarl import URL
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -52,12 +54,49 @@ document.body.append(card); window.nrcDemo = { card, hass };
         )
 
 
-async def run(port: int, card_version: str):
+class EntryProbe(HomeAssistantView):
+    """Test-only state of fictional entries; never part of the installed package."""
+
+    url = "/packaging-entry-test"
+    name = "packaging-test:entry"
+    requires_auth = False
+
+    def __init__(self, hass):
+        self.hass = hass
+
+    async def get(self, request):
+        entries = self.hass.config_entries.async_entries(DOMAIN)
+        if len(entries) != 1 or entries[0].state.value != "loaded":
+            return web.json_response({"ready": False}, status=503)
+        entry = entries[0]
+        return web.json_response(
+            {
+                "entry_id": entry.entry_id,
+                "favorites": entry.data.get("favorite_drivers"),
+                "series": entry.data.get("series"),
+                "entities": {
+                    item.unique_id: item.entity_id
+                    for item in er.async_entries_for_config_entry(
+                        er.async_get(self.hass), entry.entry_id
+                    )
+                },
+            }
+        )
+
+
+async def run(port: int, card_version: str, config_dir: Path | None):
     work = ROOT / "work"
     work.mkdir(exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="bundled-ha-", dir=work) as directory:
+    context = (
+        nullcontext(str(config_dir))
+        if config_dir
+        else tempfile.TemporaryDirectory(prefix="bundled-ha-", dir=work)
+    )
+    with context as directory:
         config = Path(directory)
         package = config / "custom_components" / DOMAIN
+        if package.exists():
+            shutil.rmtree(package)  # Only this test's copied runtime; HA storage stays.
         shutil.copytree(
             ROOT / "custom_components" / DOMAIN,
             package,
@@ -82,7 +121,7 @@ async def run(port: int, card_version: str):
                 card_version=card_version,
                 filename=f"nascar-race-center-card-{card_version}.js",
                 sha256=hashlib.sha256(contents).hexdigest(),
-                integration_version="0.2.1",
+                integration_version="0.2.2",
             )
             manifest["version"] = data["integration_version"]
             (package / "frontend" / data["filename"]).write_bytes(contents)
@@ -113,7 +152,22 @@ async def run(port: int, card_version: str):
             assert await setup.async_setup_component(hass, DOMAIN, {})
             loaded = import_module("custom_components.nascar_race_center")
             assert Path(loaded.__file__).parent == package
+            if config_dir is not None and not hass.config_entries.async_entries(DOMAIN):
+                result = await hass.config_entries.flow.async_init(
+                    DOMAIN,
+                    context={"source": "user"},
+                    data={
+                        "provider": "demo",
+                        "series": ["1", "2", "3"],
+                        "data_use_authorized": False,
+                        "live_interval": 300,
+                        "favorite_drivers": ["99001", "99002"],
+                    },
+                )
+                assert result["type"] == "create_entry"
+            await hass.async_block_till_done()
             hass.http.register_view(Harness())
+            hass.http.register_view(EntryProbe(hass))
             await hass.http.async_register_static_paths(
                 [
                     StaticPathConfig(
@@ -132,8 +186,13 @@ async def run(port: int, card_version: str):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=18123)
-    parser.add_argument("--card-version", default="0.6.0")
+    parser.add_argument("--card-version", default="0.6.1")
+    parser.add_argument("--config-dir", type=Path)
     args = parser.parse_args()
+    if args.config_dir is not None:
+        args.config_dir = args.config_dir.resolve()
+        if not args.config_dir.is_relative_to((ROOT / "work").resolve()):
+            raise ValueError("Persistence test config must be inside test-owned work/")
     original_request = aiohttp.ClientSession._request
 
     async def local_request(session, method, url, *args, **kwargs):
@@ -142,4 +201,4 @@ if __name__ == "__main__":
         return await original_request(session, method, url, *args, **kwargs)
 
     with patch.object(aiohttp.ClientSession, "_request", local_request):
-        asyncio.run(run(args.port, args.card_version))
+        asyncio.run(run(args.port, args.card_version, args.config_dir))

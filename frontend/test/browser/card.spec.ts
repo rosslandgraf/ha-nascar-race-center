@@ -235,7 +235,7 @@ test("versioned production bundle, no external requests, and render measurements
     };
   });
   expect(
-    requests.some((url) => url.includes("nascar-race-center-card-0.6.0.js")),
+    requests.some((url) => url.includes("nascar-race-center-card-0.6.1.js")),
   ).toBe(true);
   expect(requests.every((url) => new URL(url).hostname === "127.0.0.1")).toBe(
     true,

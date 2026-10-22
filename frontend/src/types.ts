@@ -21,8 +21,8 @@ export const SECTIONS: Section[] = [
 ];
 export const SERIES: Record<number, string> = {
   1: "Cup Series",
-  2: "National Series 2",
-  3: "Truck Series",
+  2: "O'Reilly Auto Parts Series",
+  3: "Craftsman Truck Series",
 };
 export const DATASETS = [
   "weekend",

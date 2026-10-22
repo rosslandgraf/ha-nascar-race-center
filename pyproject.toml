@@ -1,6 +1,6 @@
 [project]
 name = "ha-nascar-race-center"
-version = "0.2.0"
+version = "0.2.1"
 description = "NASCAR Race Center Home Assistant custom integration"
 requires-python = ">=3.14"
 

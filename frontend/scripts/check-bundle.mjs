@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 const filename = new URL(
-  "../../custom_components/nascar_race_center/frontend/nascar-race-center-card-0.6.0.js",
+  "../../custom_components/nascar_race_center/frontend/nascar-race-center-card-0.6.1.js",
   import.meta.url,
 );
 const bundle = readFileSync(filename);

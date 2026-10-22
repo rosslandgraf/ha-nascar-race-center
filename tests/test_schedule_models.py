@@ -84,10 +84,10 @@ def test_session_identity_survives_postponement_and_reordering() -> None:
 
 
 @pytest.mark.parametrize(
-    "timestamp", [None, "", "2026-12-31", "2026-12-31T18:00:00", "bad"]
+    "timestamp", [None, "", "2026-12-31", "0001-01-01T00:00:00", "bad"]
 )
 def test_uncertain_session_timestamps_are_unknown(timestamp: object) -> None:
-    """A UTC-named field and local clock are not enough to assume a zone."""
+    """Missing, date-only and sentinel inputs remain unknown; no local fallback."""
     rows = _rows()[:1]
     rows[0]["start_time_utc"] = timestamp
     rows[0]["start_time"] = "2026-12-31T13:00:00-05:00"
@@ -215,7 +215,7 @@ def test_detailed_unknown_race_start_does_not_resurrect_old_basic_time(
     )
     rows = _rows()[-1:]
     if detail_case == "unknown":
-        rows[0]["start_time_utc"] = "2027-01-03T18:00:00"
+        rows[0]["start_time_utc"] = "2027-01-03"
     elif detail_case == "multiple":
         rows.append(dict(rows[0], event_name="Second Heat"))
     else:

@@ -50,7 +50,7 @@ import "./components/chart";
 import "./components/metric-chart";
 import type { ChartMode } from "./components/chart";
 import "./editor";
-export const VERSION = "0.6.0";
+export const VERSION = "0.6.1";
 export class NascarRaceCenterCard extends LitElement {
   static styles = styles;
   private config: CardConfig = { type: "custom:nascar-race-center-card" };
@@ -293,10 +293,37 @@ export class NascarRaceCenterCard extends LitElement {
   private setDefaultRace() {
     const b = this.bootstrapData;
     const nav = b?.navigation.find((n) => n.series_id === this.series);
-    const next = b?.upcoming.find((r) => r.series_id === this.series);
+    const next = this.upcomingWeekend();
     this.season =
       next?.season ?? nav?.seasons.at(-1) ?? new Date().getFullYear();
     this.raceId = next?.race_id ?? "";
+  }
+  private upcomingWeekend() {
+    const now = Date.now();
+    const nextTime = (race: RaceSummary) =>
+      [
+        race.start_time,
+        ...(race.sessions ?? [])
+          .filter(
+            (session) =>
+              ["practice", "qualifying", "race"].includes(session.kind ?? "") &&
+              !["canceled", "cancelled", "completed"].includes(
+                session.status ?? "",
+              ),
+          )
+          .map((session) => session.start_time),
+      ]
+        .map((value) => instant(value))
+        .filter((value): value is number => value !== null && value >= now)
+        .sort((a, b) => a - b)[0] ?? Infinity;
+    return this.bootstrapData?.upcoming
+      .filter(
+        (race) =>
+          race.series_id === this.series &&
+          !["canceled", "cancelled", "completed"].includes(race.status ?? "") &&
+          Number.isFinite(nextTime(race)),
+      )
+      .sort((a, b) => nextTime(a) - nextTime(b))[0];
   }
   private syncLive() {
     this.stopLive();
@@ -760,14 +787,24 @@ export class NascarRaceCenterCard extends LitElement {
   private renderOverview() {
     const b = this.bootstrapData!,
       live = this.liveData;
-    const session = live?.session;
-    const race = session
-      ? this.currentRace
-      : b.upcoming.find((r) => r.series_id === this.series);
-    const weekend = b.upcoming.find((r) => r.series_id === this.series);
+    const session = [
+      "completed",
+      "latest_recorded",
+      "no_active_session",
+    ].includes(live?.session_state ?? live?.session?.progress ?? "")
+      ? null
+      : live?.session;
+    const race = session ? this.currentRace : this.upcomingWeekend();
+    const weekend = this.upcomingWeekend();
     const nextInstant = [
       race?.start_time,
-      ...(race?.sessions ?? []).map((s) => s.start_time),
+      ...(race?.sessions ?? [])
+        .filter(
+          (s) =>
+            ["practice", "qualifying", "race"].includes(s.kind ?? "") &&
+            !["canceled", "cancelled", "completed"].includes(s.status ?? ""),
+        )
+        .map((s) => s.start_time),
     ]
       .filter(
         (s): s is string =>
@@ -1166,6 +1203,7 @@ export class NascarRaceCenterCard extends LitElement {
     const rows = view?.current?.records ?? [];
     const races = rows.filter((r) => r.kind === "race");
     const sessions = rows.filter((r) => r.kind === "session");
+    const upcoming = this.upcomingWeekend();
     return html`<div class="stack">
       <div class="section-head">
         <div>
@@ -1188,6 +1226,39 @@ export class NascarRaceCenterCard extends LitElement {
             Some retained seasons are unavailable. Available peers do not
             establish full schedule coverage.
           </p>`
+        : nothing}
+      ${upcoming
+        ? html`<section class="panel" aria-label="Next known weekend">
+            <p class="eyebrow">Next known weekend</p>
+            <h3>${upcoming.name}</h3>
+            <p class="muted">
+              ${upcoming.track ?? "Track unknown"} ·
+              ${date(upcoming.start_time, this.hass)}
+            </p>
+            <div class="sessions">
+              ${(upcoming.sessions ?? [])
+                .filter(
+                  (session) =>
+                    instant(session.start_time) !== null &&
+                    instant(session.start_time)! >= Date.now() &&
+                    !["canceled", "cancelled", "completed"].includes(
+                      session.status ?? "",
+                    ),
+                )
+                .sort((a, b) => instant(a.start_time)! - instant(b.start_time)!)
+                .map(
+                  (session) =>
+                    html`<div class="session-row">
+                      <span>${session.name} · ${label(session.kind)}</span
+                      ><span>${date(session.start_time, this.hass)}</span>
+                    </div>`,
+                )}
+            </div>
+            <p class="muted">
+              The retained catalog below also includes past races. Scheduled
+              times do not confirm on-track activity.
+            </p>
+          </section>`
         : nothing}
       <div class="schedule">
         ${races.map((row) => {

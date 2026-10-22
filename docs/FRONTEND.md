@@ -1,10 +1,11 @@
-# Frontend: NASCAR Race Center card 0.6.0
+# Frontend: NASCAR Race Center card 0.6.1
 
 The Lit/TypeScript source package consumes dashboard API v1 and builds one
-versioned module into integration **0.2.0**. The single HACS Integration directory
+versioned module into integration **0.2.1**. The single HACS Integration directory
 contains Python, compiled JS, identity metadata and licenses. Source/test files
 remain in `frontend/`; HACS does not install them. See [packaging evidence](HACS_DISTRIBUTION.md).
-Earlier snapshot/CF fixes and permission gates are preserved.
+Earlier snapshot/source fixes and permission gates are preserved. See the
+[current CF corrections](REAL_CF_VALIDATION.md) and [upgrade guide](REAL_CF_UPGRADE.md).
 
 ## Bundled installation and one-time resource setup
 
@@ -170,7 +171,7 @@ reproducible commands. In the restricted prepared cloud environment use `npm ci 
 actual-card screenshots/measurements. Test adapter/fixtures live only in
 `frontend/demo`; a Python HA contract test exports/rechecks synthetic projections.
 
-Compatibility: this distribution pins card 0.6.0 to integration 0.2.0.
+Compatibility: this distribution pins card 0.6.1 to integration 0.2.1.
 The API v1 snapshot release extension began in 0.1.1; session labels in 0.1.2.
 Update the complete compatible directory and restart Core before browser reload. The original API v1 began in PR #11 (`fb8d8d0`).
 Inspected installed HA **2026.10.2** / frontend **20260930.4**, including
