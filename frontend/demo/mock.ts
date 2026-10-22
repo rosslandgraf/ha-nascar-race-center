@@ -88,8 +88,11 @@ export class MockHass implements Hass {
   config = { time_zone: "America/New_York" };
   requests: Record<string, unknown>[] = [];
   fail?: string;
+  delay = 0;
   async callWS<T>(request: Record<string, unknown>): Promise<T> {
     this.requests.push(clone(request));
+    if (this.delay)
+      await new Promise((resolve) => setTimeout(resolve, this.delay));
     if (this.fail) throw { code: this.fail };
     if (request.type === "config_entries/get")
       return [

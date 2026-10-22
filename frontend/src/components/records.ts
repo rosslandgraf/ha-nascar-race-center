@@ -1,10 +1,14 @@
 import { html, nothing, type TemplateResult } from "lit";
 import type { DataRow, Hass, Metric, Page } from "../types";
-import { date, label, metricUnit, number } from "../format";
-export function values(value: unknown, depth = 0): TemplateResult | string {
+import { date, label, metricUnit, number, numberLocale } from "../format";
+export function values(
+  value: unknown,
+  depth = 0,
+  locale?: string,
+): TemplateResult | string {
   if (value == null) return "Unknown / not reported";
   if (typeof value === "boolean") return value ? "Yes" : "No";
-  if (typeof value === "number") return number(value, undefined, 6);
+  if (typeof value === "number") return number(value, locale, 6);
   if (typeof value === "string") return value;
   if (depth > 6) return "Nested observation";
   if (Array.isArray(value))
@@ -14,7 +18,7 @@ export function values(value: unknown, depth = 0): TemplateResult | string {
             html`<div>
               ${value.length > 1
                 ? html`<small>Observation ${i + 1}</small>`
-                : nothing}${values(v, depth + 1)}
+                : nothing}${values(v, depth + 1, locale)}
             </div>`,
         )}`
       : "No reported records";
@@ -22,17 +26,36 @@ export function values(value: unknown, depth = 0): TemplateResult | string {
     ${Object.entries(value).map(
       ([k, v]) =>
         html`<dt>${label(k)}</dt>
-          <dd>${values(v, depth + 1)}</dd>`,
+          <dd>${values(v, depth + 1, locale)}</dd>`,
     )}
   </dl>`;
 }
-export function records(rows: DataRow[]) {
+export function recordTitle(row: DataRow, locale?: string): string {
+  if (row.kind === "notes" && row.value)
+    return `Lap ${number(row.value.lap, locale)} · ${row.value.text ?? "Note text unreported"}`;
+  if (row.kind === "flags" && row.value)
+    return `Lap ${number(row.value.laps_completed, locale)} · reported flag code ${number(row.value.flag_code, locale)}`;
+  if (row.kind === "pits" && row.value)
+    return `Archived pit · car ${row.value.activity.car_number ?? "—"} · ${row.value.nascar_driver_id ? `NASCAR driver ${row.value.nascar_driver_id}` : "NASCAR driver identity unreported"}`;
+  if (
+    (row.kind === "stage_result" || row.kind === "weekend_stage_result") &&
+    row.value
+  )
+    return `Stage ${number(row.number, locale)} · P${number(row.value.position, locale)} · car ${row.value.car_number ?? "—"} · driver ${row.value.driver_id}`;
+  if (row.kind === "loop_driver" && row.value)
+    return `Loop observations · NASCAR driver ${row.value.nascar_driver_id}`;
+  if (row.kind === "average_driver" && row.value)
+    return `Lap averages · ${row.value.driver.name ?? row.value.driver.nascar_driver_id} · car ${row.value.driver.car_number ?? "—"}`;
+  return label(row.kind);
+}
+export function records(rows: DataRow[], hass?: Hass) {
+  const locale = numberLocale(hass);
   return html`<div class="record-list">
     ${rows.map(
       (row, i) =>
         html`<details>
           <summary>
-            ${label(row.kind)}${row.driver_id
+            ${recordTitle(row, locale)}${row.driver_id
               ? ` · driver ${row.driver_id}`
               : ""}${row.number != null
               ? ` · stage ${row.number}`
@@ -41,7 +64,35 @@ export function records(rows: DataRow[]) {
               ? ` · source index ${row.source_index}`
               : ` · record ${i + 1}`}
           </summary>
-          ${values(row.value ?? row.best_mean ?? row)}
+          ${row.kind === "loop_driver" || row.kind === "average_driver"
+            ? html`<div
+                class="table-scroll"
+                tabindex="0"
+                role="region"
+                aria-label="Reported scoring metrics"
+              >
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Reported field</th>
+                      <th>Source value</th>
+                      <th>Interpretation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${row.value?.metrics.map(
+                      (m) =>
+                        html`<tr>
+                          <th scope="row">${label(m.field)}</th>
+                          <td>${number(m.value, locale, 6)}</td>
+                          <td>${label(m.interpretation)}</td>
+                        </tr>`,
+                    )}
+                  </tbody>
+                </table>
+              </div>`
+            : nothing}
+          ${values(row, 0, locale)}
         </details>`,
     )}
   </div>`;
@@ -88,7 +139,14 @@ export function metricCard(m: Metric, locale?: string) {
   </div>`;
 }
 export function resultTable(rows: DataRow[], hass?: Hass) {
-  const results = rows.filter((r) => r.kind === "result");
+  const results = rows
+    .filter((r) => r.kind === "result")
+    .sort(
+      (a, b) =>
+        (a.value?.finishing_position ?? Infinity) -
+        (b.value?.finishing_position ?? Infinity),
+    );
+  const locale = numberLocale(hass);
   return results.length
     ? html`<div
         class="table-scroll"
@@ -116,16 +174,16 @@ export function resultTable(rows: DataRow[], hass?: Hass) {
             ${results.map((r) => {
               const v = r.value!;
               return html`<tr>
-                <td>${number(v.finishing_position, hass?.locale?.language)}</td>
+                <td>${number(v.finishing_position, locale)}</td>
                 <td>
                   <span class="car">${v.driver.car_number ?? "—"}</span> ${v
                     .driver.name ?? v.driver.nascar_driver_id}
                 </td>
-                <td>${number(v.starting_position)}</td>
-                <td>${number(v.laps_completed)}</td>
-                <td>${number(v.laps_led)}</td>
-                <td>${number(v.points_earned)}</td>
-                <td>${number(v.playoff_points_earned)}</td>
+                <td>${number(v.starting_position, locale)}</td>
+                <td>${number(v.laps_completed, locale)}</td>
+                <td>${number(v.laps_led, locale)}</td>
+                <td>${number(v.points_earned, locale)}</td>
+                <td>${number(v.playoff_points_earned, locale)}</td>
                 <td>${v.finishing_status ?? "Unknown"}</td>
               </tr>`;
             })}

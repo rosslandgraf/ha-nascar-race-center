@@ -1,0 +1,195 @@
+{
+  "browser": "26.0",
+  "platform": "Debian 13, Playwright 1.56.1 WebKit build 2215",
+  "viewport": 320,
+  "themeFont": "DejaVu Sans",
+  "baselineNote": "Before restores the original native white-space: pre via inline styles; the unmodified source also failed the regression with 304 versus 320 before the CSS correction.",
+  "before": {
+    "card": {
+      "clientWidth": 304,
+      "scrollWidth": 304,
+      "borderBoxWidth": 304,
+      "width": "304px",
+      "minWidth": "0px",
+      "maxWidth": "1500px",
+      "fontFamily": "\"DejaVu Sans\", sans-serif",
+      "fontSize": "14px",
+      "gridTemplateColumns": "none",
+      "whiteSpace": "normal",
+      "overflowX": "visible",
+      "appearance": "none"
+    },
+    "haCard": {
+      "clientWidth": 302,
+      "scrollWidth": 320,
+      "borderBoxWidth": 304,
+      "width": "304px",
+      "minWidth": "0px",
+      "maxWidth": "none",
+      "fontFamily": "\"DejaVu Sans\", sans-serif",
+      "fontSize": "14px",
+      "gridTemplateColumns": "none",
+      "whiteSpace": "normal",
+      "overflowX": "hidden",
+      "appearance": "none"
+    },
+    "controls": [
+      {
+        "label": "Known retained race",
+        "labelStyles": {
+          "clientWidth": 236,
+          "scrollWidth": 285,
+          "borderBoxWidth": 236,
+          "width": "236px",
+          "minWidth": "100px",
+          "maxWidth": "none",
+          "fontFamily": "\"DejaVu Sans\", sans-serif",
+          "fontSize": "12px",
+          "gridTemplateColumns": "236px",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "appearance": "none"
+        },
+        "selectStyles": {
+          "clientWidth": 234,
+          "scrollWidth": 235,
+          "borderBoxWidth": 236,
+          "width": "236px",
+          "minWidth": "0px",
+          "maxWidth": "100%",
+          "fontFamily": "\"DejaVu Sans\", sans-serif",
+          "fontSize": "12px",
+          "gridTemplateColumns": "none",
+          "whiteSpace": "pre",
+          "overflowX": "visible",
+          "appearance": "auto"
+        }
+      },
+      {
+        "label": "Metric and measurement basis",
+        "labelStyles": {
+          "clientWidth": 236,
+          "scrollWidth": 287,
+          "borderBoxWidth": 236,
+          "width": "236px",
+          "minWidth": "0px",
+          "maxWidth": "none",
+          "fontFamily": "\"DejaVu Sans\", sans-serif",
+          "fontSize": "12px",
+          "gridTemplateColumns": "236px",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "appearance": "none"
+        },
+        "selectStyles": {
+          "clientWidth": 234,
+          "scrollWidth": 235,
+          "borderBoxWidth": 236,
+          "width": "236px",
+          "minWidth": "0px",
+          "maxWidth": "100%",
+          "fontFamily": "\"DejaVu Sans\", sans-serif",
+          "fontSize": "12px",
+          "gridTemplateColumns": "none",
+          "whiteSpace": "pre",
+          "overflowX": "visible",
+          "appearance": "auto"
+        }
+      }
+    ]
+  },
+  "after": {
+    "card": {
+      "clientWidth": 304,
+      "scrollWidth": 304,
+      "borderBoxWidth": 304,
+      "width": "304px",
+      "minWidth": "0px",
+      "maxWidth": "1500px",
+      "fontFamily": "\"DejaVu Sans\", sans-serif",
+      "fontSize": "14px",
+      "gridTemplateColumns": "none",
+      "whiteSpace": "normal",
+      "overflowX": "visible",
+      "appearance": "none"
+    },
+    "haCard": {
+      "clientWidth": 302,
+      "scrollWidth": 302,
+      "borderBoxWidth": 304,
+      "width": "304px",
+      "minWidth": "0px",
+      "maxWidth": "none",
+      "fontFamily": "\"DejaVu Sans\", sans-serif",
+      "fontSize": "14px",
+      "gridTemplateColumns": "none",
+      "whiteSpace": "normal",
+      "overflowX": "hidden",
+      "appearance": "none"
+    },
+    "controls": [
+      {
+        "label": "Known retained race",
+        "labelStyles": {
+          "clientWidth": 236,
+          "scrollWidth": 236,
+          "borderBoxWidth": 236,
+          "width": "236px",
+          "minWidth": "100px",
+          "maxWidth": "none",
+          "fontFamily": "\"DejaVu Sans\", sans-serif",
+          "fontSize": "12px",
+          "gridTemplateColumns": "236px",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "appearance": "none"
+        },
+        "selectStyles": {
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "borderBoxWidth": 236,
+          "width": "236px",
+          "minWidth": "0px",
+          "maxWidth": "100%",
+          "fontFamily": "\"DejaVu Sans\", sans-serif",
+          "fontSize": "12px",
+          "gridTemplateColumns": "none",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "appearance": "auto"
+        }
+      },
+      {
+        "label": "Metric and measurement basis",
+        "labelStyles": {
+          "clientWidth": 236,
+          "scrollWidth": 236,
+          "borderBoxWidth": 236,
+          "width": "236px",
+          "minWidth": "0px",
+          "maxWidth": "none",
+          "fontFamily": "\"DejaVu Sans\", sans-serif",
+          "fontSize": "12px",
+          "gridTemplateColumns": "236px",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "appearance": "none"
+        },
+        "selectStyles": {
+          "clientWidth": 234,
+          "scrollWidth": 234,
+          "borderBoxWidth": 236,
+          "width": "236px",
+          "minWidth": "0px",
+          "maxWidth": "100%",
+          "fontFamily": "\"DejaVu Sans\", sans-serif",
+          "fontSize": "12px",
+          "gridTemplateColumns": "none",
+          "whiteSpace": "normal",
+          "overflowX": "visible",
+          "appearance": "auto"
+        }
+      }
+    ]
+  }
+}

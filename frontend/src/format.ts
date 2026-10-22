@@ -1,17 +1,27 @@
 import type { Driver, Hass, Live, Metric } from "./types";
 export const label = (value: string | undefined | null) =>
   value ? value.replaceAll("_", " ") : "Unknown";
+const numberFormats = new Map<string, Intl.NumberFormat>();
 export function number(
   value: number | null | undefined,
   locale?: string,
   digits = 0,
 ): string {
-  return typeof value === "number" && Number.isFinite(value)
-    ? new Intl.NumberFormat(locale === "none" ? "en-US" : locale, {
-        useGrouping: locale !== "none",
-        maximumFractionDigits: digits,
-      }).format(value)
-    : "—";
+  if (typeof value !== "number" || !Number.isFinite(value)) return "—";
+  // Timing updates format hundreds of cells. Reuse locale-specific formatters,
+  // with a fixed bound across independent cards and preference changes.
+  const key = JSON.stringify([locale, digits]);
+  let formatter = numberFormats.get(key);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale === "none" ? "en-US" : locale, {
+      useGrouping: locale !== "none",
+      maximumFractionDigits: digits,
+    });
+    numberFormats.set(key, formatter);
+    if (numberFormats.size > 32)
+      numberFormats.delete(numberFormats.keys().next().value!);
+  }
+  return formatter.format(value);
 }
 export function instant(value: string | null | undefined): number | null {
   if (

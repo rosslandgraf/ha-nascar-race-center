@@ -106,4 +106,15 @@ export class PageView {
     await this.load(client, offset);
     if (this.current?.pagination.offset === offset) this.previousOffsets.pop();
   }
+  async jump(client: DashboardClient, offset: number) {
+    if (!this.pages.has(offset) || this.loading) return;
+    const before = this.current?.pagination.offset;
+    await this.load(client, offset);
+    if (
+      before !== undefined &&
+      before !== offset &&
+      this.current?.pagination.offset === offset
+    )
+      this.previousOffsets.push(before);
+  }
 }

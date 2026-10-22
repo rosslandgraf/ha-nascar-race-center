@@ -100,7 +100,7 @@ describe("Lovelace lifecycle and independent card state", () => {
     const { card, hass } = create();
     await settled(card);
     const select = card.shadowRoot!.querySelector(
-      "select",
+      'select[aria-label="Selected series"]',
     ) as HTMLSelectElement;
     select.value = "2";
     select.dispatchEvent(new Event("change"));
@@ -170,7 +170,7 @@ describe("Lovelace lifecycle and independent card state", () => {
     const old = [...hass.connection.callbacks.values()][0].callback;
     const wire = hass.connection.live(1);
     const select = card.shadowRoot!.querySelector(
-      "select",
+      'select[aria-label="Selected series"]',
     ) as HTMLSelectElement;
     select.value = "2";
     select.dispatchEvent(new Event("change"));

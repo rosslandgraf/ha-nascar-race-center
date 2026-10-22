@@ -1,6 +1,6 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 5A are reviewed and merged into `main`, including PR #11 (`fb8d8d0`) and the observed API reference package. Phase 5B starts from that merge and preserves its 1,006-test baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 5B are reviewed and merged into `main`, including PR #12 (`177f81c`) and the observed API reference package. Phase 5C starts from that merge and preserves its 1,007-test Python baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
 
@@ -157,7 +157,7 @@ extra Recorder rows, frontend or authenticated transport is introduced.
 **Gates:** source units, conditions, sentinel meanings, official classification,
 cross-context historical coverage and NASCAR data-use remain unverified. No tire
 strategy, pit-driver join, rating formula, invented score or championship standings.
-Phase 5A is merged below; Phase 5B is implemented for review. Phase 5C and Phase 6 remain deferred.
+Phases 5A and 5B are merged. Phase 5C refinement is implemented for independent review; Phase 6 remains deferred.
 
 ## Phase 5A — Authenticated dashboard data interface
 
@@ -177,13 +177,32 @@ policy if separately authorized, and the visual frontend. Phase 5B below impleme
 
 ## Phase 5B — Functional premium Lovelace dashboard
 
-**Status:** implemented for review from merged Phase 5A. See [frontend installation/architecture](docs/FRONTEND.md) and [actual validation/screenshots](docs/PHASE5B_VALIDATION.md).
+**Status:** reviewed and merged in PR #12 (`177f81c`) from merged Phase 5A. See [frontend installation/architecture](docs/FRONTEND.md) and [actual validation/screenshots](docs/PHASE5B_VALIDATION.md).
 
 **Delivered:** independently built/versioned local Lit card, picker/editor and explicit entry selection; five connected views; full sortable live field and favorites; requested detail disclosure; retained race weekends/manual historical keys; progressive history and backend analytics with bounded gap-preserving SVG charts; administrator/error/freshness/demo states; responsive phone/tablet/desktop/wall layouts, keyboard controls and reduced motion.
 
 **Boundaries:** one selected-series subscription; authenticated HA transport only; exact immutable snapshot offsets, two retained selections and eight cached pages/view; no NASCAR polling, backend contract change, new entities/Recorder rows, controlled assets, production installation or resource registration. Frontend CI/lockfile/versioned bundle are separate from existing integration/HACS packaging.
 
-**Remaining:** Phase 5C physical-device/additional-browser/assistive-reader and interaction polish, broader localization and record presentation. NASCAR rights, active-source units/semantics, public HACS packaging and release gates remain open. Phase 5C and Phase 6 are not begun.
+**Remaining:** Phase 5C physical-device/additional-browser/assistive-reader and interaction polish, broader localization and record presentation. NASCAR rights, active-source units/semantics, public HACS packaging and release gates remain open. Phase 5C is implemented below; Phase 6 is not begun.
+
+## Phase 5C — Dashboard refinement and expanded verification
+
+**Status:** implemented for independent review from merged Phase 5B. See
+[Phase 5C validation](docs/PHASE5C_VALIDATION.md) for executed checks, screenshots,
+measurements and explicit limitations. No merge, deployment or release is included.
+
+**Delivered:** card-local comfortable/compact density; responsive five-view
+navigation; pinned, accessible timing identity/columns; keyboard driver movement
+and focus recovery; interactive SVG observation inspection including missing data;
+visible loaded-page coverage and cached navigation; retained History/Analytics
+selection reuse; specialized historical summaries preserving namespace/provenance;
+English source labels and expanded number/date preference coverage. Card 0.5.1
+remains a separately versioned reproducible local module over API v1.
+
+**Acceptance limits:** browser rendering and mocked lifecycle checks do not close
+physical-device/HA OS/companion WebView or VoiceOver/TalkBack acceptance. Those
+remain exact manual Phase 6A checklist items, alongside translations, source
+rights/semantics/cadence and separate HACS distribution gates. Phase 6 has not begun.
 
 ## Phase 5 — Premium Dashboard and dedicated data interface
 
@@ -236,7 +255,8 @@ source/live/data-use and release gates above still apply.
 - [x] Defensible derived analytics/comparisons and bounded internal consumer API (Phase 4B, merged PR #10).
 - [ ] Historical cross-context coverage, source units/conditions and semantic acceptance.
 - [x] Authenticated dedicated dashboard transport v1 (Phase 5A, reviewed and merged).
-- [x] Functional premium dashboard and separate frontend package (Phase 5B, for review).
-- [ ] Additional device, accessibility and interaction polish (Phase 5C).
+- [x] Functional premium dashboard and separate frontend package (Phase 5B, merged).
+- [x] Responsive/interaction polish and expanded automated verification (Phase 5C, for review).
+- [ ] Physical devices, assistive-reader acceptance and remaining Phase 6A matrix (see Phase 5C validation).
 - [ ] Beta & Release Readiness: compatibility matrix, beta feedback, translations, diagnostics and release workflows (Phase 6).
 - [ ] HACS-ready distribution: permission/asset review, branding, no validation exceptions, distinct integration/card artifacts and explicit release authorization (Phase 6).

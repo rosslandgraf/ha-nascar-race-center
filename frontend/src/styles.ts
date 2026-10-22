@@ -55,9 +55,8 @@ export const styles = css`
   }
   button {
     cursor: pointer;
-    transition:
-      background 0.15s,
-      color 0.15s;
+    /* Theme changes must not animate through unreadable intermediate colors. */
+    transition: none;
   }
   button:hover {
     background: color-mix(in srgb, var(--nrc-accent), transparent 88%);
@@ -81,6 +80,14 @@ export const styles = css`
   }
   select {
     max-width: 100%;
+    min-width: 0;
+    /* WebKit's native white-space: pre leaks selected-text overflow to the
+       parent grid even when the select's border box fits its track. */
+    white-space: normal;
+  }
+  .field select {
+    width: 100%;
+    min-width: 0;
   }
   a {
     color: var(--nrc-accent);
@@ -95,8 +102,9 @@ export const styles = css`
   p {
     margin: 0;
   }
-  h1 {
-    font-size: clamp(30px, 4cqi, 52px);
+  h1,
+  .race-title {
+    font-size: clamp(28px, 3.5cqi, 44px);
     letter-spacing: -0.045em;
     line-height: 1.1;
     font-weight: 750;
@@ -156,17 +164,20 @@ export const styles = css`
     opacity: 0.3;
   }
   .brand-title {
+    overflow-wrap: anywhere;
     font-size: 17px;
     font-weight: 750;
     letter-spacing: -0.03em;
   }
   .tools {
+    flex-wrap: wrap;
     display: flex;
     align-items: center;
     gap: 10px;
   }
   .series-label {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 3px;
   }
   .demo {
@@ -190,21 +201,26 @@ export const styles = css`
     background: transparent;
     white-space: nowrap;
     color: var(--nrc-muted);
+    border-bottom: 2px solid transparent;
+    border-radius: 6px 6px 0 0;
     font-size: 13px;
     padding: 10px 14px;
   }
   .nav button[aria-current="page"] {
-    color: color-mix(
-      in srgb,
-      var(--nrc-accent) 35%,
-      var(--primary-text-color, #e8edf2)
-    );
+    border-bottom-color: currentColor;
+    color: var(--primary-text-color, #e8edf2);
+    font-weight: 650;
     background: color-mix(in srgb, var(--nrc-accent), transparent 92%);
   }
   main {
     padding: 28px;
     min-height: 420px;
   }
+  .brand > *,
+  .tools > *,
+  .row > *,
+  .section-head > *,
+  .filters > *,
   .stack > *,
   .two-col > *,
   .hero > * {
@@ -217,6 +233,7 @@ export const styles = css`
   .section-head,
   .row {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: 16px;
     align-items: center;
@@ -229,6 +246,7 @@ export const styles = css`
   }
   .badge {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 7px;
     border: 1px solid var(--nrc-line);
@@ -268,39 +286,43 @@ export const styles = css`
     height: 12px;
     background-size: 8px 8px;
   }
+  .race-flag::before {
+    width: 20px;
+    height: 14px;
+    border-radius: 0;
+    border-left: 2px solid currentColor;
+    clip-path: polygon(0 0, 100% 10%, 90% 90%, 0 80%);
+  }
+  .race-flag.green::before {
+    background: #81be55;
+  }
+  .race-flag.yellow::before {
+    background: #e9bd4f;
+  }
+  .race-flag.red::before {
+    background: #ea686c;
+  }
+  .race-flag.white::before {
+    background: #eee;
+    border: 1px solid #555;
+  }
+  .race-flag.checkered::before {
+    background-size: 8px 8px;
+  }
   .panel {
     background: var(--nrc-panel);
     border: 1px solid var(--nrc-line);
     border-radius: 12px;
-    padding: 22px;
+    padding: var(--nrc-panel-space, 22px);
   }
   .hero {
     position: relative;
     overflow: hidden;
     display: grid;
     grid-template-columns: 1.35fr 1fr;
-    gap: 40px;
-    padding: 38px;
-    background:
-      radial-gradient(
-        ellipse at 90% 0%,
-        color-mix(in srgb, var(--nrc-accent), transparent 92%),
-        transparent 70%
-      ),
-      var(--nrc-panel);
-  }
-  .hero::after {
-    content: "";
-    position: absolute;
-    width: 180px;
-    height: 280px;
-    right: -55px;
-    top: -80px;
-    border: 28px solid var(--nrc-line);
-    transform: rotate(30deg);
-    border-radius: 45%;
-    pointer-events: none;
-    opacity: 0.3;
+    gap: 28px;
+    padding: var(--nrc-hero-space, 28px);
+    background: var(--nrc-panel);
   }
   .hero-content {
     display: grid;
@@ -319,7 +341,7 @@ export const styles = css`
     z-index: 1;
   }
   .lap-count {
-    font-size: 60px;
+    font-size: 52px;
     font-weight: 750;
     letter-spacing: -0.06em;
     line-height: 1;
@@ -359,8 +381,9 @@ export const styles = css`
     gap: 20px;
   }
   .favorite-grid {
+    align-items: start;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(155px, 100%), 1fr));
     gap: 12px;
   }
   .favorite {
@@ -427,6 +450,7 @@ export const styles = css`
   }
   .field {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 6px;
     font-size: 12px;
     color: var(--nrc-muted);
@@ -445,6 +469,8 @@ export const styles = css`
     flex: 1;
   }
   .filters fieldset {
+    min-inline-size: 0;
+    max-inline-size: 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
@@ -461,9 +487,11 @@ export const styles = css`
     display: flex;
     align-items: center;
     gap: 6px;
-    min-height: 32px;
+    min-height: 44px;
   }
   input[type="checkbox"] {
+    padding: 0;
+    flex-shrink: 0;
     width: 18px;
     height: 18px;
     min-height: 0;
@@ -558,9 +586,14 @@ export const styles = css`
     border-radius: 8px;
     padding: 12px 16px;
   }
+  /* Explicitly suppress closed disclosure layout in WebKit, including grids. */
+  details:not([open]) > :not(summary) {
+    display: none;
+  }
   summary {
     cursor: pointer;
-    min-height: 28px;
+    min-height: 44px;
+    align-content: center;
   }
   summary:focus-visible {
     outline: 3px solid var(--primary-text-color, #e8edf2);
@@ -589,7 +622,7 @@ export const styles = css`
   }
   .metric-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(155px, 100%), 1fr));
     gap: 12px;
   }
   .metric strong {
@@ -621,6 +654,85 @@ export const styles = css`
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
+  }
+  .overview-field {
+    display: none;
+  }
+  .front-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .front-grid button {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: start;
+    gap: 8px;
+    text-align: left;
+    align-items: center;
+  }
+  .front-grid strong {
+    grid-column: 1 / -1;
+    overflow-wrap: anywhere;
+  }
+  .selection-library > .actions {
+    margin-block: 12px;
+  }
+  [data-compact] {
+    --nrc-panel-space: 14px;
+    --nrc-hero-space: 22px;
+  }
+  [data-compact] main {
+    padding: 18px;
+  }
+  [data-compact] .stack {
+    gap: 14px;
+  }
+  [data-compact] .section-head {
+    margin-bottom: 10px;
+  }
+  [data-compact] .hero-content {
+    gap: 12px;
+  }
+  [data-compact] .stat {
+    padding: 12px;
+  }
+  [data-compact] .session-row {
+    padding-block: 8px;
+  }
+  @container (min-width:1100px) {
+    .overview-field {
+      display: block;
+    }
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+    .two-col > .stack {
+      align-content: start;
+    }
+    [data-compact] .hero {
+      grid-template-columns: 1.4fr 1fr;
+    }
+    [data-compact] .two-col > .panel.stack {
+      gap: 10px;
+    }
+  }
+  @media (forced-colors: active) {
+    :focus-visible {
+      outline: 3px solid Highlight;
+    }
+    .nav button[aria-current="page"],
+    button[aria-pressed="true"] {
+      border: 2px solid Highlight;
+    }
+    .badge::before,
+    .car,
+    .progress {
+      forced-color-adjust: auto;
+      border: 1px solid CanvasText;
+    }
   }
   @keyframes breathe {
     50% {
@@ -680,23 +792,40 @@ export const styles = css`
   }
   @container (max-width:450px) {
     .masthead {
+      flex-wrap: wrap;
       padding: 16px;
       align-items: start;
       gap: 8px;
     }
     .brand-title {
+      overflow-wrap: anywhere;
       font-size: 14px;
     }
     .brand .eyebrow {
       font-size: 9px;
     }
     .tools {
-      max-width: 135px;
+      width: 100%;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .tools > label {
+      flex: 1;
+      min-width: 0;
     }
     .tools select {
-      font-size: 11px;
+      font-size: 13px;
       padding: 8px 6px;
       width: 100%;
+    }
+    .nav {
+      flex-wrap: wrap;
+    }
+    .nav button {
+      flex: 1 1 29%;
+      white-space: normal;
+      padding: 8px;
+      font-size: 12px;
     }
     .brand-mark {
       height: 25px;
@@ -738,7 +867,7 @@ export const styles = css`
       gap: 4px;
     }
     .favorite-grid {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 8px;
     }
     .source {
@@ -759,6 +888,16 @@ export const styles = css`
     }
     .notice {
       padding: 12px;
+    }
+    dl {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+    }
+    dt {
+      font-weight: 650;
+    }
+    dd {
+      margin-bottom: 8px;
     }
     .event-number {
       font-size: 24px;
