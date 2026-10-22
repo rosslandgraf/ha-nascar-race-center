@@ -1,4 +1,4 @@
-# Frontend: NASCAR Race Center card 0.5.1
+# Frontend: NASCAR Race Center card 0.5.2
 
 Phase 5C refines the existing custom Lovelace card, consuming the merged Phase 5A
 [dashboard API v1](DASHBOARD_API.md). The separately identified
@@ -6,10 +6,11 @@ Phase 5C refines the existing custom Lovelace card, consuming the merged Phase 5
 local ES module. Python integration packaging, cadence, entities, Recorder,
 automation and authentication behavior are unchanged.
 
-For the owner-operated HA OS beta, use [Phase 6A installation](PHASE6A_INSTALLATION.md),
-[acceptance](PHASE6A_BETA_CHECKLIST.md) and [rollback](PHASE6A_ROLLBACK.md). They pin
-the reviewed 0.5.1 hash, require backup/conflict checks and a separate dashboard,
-and describe the production demo's deliberately unavailable live/lap sections.
+For the current beta fix use the [0.1.1 / 0.5.2 update and rollback guide](SNAPSHOT_FIX_UPGRADE.md)
+and [validation report](SNAPSHOT_FIX_VALIDATION.md). The original
+[Phase 6A installation](PHASE6A_INSTALLATION.md), [acceptance](PHASE6A_BETA_CHECKLIST.md)
+and [rollback](PHASE6A_ROLLBACK.md) pin the earlier 0.1.0 / 0.5.1 pair and describe
+the production demo's deliberately unavailable live/lap sections.
 No resource or production configuration is modified automatically.
 
 ## Manual development installation
@@ -17,16 +18,16 @@ No resource or production configuration is modified automatically.
 The user performs these steps on a development HA installation. Nothing in the
 repository installs files on HA OS or changes dashboards/resources automatically.
 
-1. From a checkout containing Phase 5A and 5B, use Node 24 and `cd frontend &&
+1. From the reviewed 0.1.1 / 0.5.2 checkout, use Node 24 and `cd frontend &&
    npm ci && npm run build`. The committed bundle may also be used directly.
 2. Manually create `<HA config>/www/nascar-race-center/` and copy
-   `frontend/dist/nascar-race-center-card-0.5.1.js` into that directory. On HA OS,
+   `frontend/dist/nascar-race-center-card-0.5.2.js` into that directory. On HA OS,
    `<HA config>` is ordinarily `/config`; use the installation's supported file
    editor or file transfer method. Do not copy `node_modules`, `demo` or tests.
 3. With an administrator account, open **Settings → Dashboards → Resources**
    (enable Advanced Mode in the profile if necessary). Add a **JavaScript Module**
    resource with URL:
-   `/local/nascar-race-center/nascar-race-center-card-0.5.1.js`.
+   `/local/nascar-race-center/nascar-race-center-card-0.5.2.js`.
    YAML-managed resource users add that same URL with `type: module` to their
    existing resource list. Do not add the resource twice.
 4. Reload the browser, edit a dashboard and choose **NASCAR Race Center** from the
@@ -118,7 +119,8 @@ Ready/disconnected listeners recover from bootstrap; disconnect invalidates
 connection-bound snapshots. Terminal entry-unavailable events show an actionable
 reconnect state. The card clears pacing/countdown timers, listeners and local
 views on removal. HA owns cancellation/cleanup of sent WebSocket work: the
-frontend cannot cancel an individual `callWS` request and discards a late result.
+frontend cannot cancel an individual `callWS` request. It discards late results
+and releases any newly issued snapshot token, including after card disposal.
 
 Each page requests at most 200 rows and trusts the server's explicit next offset,
 including byte-budget-shortened pages. `PageView` retains at most eight pages
@@ -129,18 +131,23 @@ charts/accessibility tables use at most the retained 1,600 rows, with visible
 loaded-page scope. Null values and missing lap numbers break lines. The browser
 never reconstructs absent observations or interpolates chart gaps.
 
-At most two active history/analytics selection entries are retained per card. Submitting the
+At most two history/analytics selections are retained per card. Submitting the
 same exact selection reuses it; rendering and tab switching create no snapshots.
-A different third selection explains capacity and asks the user to reuse/wait. Expired cached current-view records can remain until replaced, with a conservative bound of four page stores across the registry and two view references.
-The actual **two-per-user/four-global** server budget applies across all cards,
-users/entries and browser tabs; local state cannot override it. Snapshots expire
-five minutes after server construction; the card also bounds local continuation
-age and handles earlier server invalidation. Expired cached historical records
-remain explicitly labeled; restart starts from offset zero without the old token.
-There is no release endpoint: forgetting local state cannot release a server
-slot; closing the shared HA socket solely for this purpose would disrupt HA and
-is not performed. Capacity errors, fixed expiry and request-floor/backoff outcomes
-have explicit retry/restart actions with no automatic retry loop.
+A third selection releases a displaced selection before allocation; when History
+and Analytics are both retained, an older selection of the submitted kind is
+replaced first. Capacity can also reclaim a hidden idle selection offered by
+another card on the same connection/entry, followed by one paced retry. Visible
+peer selections and active work are protected. Reclaimed selections disappear
+from the retained selector and must be explicitly submitted again.
+
+The actual **two-per-user/four-global** server budget still applies across cards,
+entries and tabs. Another connection cannot be reclaimed. If all slots are active,
+the card shows a calm capacity notice. Snapshots expire five minutes after server
+construction; local continuation age is bounded too. Expired cached historical
+records remain labeled; restart releases the old token and starts at offset zero.
+Removal/disposal releases owned tokens; disconnect and TTL backstop interrupted
+cleanup. No shared HA socket is closed to reclaim a slot. Actual request-window,
+request-floor and backoff safeguards remain. There is no retry loop.
 
 Requests are serialized and paced at least 370 ms apart per connection/entry,
 shared by independent card clients (under 30 commands/10 seconds). Other tabs
@@ -175,7 +182,8 @@ reproducible commands. In the restricted prepared cloud environment use `npm ci 
 actual-card screenshots/measurements. Test adapter/fixtures live only in
 `frontend/demo`; a Python HA contract test exports/rechecks synthetic projections.
 
-Compatibility: card 0.5.1 ↔ dashboard API v1 from merged PR #11 (`fb8d8d0`).
+Compatibility: card 0.5.2 requires integration 0.1.1's API v1 release extension;
+update the backend first. The original API v1 began in PR #11 (`fb8d8d0`).
 Inspected installed HA **2026.10.2** / frontend **20260930.4**, including
 [custom-card interfaces](https://github.com/home-assistant/frontend/blob/20260930.4/src/panels/lovelace/types.ts)
 and [entry discovery](https://github.com/home-assistant/frontend/blob/20260930.4/src/data/config_entries.ts).
@@ -209,7 +217,8 @@ sponsor graphics, video, remote fonts or controlled media are included.
 
 ## Phase 5C refinements
 
-Card **0.5.1** retains the five views and API v1. Choose **Display density →
+Phase 5C's card **0.5.1** retained the five views and API v1; these controls remain
+in 0.5.2. Choose **Display density →
 Compact** for tighter panels, schedules and timing rows; Comfortable remains the
 default. Density belongs to this card instance, survives view navigation, and
 is neither stored globally nor written into integration settings. On small cards,
@@ -248,8 +257,8 @@ loaded page** reopens a retained immutable page without a command. **Return to a
 retained selection** switches to an existing history/analytics view without
 allocating a snapshot. Loaded record ranges explicitly include headers/metrics,
 not just lap samples. Five-minute expiry, two-user/four-global slots, eight-page
-retention, restart and reconnect semantics are unchanged. Clearing local state
-never claims to release a server slot.
+retention and reconnect isolation remain. Clearing an owned selection now
+explicitly releases its backend slot; active readers drain before reuse.
 
 New controls use `messages.ts` as an English source catalog. Numeric timing,
 results, nested records, charts and metrics follow HA number-format preferences;

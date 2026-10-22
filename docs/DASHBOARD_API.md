@@ -203,6 +203,24 @@ changes do not modify already issued snapshots; a new selection sees whatever th
 existing HTTP freshness/cache/floor rules permit. Partial/unavailable source states
 remain explicit and pinned too; snapshot completion does not assert source coverage.
 
+### Explicit release (integration 0.1.1)
+
+Send `nascar_race_center/dashboard/release_snapshot` with `api_version: 1`,
+`entry_id` and the 64-hex `snapshot` token. It returns the usual envelope with
+`data: {}`. Releasing a token requires the same administrator, entry runtime,
+authenticated user and WebSocket connection that created it. Foreign/unknown/
+already released tokens receive the identical empty result without affecting
+any lease. The normal 30/10s admission and 2/8 concurrent request limits apply.
+
+Release immediately retires a selection for future reads. Its immutable index
+and slot survive until existing readers drain. A client must drop all cached
+pages for that token and start afresh if reselected. Release is optional for
+legacy API v1 clients; disconnect/unload/shutdown/TTL cleanup still applies.
+Card 0.5.2 uses it on displacement, restart, invalidation and disposal, including
+late first-page responses. Retained selections replay their original token;
+new tokenless requests intentionally remain fresh selection requests. There is
+no cross-client token deduplication or server eviction of presumed idle tokens.
+
 Snapshots expire **300 seconds after construction**, without sliding renewal, and
 are invalidated on disconnect, unload, reload or shutdown. Any active page worker
 keeps its slot reserved until it drains, including after expiry/disconnect. Completed snapshots remain
@@ -220,14 +238,20 @@ allows 24 MiB of accounted serialized/index memory and 100,000 rows: at most 96 
 reserved in total, in addition to existing bounded source/service/HA resources.
 The accounting includes bytes-object overhead, conservative index pointers and
 metadata allowance; construction retains its reservation through cancellation drain.
-No slot is evicted to admit another client. `snapshot_limit` fails before retrieval.
+The backend never evicts a live lease to admit another client; clients may
+explicitly release their own abandoned selections. `snapshot_limit` fails before retrieval.
 `snapshot_too_large`, `record_too_large` or `response_too_large` fails before any token
 if the full selection cannot be indexed or any later record cannot fit a page.
 All seven datasets remain selectable. There is no new endpoint or disk archive.
 
 Schedule and live-detail commands retain their lightweight stateless content digest:
 changed source/context returns `snapshot_changed`; discard assembled pages and
-restart. Their tokens do not reserve history/analytics slots.
+restart. Their tokens do not reserve history/analytics slots. With no session, live-detail
+identity has the requested series and null race/run/source time, and returns empty
+records with its accurate availability. Earlier API v1 versions used a null detail
+identity. This is a legitimate empty-result contract; clients should avoid requesting
+these details without a matching fresh race. A known race/run becoming absent or
+changing is still a source change, never normalized into the expected empty context.
 
 History headers: `race`, aggregate `status`, `datasets[]`, `records`, `pagination`.
 Each dataset entry preserves status, fixed reason, classification and complete

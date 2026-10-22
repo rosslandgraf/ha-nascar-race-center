@@ -418,7 +418,12 @@ immutable serialized row index; continuations decode only requested rows without
 service calls, refetches or recalculation. Opaque snapshot tokens bind content,
 entry runtime, user, socket and exact selection. Four globally reserved slots,
 two per user, 24 MiB/100,000 rows each and fixed 300-second expiry explicitly bound
-retention. Disconnect, unload/reload and stop release completed snapshots; canceled
+retention. An authenticated idempotent release extension (integration 0.1.1) lets
+clients retire their own abandoned selections without guessing idle server leases.
+Released readers retain reservations until drained. Card 0.5.2 retains two recent
+selections, reuses cached pages, releases displaced/late tokens, and coordinates
+hidden idle cleanup with peer cards on the same socket/entry. Disconnect,
+unload/reload and stop release completed snapshots; canceled
 workers retain reservations until drained. Oversized selections fail before issuing
 a token. The HTTP cache remains two documents and the 60-second floor is unchanged.
 Pages retain at most 200 returned records and fit a 256 KiB envelope budget. Existing

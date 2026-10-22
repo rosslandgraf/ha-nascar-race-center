@@ -614,28 +614,34 @@ for (const font of ["default", "DejaVu Sans"]) {
   });
 }
 
-test("snapshot capacity explains reuse without allocating another selection", async ({
+test("replacing an old snapshot keeps recent Analytics available for reuse", async ({
   page,
 }) => {
   await analyze(page);
   await page.getByRole("button", { name: "History", exact: true }).click();
   await page.getByRole("button", { name: "Load race records" }).click();
   await expect(page.getByText(/Records 1–/)).toBeVisible();
-  const calls = await page.evaluate(() => window.nrcDemo.hass.requests.length);
+  // Touch Analytics, making the previous History selection least recently used.
+  await page.getByRole("button", { name: "Analytics", exact: true }).click();
+  await page.getByRole("button", { name: "History", exact: true }).click();
   await page.getByRole("checkbox", { name: "notes", exact: true }).check();
   await page.getByRole("button", { name: "Load race records" }).click();
-  await expect(page.getByRole("alert")).toContainText(
-    "Snapshot capacity is in use",
-  );
-  expect(await page.evaluate(() => window.nrcDemo.hass.requests.length)).toBe(
-    calls,
-  );
-  await page
-    .getByText("Return to a retained selection", { exact: true })
-    .click();
-  await page.getByRole("button", { name: /Analytics · Cup Series/ }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          window.nrcDemo.hass.requests.filter((r) =>
+            String(r.type).endsWith("/history"),
+          ).length,
+      ),
+    )
+    .toBe(2);
   await expect(page.getByRole("alert")).toHaveCount(0);
-  expect(await page.evaluate(() => window.nrcDemo.hass.requests.length)).toBe(
-    calls,
-  );
+  expect(
+    await page.evaluate(() =>
+      window.nrcDemo.hass.requests.some((r) =>
+        String(r.type).endsWith("/release_snapshot"),
+      ),
+    ),
+  ).toBe(true);
 });

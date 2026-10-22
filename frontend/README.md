@@ -1,4 +1,9 @@
-# NASCAR Race Center card 0.5.1
+# NASCAR Race Center card 0.5.2
+
+Requires integration 0.1.1 for snapshot release. See the
+[update/rollback guide](../docs/SNAPSHOT_FIX_UPGRADE.md) for the installed
+0.1.0 / 0.5.1 pair. This fix releases abandoned selections while preserving
+bounded resources, retained pagination and calm empty live observations.
 
 A local, independently built Lit custom Lovelace card for dashboard API v1.
 Five connected views: Race Center, Live Timing, Race Weekend, History and Analytics.
@@ -20,7 +25,7 @@ npx playwright install --with-deps chromium firefox webkit
 CHROMIUM_PATH=bundled npm run test:browser
 ```
 
-The versioned ES module is `dist/nascar-race-center-card-0.5.1.js`; Lit is included.
+The versioned ES module is `dist/nascar-race-center-card-0.5.2.js`; Lit is included.
 No runtime package installation, CDN, remote font or additional JS request.
 `npm run dev` serves `/demo/`, a clearly fictional development-only contract
 preview. `?bundle=true` exercises the committed production bundle. Neither the

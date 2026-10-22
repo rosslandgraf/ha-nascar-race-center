@@ -235,7 +235,7 @@ test("versioned production bundle, no external requests, and render measurements
     };
   });
   expect(
-    requests.some((url) => url.includes("nascar-race-center-card-0.5.1.js")),
+    requests.some((url) => url.includes("nascar-race-center-card-0.5.2.js")),
   ).toBe(true);
   expect(requests.every((url) => new URL(url).hostname === "127.0.0.1")).toBe(
     true,
@@ -314,9 +314,10 @@ test("tab reuse and snapshot expiry restart from offset zero", async ({
     ).nrcDemo.hass.fail = "snapshot_expired";
   });
   await page.getByRole("button", { name: "Next page" }).click();
-  await expect(page.getByRole("alert")).toContainText(
-    "five-minute selection expired",
-  );
+  await expect(
+    page.getByText("This five-minute selection expired.", { exact: false }),
+  ).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveCount(0);
   await page.evaluate(() => {
     (
       window as unknown as { nrcDemo: { hass: { fail?: string } } }

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { defineConfig } from "vite";
-const license = `/*! NASCAR Race Center card 0.5.1
+const license = `/*! NASCAR Race Center card 0.5.2
 ${readFileSync(new URL("./LICENSE", import.meta.url), "utf8")}
 ${readFileSync(new URL("./THIRD_PARTY_NOTICES.md", import.meta.url), "utf8")}
 */\n`;
@@ -18,7 +18,7 @@ export default defineConfig({
     lib: {
       entry: "src/card.ts",
       formats: ["es"],
-      fileName: () => "nascar-race-center-card-0.5.1.js",
+      fileName: () => "nascar-race-center-card-0.5.2.js",
     },
     target: "es2022",
     sourcemap: false,

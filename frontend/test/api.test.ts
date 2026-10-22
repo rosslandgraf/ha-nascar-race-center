@@ -163,11 +163,12 @@ describe("immutable paged views", () => {
   it("invalidates responses from old view state", async () => {
     const { hass, client, view } = setup();
     let resolve!: (value: unknown) => void;
-    hass.callWS = vi.fn(
-      () =>
-        new Promise((r) => {
-          resolve = r;
-        }),
+    hass.callWS = vi.fn((request: Record<string, unknown>) =>
+      String(request.type).endsWith("/release_snapshot")
+        ? Promise.resolve({})
+        : new Promise((r) => {
+            resolve = r;
+          }),
     ) as typeof hass.callWS;
     const pending = view.load(client);
     await vi.waitFor(() => expect(resolve).toBeDefined());
@@ -330,4 +331,191 @@ test("history pages cannot substitute a different race selection", async () => {
       datasets: ["weekend"],
     }),
   ).rejects.toThrow("invalid_response");
+});
+
+describe("snapshot cleanup", () => {
+  it("releases a late snapshot after disposal and deduplicates cleanup", async () => {
+    const hass = new MockHass();
+    const original = hass.callWS.bind(hass);
+    let complete!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      complete = resolve;
+    });
+    hass.callWS = vi.fn(async <T>(request: Record<string, unknown>) => {
+      if (String(request.type).endsWith("/history")) await gate;
+      return original<T>(request);
+    }) as typeof hass.callWS;
+    const client = new DashboardClient(hass, "FICTIONAL_ENTRY");
+    const pending = client.history({
+      series_id: 1,
+      season: 2024,
+      race_id: 88001,
+      datasets: ["laps"],
+    });
+    await vi.waitFor(() => expect(hass.callWS).toHaveBeenCalledTimes(1));
+    client.dispose();
+    complete();
+    await expect(pending).rejects.toThrow("connection_error");
+    expect(
+      hass.requests.filter((r) => String(r.type).endsWith("/release_snapshot")),
+    ).toHaveLength(1);
+  });
+  it("restarts only after releasing the old snapshot and preserves cached reuse", async () => {
+    const hass = new MockHass();
+    hass.snapshotBudget = true;
+    const client = new DashboardClient(hass, "FICTIONAL_ENTRY");
+    const view = new PageView("history", {
+      series_id: 1,
+      season: 2024,
+      race_id: 88001,
+      datasets: ["laps"],
+    });
+    await view.load(client);
+    const old = view.current!.pagination.snapshot;
+    const before = hass.requests.length;
+    await view.load(client);
+    expect(hass.requests.length).toBe(before);
+    await view.load(client, 0, true);
+    expect(view.error).toBeUndefined();
+    expect(view.current!.pagination.snapshot).not.toBe(old);
+    expect(hass.snapshots.size).toBe(1);
+    expect(String(hass.requests.at(-2)!.type)).toContain("/release_snapshot");
+    await view.invalidate();
+    expect(hass.snapshots.size).toBe(0);
+  });
+});
+
+it.each([null, { series_id: 1, race_id: null, run_id: null }])(
+  "accepts an empty no-session detail identity %s",
+  async (identity) => {
+    const hass = new MockHass();
+    const original = hass.callWS.bind(hass);
+    hass.callWS = vi.fn(async <T>(request: Record<string, unknown>) => {
+      const result = await original<Envelope<Page>>(request);
+      result.data.identity = identity;
+      result.data.records = [];
+      result.data.pagination = {
+        offset: 0,
+        limit: 200,
+        returned: 0,
+        total: 0,
+        complete: true,
+        next_offset: null,
+        snapshot: "a".repeat(64),
+      };
+      return result as T;
+    }) as typeof hass.callWS;
+    const view = new PageView(
+      "live_scoring",
+      { series_id: 1, collection: "pits" },
+      { race_id: null, run_id: null },
+    );
+    await view.load(new DashboardClient(hass, "FICTIONAL_ENTRY"));
+    expect(view.error).toBeUndefined();
+    expect(view.current?.records).toEqual([]);
+  },
+);
+
+it.each(["race_id", "run_id", "series_id", "disappeared"])(
+  "preserves live identity protection when %s changes",
+  async (change) => {
+    const hass = new MockHass();
+    const wire = structuredClone(fixtures.live_driver) as Envelope<Page>;
+    const expected = {
+      race_id: wire.data.identity!.race_id,
+      run_id: wire.data.identity!.run_id,
+    };
+    if (change === "disappeared") wire.data.identity = null;
+    else if (change === "series_id") wire.data.identity!.series_id = 2;
+    else wire.data.identity![change as "race_id" | "run_id"] = "changed";
+    hass.callWS = vi.fn(async <T>() => wire as T) as typeof hass.callWS;
+    const view = new PageView(
+      "live_driver",
+      { series_id: 1, driver_id: 99002, collection: "pit_stops" },
+      expected,
+    );
+    await view.load(new DashboardClient(hass, "FICTIONAL_ENTRY"));
+    expect((view.error as { code: string }).code).toBe("snapshot_changed");
+    expect(view.current).toBeUndefined();
+  },
+);
+
+it("cancels an abandoned page while it is still queued without allocating a token", async () => {
+  const hass = new MockHass();
+  const client = new DashboardClient(hass, "FICTIONAL_ENTRY");
+  await client.bootstrap();
+  const view = new PageView("history", {
+    series_id: 1,
+    season: 2024,
+    race_id: 88001,
+    datasets: ["laps"],
+  });
+  const pending = view.load(client);
+  await view.invalidate();
+  await pending;
+  expect(hass.requests.map((r) => String(r.type).split("/").at(-1))).toEqual([
+    "bootstrap",
+  ]);
+  expect(view.current).toBeUndefined();
+});
+
+it("coalesces repeated restart clicks while cleanup is pending", async () => {
+  const hass = new MockHass();
+  hass.snapshotBudget = true;
+  const client = new DashboardClient(hass, "FICTIONAL_ENTRY");
+  const view = new PageView("history", {
+    series_id: 1,
+    season: 2024,
+    race_id: 88001,
+    datasets: ["laps"],
+  });
+  await view.load(client);
+  await Promise.all([view.load(client, 0, true), view.load(client, 0, true)]);
+  expect(view.error).toBeUndefined();
+  expect(hass.snapshots.size).toBe(1);
+  expect(
+    hass.requests.filter((r) => String(r.type).endsWith("/history")),
+  ).toHaveLength(2);
+  expect(
+    hass.requests.filter((r) => String(r.type).endsWith("/release_snapshot")),
+  ).toHaveLength(1);
+  await view.invalidate();
+});
+
+it("failed cleanup retires local ownership without accumulating disposal retries", async () => {
+  vi.useFakeTimers();
+  try {
+    const hass = new MockHass();
+    const original = hass.callWS.bind(hass);
+    let issued = 0;
+    hass.callWS = vi.fn(async <T>(request: Record<string, unknown>) => {
+      if (String(request.type).endsWith("/release_snapshot"))
+        throw { code: "rate_limited" };
+      const result = await original<Envelope<Page>>(request);
+      result.data.pagination.snapshot = (++issued)
+        .toString(16)
+        .padStart(64, "0");
+      return result as T;
+    }) as typeof hass.callWS;
+    const client = new DashboardClient(hass, "FICTIONAL_ENTRY");
+    for (let i = 0; i < 20; i++) {
+      const work = client
+        .history({
+          series_id: 1,
+          season: 2024,
+          race_id: 88001,
+          datasets: ["laps"],
+        })
+        .then((page) => client.releaseSnapshot(page.pagination.snapshot))
+        .catch((error) => error);
+      await vi.advanceTimersByTimeAsync(800);
+      expect((await work).code).toBe("rate_limited");
+    }
+    const before = vi.mocked(hass.callWS).mock.calls.length;
+    client.dispose();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(hass.callWS).toHaveBeenCalledTimes(before);
+  } finally {
+    vi.useRealTimers();
+  }
 });
