@@ -159,7 +159,7 @@ The card is **155,427 bytes**, gzip **38,871 bytes**, within unchanged 180,000 /
 `24e89e3cddefdf66703679057e116cfb51bfa0c8c613b6ded9b3f7c4a73e2f94`.
 The deterministic private preview for explicit repository identity
 `rosslandgraf/ha-nascar-race-center` has ZIP SHA-256
-`7dc59fa6bb80d8c607c5632872142baf78c62573df5fc00fbd23ed02eb897b99`.
+`6fcbc6eb97f6556a3a6d0615c7daf0c9f4a837167a0f71a348b19b2b7716c89a`.
 Changing the approved destination or exported files requires a new archive/hash;
 these bytes are not a public release.
 No NASCAR endpoint, owner provider/configuration/polling or Home Assistant

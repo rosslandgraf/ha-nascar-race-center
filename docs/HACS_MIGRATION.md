@@ -48,6 +48,11 @@ gate. Current manual installations continue working while approvals are pending.
    that NASCAR URL and preserve `type: module` and all other entries. If duplicate
    NASCAR resources already exist, remove only the known duplicates after backup.
    Keep every unrelated resource, dashboard, `entry_id` and card option.
+   For YAML-managed resources, apply the URL edit with **Developer tools →
+   Actions → `lovelace.reload_resources`** (available in YAML resource mode),
+   or validate the configuration and restart Core after the edit. A browser
+   refresh alone does not reload HA's YAML resource list. Apply this same step
+   when restoring a saved YAML resource URL during rollback.
 8. Fully reload/close and reopen dashboard documents on each browser/tablet or
    companion client. A registered custom element cannot be upgraded inside its
    existing document. Reset the companion frontend cache through its normal UI
