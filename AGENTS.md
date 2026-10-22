@@ -48,7 +48,7 @@ That activation path belongs to the prepared cloud environment, not the installe
 - One config entry manages selected national series (IDs 1, 2, 3). Use config/options flows, translated labels, validated options, typed `runtime_data`, and clean unload/reload.
 - Base identifiers on integration domain, series ID, NASCAR driver ID, and session/race ID as appropriate. Never use driver names or car numbers as identity. Preserve IDs across options changes and upgrades.
 - Keep Recorder attributes small. Future leaderboards/history belong in dedicated data views. Future events require baseline suppression and durable deduplication across restart/replay before being exposed.
-- Keep optional frontend code in its own package. Integration HACS packaging and dashboard card packaging are separate deliverables.
+- Keep optional frontend source in its own package. The approved bundled distribution installs its compiled card with the single HACS Integration directory; do not register this repository as two HACS categories.
 
 ## Validation
 
@@ -59,6 +59,6 @@ mypy custom_components/nascar_race_center
 pytest -q
 ```
 
-Use the actual Home Assistant fixtures and realistic mocked structural responses. Cover UI validation, setup/unload/reload, selected-series routing, stable IDs, stale/failed feeds, malformed data, rate limiting, timezone/season boundaries, and cache behavior as relevant to the change. Add meaningful tests for changed behavior, not implementation mirrors. CI runs Hassfest. The official HACS action rejects private repositories, so its job is conditional on public visibility; do not change visibility just to run validation. Its temporary brands exception must also be removed before release readiness. Report both limits rather than claiming full HACS approval.
+Use the actual Home Assistant fixtures and realistic mocked structural responses. Cover UI validation, setup/unload/reload, selected-series routing, stable IDs, stale/failed feeds, malformed data, rate limiting, timezone/season boundaries, and cache behavior as relevant to the change. Add meaningful tests for changed behavior, not implementation mirrors. CI runs Hassfest. The official HACS action rejects private repositories, so its job is conditional on public visibility; do not change visibility just to run validation. The bundled candidate includes original local branding and removes the old brands exception. Public validation and owner publication/asset approvals remain open; do not claim full HACS approval.
 
 Do not expose tokens, sensitive headers, local `.storage`, or full raw provider bodies in diagnostics. Never send messages to external recipients unless the user explicitly authorized that communication.

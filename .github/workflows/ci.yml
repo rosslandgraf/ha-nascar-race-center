@@ -39,3 +39,13 @@ jobs:
         run: mypy custom_components/nascar_race_center
       - name: Mocked Home Assistant and provider tests
         run: pytest -q
+      - name: Build a local distribution preview (never publish)
+        run: python scripts/build_distribution.py --repository "$GITHUB_REPOSITORY" --output work/distribution-preview
+      - name: Retain private distribution preview and checksums
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: bundled-integration-preview
+          path: |
+            work/distribution-preview/nascar-race-center-*.zip
+            work/distribution-preview/ARCHIVE.sha256
+          retention-days: 14

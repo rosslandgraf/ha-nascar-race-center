@@ -1,3 +1,4 @@
+import { defineOnce } from "../register";
 import { LitElement, css, html, nothing } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import type { Driver, Hass } from "../types";
@@ -426,4 +427,4 @@ export class Leaderboard extends LitElement {
       </p>`;
   }
 }
-customElements.define("nrc-leaderboard", Leaderboard);
+defineOnce("nrc-leaderboard", Leaderboard);

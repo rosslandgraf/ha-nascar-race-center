@@ -6,6 +6,7 @@ from homeassistant.core import HomeAssistant
 
 from . import NascarConfigEntry
 from .const import CONF_PROVIDER, PROVIDER_DEMO
+from .frontend import packaging_diagnostics
 from .provider import CFProvider
 
 
@@ -19,6 +20,7 @@ async def async_get_config_entry_diagnostics(
     snapshot = live.data
     provider = entry.runtime_data.provider
     return {
+        "packaging": packaging_diagnostics(hass),
         "cf_pipeline": {
             "transport": provider.api.diagnostics(),
             "parsers": dict(provider.parse_results),

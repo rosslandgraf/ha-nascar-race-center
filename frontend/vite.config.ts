@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { defineConfig } from "vite";
-const license = `/*! NASCAR Race Center card 0.5.3
+const license = `/*! NASCAR Race Center card 0.6.0
 ${readFileSync(new URL("./LICENSE", import.meta.url), "utf8")}
 ${readFileSync(new URL("./THIRD_PARTY_NOTICES.md", import.meta.url), "utf8")}
 */\n`;
@@ -14,11 +14,14 @@ export default defineConfig({
       },
     },
   ],
+  publicDir: "../custom_components/nascar_race_center/frontend",
   build: {
+    outDir: "../custom_components/nascar_race_center/frontend",
+    copyPublicDir: false,
     lib: {
       entry: "src/card.ts",
       formats: ["es"],
-      fileName: () => "nascar-race-center-card-0.5.3.js",
+      fileName: () => "nascar-race-center-card-0.6.0.js",
     },
     target: "es2022",
     sourcemap: false,

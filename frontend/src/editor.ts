@@ -1,3 +1,4 @@
+import { defineOnce } from "./register";
 import { LitElement, html } from "lit";
 import type { CardConfig, Entry, Hass } from "./types";
 import { discoverEntries, errorMessage } from "./api";
@@ -121,4 +122,4 @@ export class CardEditor extends LitElement {
     </div>`;
   }
 }
-customElements.define("nascar-race-center-card-editor", CardEditor);
+defineOnce("nascar-race-center-card-editor", CardEditor);

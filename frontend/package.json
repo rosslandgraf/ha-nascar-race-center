@@ -1,11 +1,11 @@
 {
   "name": "nascar-race-center-card",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "npm run typecheck && vite build",
+    "build": "npm run typecheck && vite build && node scripts/bundle-metadata.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src test demo scripts *.js && prettier --check src test demo scripts *.ts *.json *.js",
     "format": "prettier --write src test demo scripts *.ts *.json *.js",

@@ -1,11 +1,13 @@
 # NASCAR Race Center
 
-The **0.1.2 integration / 0.5.3 card** CF-readiness candidate preserves merged
-PR #15 and improves reported practice/qualifying/race timing and retained-source
-handling. See [evidence and validation](docs/CF_READINESS_VALIDATION.md) and the
-[owner update, authorized acceptance and rollback guide](docs/CF_OWNER_ACCEPTANCE.md).
-Real active-source behavior and data-use/cadence permission remain unverified.
-No release or owner installation is performed.
+The **0.2.0 integration / 0.6.0 card** candidate bundles Python and the compiled
+card in one HACS Integration directory. The stable dashboard resource is
+`/nascar_race_center/card.js`. See the [packaging audit and validation](docs/HACS_DISTRIBUTION.md)
+and [existing-installation migration, updates and rollback](docs/HACS_MIGRATION.md).
+The repository remains private, which blocks HACS installation until an approved
+public distribution exists. No publication or owner installation is performed.
+The merged snapshot and CF-readiness corrections remain supported; real active
+CF sessions and data-use/cadence permission remain unverified.
 
 A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phases 1–6A and the PR #15 snapshot correction are merged. The owner reports successful Demonstration installation; broader physical acceptance, genuine active-source validation and release gates remain open.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
 
@@ -40,11 +42,14 @@ with a future [authorized HA OS CF test procedure](docs/CF_LIVE_VALIDATION.md).
 - Race leader, reported lap totals/remaining laps and evidence-limited session progress; favorite-driver live sensors independent of the reference directory.
 - Mocked provider and Home Assistant lifecycle tests, Ruff/mypy checks, Hassfest and HACS validation workflows.
 
-Phase 3B adds embedded pit/current-stage observations and conservative standalone scoring adapters; live association of standalone feeds remains blocked where identity/freshness is unproven. Phase 3C adds opt-in racing events and user-enabled notification/lighting blueprints. Phases 4A/4B add bounded on-demand historical data and evidence-limited analytics. Phase 5A adds the [authenticated dashboard API v1](docs/DASHBOARD_API.md) for cached bootstrap, schedule navigation, live subscriptions and paged history/analytics. It requires an active Home Assistant administrator. Phase 5A is reviewed and merged in PR #11 (`fb8d8d0`). Phases 5B/5C deliver the [separate custom card](docs/FRONTEND.md), responsive/interaction refinements and three-engine automated checks. Physical-device acceptance remains in the Phase 6A checklist. The [validation report](docs/VALIDATION.md) records precisely which checks ran; configured CI is not a claim that every check passed. Real CF response schemas, cancellation/status fields and timestamp semantics remain unverified; [schema evidence](docs/SCHEMA_EVIDENCE.md) distinguishes community references from current service validation.
+Phase 3B adds embedded pit/current-stage observations and conservative standalone scoring adapters; live association of standalone feeds remains blocked where identity/freshness is unproven. Phase 3C adds opt-in racing events and user-enabled notification/lighting blueprints. Phases 4A/4B add bounded on-demand historical data and evidence-limited analytics. Phase 5A adds the [authenticated dashboard API v1](docs/DASHBOARD_API.md) for cached bootstrap, schedule navigation, live subscriptions and paged history/analytics. It requires an active Home Assistant administrator. Phase 5A is reviewed and merged in PR #11 (`fb8d8d0`). Phases 5B/5C deliver the [bundled custom card](docs/FRONTEND.md), responsive/interaction refinements and three-engine automated checks. Physical-device acceptance remains in the Phase 6A checklist. The [validation report](docs/VALIDATION.md) records precisely which checks ran; configured CI is not a claim that every check passed. Real CF response schemas, cancellation/status fields and timestamp semantics remain unverified; [schema evidence](docs/SCHEMA_EVIDENCE.md) distinguishes community references from current service validation.
 
 ## Controlled beta installation
 
-For an approved owner beta, follow the complete [Phase 6A installation guide](docs/PHASE6A_INSTALLATION.md) before copying files or restarting HA OS. It pins the reviewed commit and artifact hashes, requires a full backup and recovery route, preserves household configuration and creates a separate dashboard. [Rollback](docs/PHASE6A_ROLLBACK.md) separates card removal from integration recovery. No installation, production change or restart is authorized merely by this documentation.
+For this candidate, follow the [migration and rollback guide](docs/HACS_MIGRATION.md).
+Preserve the existing entry, dashboard, card choices and household configuration.
+The earlier Phase 6A and CF-readiness guides remain historical procedures for
+their pinned version pairs. No production change or restart is performed by this PR.
 
 ## Development installation
 
@@ -62,7 +67,14 @@ The existing [MIT license](LICENSE) applies to project code; NASCAR data and med
 
 ## HACS status
 
-The repository uses a HACS-compatible integration layout and includes `hacs.json` and validation workflows. It is not yet release-ready or approved for the HACS default catalog. The official HACS action rejects private repositories, so its job is conditional on public visibility and is skipped during private development. When available, it temporarily skips the brands check while authorized branding is pending. Full HACS validation, branding and all permission/release gates must be resolved before public distribution. The optional frontend card has a separate local build in Phase 5B; its future HACS dashboard-plugin release remains separately reviewed.
+One normal **Integration** download contains all runtime files, including the
+compiled card and original local project icon. Register one stable module URL
+once; future approved releases replace the whole directory through HACS, followed
+by Core restart and browser reload. No second plugin repository is required.
+The [audit](docs/HACS_DISTRIBUTION.md) documents official requirements and the
+recommended future public distribution. Private repositories cannot be installed
+through HACS, including custom repositories. Full public HACS validation and
+publication approvals remain gates; the workflow has no brands exception.
 
 ## Development
 
@@ -230,11 +242,9 @@ evidence gates, diagnostics, budgets and the future verified-permission process.
 
 ### Optional Phase 5B Lovelace dashboard
 
-The separate [NASCAR Race Center card](frontend/README.md) adds Race Center,
-Live Timing, Race Weekend, History and Analytics through the authenticated
-administrator-only dashboard API v1. See [manual local installation and card
-configuration](docs/FRONTEND.md) and [validation with actual-card screenshots](docs/PHASE5B_VALIDATION.md).
-It has its own reproducible build/versioned JS bundle; the existing integration
-HACS package does not automatically install or register a dashboard plugin.
-The offline provider remains clearly simulated; current timing appears only
-when a source supplies fresh matching observations.
+The [NASCAR Race Center card](frontend/README.md) adds Race Center, Live Timing,
+Race Weekend, History and Analytics through the administrator-only dashboard API
+v1. The single integration installs its versioned bundle; resource setup remains
+one manual edit. See [configuration](docs/FRONTEND.md) and the
+[migration guide](docs/HACS_MIGRATION.md). The offline provider remains clearly
+simulated; current timing requires fresh matching source observations.

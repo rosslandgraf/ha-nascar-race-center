@@ -1,3 +1,4 @@
+import { defineOnce } from "../register";
 import { LitElement, css, html, svg } from "lit";
 import type { DataRow, Metric } from "../types";
 import { label, number } from "../format";
@@ -247,4 +248,4 @@ export class MetricChart extends LitElement {
     </section>`;
   }
 }
-customElements.define("nrc-metric-chart", MetricChart);
+defineOnce("nrc-metric-chart", MetricChart);

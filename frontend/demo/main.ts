@@ -4,9 +4,19 @@ import type { Section } from "../src/types";
 const params = new URLSearchParams(location.search);
 const resource =
   params.get("bundle") === "true"
-    ? "/dist/nascar-race-center-card-0.5.3.js"
+    ? "/nascar-race-center-card-0.6.0.js"
     : "/src/card.ts";
-await import(/* @vite-ignore */ resource);
+if (params.get("bundle") === "true") {
+  // Public artifacts must load as-is, without Vite source transforms.
+  await new Promise<void>((resolve, reject) => {
+    const script = document.createElement("script");
+    script.type = "module";
+    script.src = resource;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Compiled preview failed to load"));
+    document.head.append(script);
+  });
+} else await import(/* @vite-ignore */ resource);
 const Card = customElements.get("nascar-race-center-card")!;
 const hass = new MockHass();
 if (params.get("loading") === "true") hass.delay = 2000;

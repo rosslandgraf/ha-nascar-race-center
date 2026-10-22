@@ -57,7 +57,7 @@ flowchart TD
 | Coordinators | Deduplicate polling, select seasons, manage freshness and failures | Separate schedules, driver/track references and live sessions; history has an independent on-demand broker |
 | Entities | Render compact state and availability | No direct HTTP calls or full leaderboard attributes |
 | Config entry | Selected series, source, authorization and options lifecycle | Version/migrate persisted configuration as needed |
-| Optional frontend | Five accessible interactive Lovelace views against API v1 | Independent Lit/TypeScript package; manual local module, future HACS dashboard distribution |
+| Optional frontend | Five accessible interactive Lovelace views against API v1 | Independent Lit/TypeScript source; compiled module in the single HACS Integration directory |
 
 ## Configuration and lifecycle
 
@@ -441,10 +441,10 @@ assets, card/resource registration, production installation or release is includ
 ## Phase 5B optional frontend
 
 The independently versioned `frontend/` Lit/TypeScript package registers
-`nascar-race-center-card` and its in-UI editor. The Python integration release
-package and `hacs.json` are unchanged. [Frontend architecture and manual installation](docs/FRONTEND.md)
-describe the module boundaries, supported configuration, compatibility and future
-separate HACS plugin plan. No backend contract change was required.
+`nascar-race-center-card` and its in-UI editor. The source package remains independent; the packaging candidate now installs its
+compiled artifact inside the integration directory. [Frontend architecture](docs/FRONTEND.md)
+and [packaging audit](docs/HACS_DISTRIBUTION.md) describe compatibility, one-time
+resource setup and public distribution gates. The authenticated data contract is unchanged.
 
 One typed client consumes the eight authenticated v1 commands and imports shared
 leaf-model declarations. Per-card generations isolate entry/series/race choices;
@@ -509,3 +509,22 @@ services. Practice/qualifying use on-track evidence without race-lap/stage
 semantics and retain the conservative 300-second floor. Card 0.5.3 consumes
 additive v1 session-state fields with calm labels and matched-detail guards.
 See [evidence, actual checks and limits](docs/CF_READINESS_VALIDATION.md).
+
+## Bundled HACS distribution candidate
+
+Integration 0.2.0 pins card 0.6.0 and its SHA-256 in installed `frontend/bundle.json`.
+Global `async_setup` registers public, code-only routes once per Core process.
+The supported HTTP `StaticPathConfig` exposes exactly the versioned JS file;
+Python, metadata and the directory are not served. `/nascar_race_center/card.js`
+is a small HA view with `Cache-Control: no-store`; it imports the canonical hashed
+module only when the card is not defined. The compiled module guards all custom
+elements. Existing documents need reload; config-entry reload never changes code.
+
+Bounded metadata and artifact validation runs in an executor before registration.
+A damaged optional card returns 503 without disabling entities/automations.
+Diagnostics report the loaded integration/card/hash and no private paths.
+No Lovelace storage collection, dashboard or resource is edited. Data permissions,
+entry/connection isolation, polling, IDs and config-entry version stay unchanged.
+Supported static routes have process lifetime; disable/unload rejects data access
+while public code may remain until restart. A complete directory replacement,
+Core restart and browser reload form the supported upgrade/rollback boundary.

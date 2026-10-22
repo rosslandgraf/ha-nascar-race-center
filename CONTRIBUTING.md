@@ -61,6 +61,11 @@ These paths are environment helpers, not installed integration dependencies. Nev
 
 GitHub Actions runs the pinned Python/HA test baseline, Ruff, mypy, Hassfest and HACS integration validation. Action wrappers are pinned to reviewed commit SHAs. Upstream Hassfest/HACS wrappers currently use their maintained validator container tags, so validator behavior can change independently of this repository. Review failures against current official requirements.
 
-The upstream HACS validator rejects private repositories, so its CI job runs only when the repository is public. Keep this project private until the owner authorizes publication; a skipped job is not successful HACS validation. The HACS `brands` check is also deliberately excluded in Phase 1 because no authorized branding submission exists. Remove that exception before release readiness. CI does not contact CF, publish releases, install on production, or establish data-use rights. Report actual results and outstanding checks in the PR, including any action still queued or requiring first-run approval.
+The upstream HACS validator rejects private repositories, so its CI job runs only when the repository is public. Keep this project private until the owner authorizes publication; a skipped job is not successful HACS validation. The current workflow has no brands exception: the Integration contains an original local NRC icon supported by current HA/HACS. Owner asset approval and the full official validator on an approved public repository remain gates. CI does not contact CF, publish releases, install on production, or establish data-use rights. Report actual results and outstanding checks in the PR, including any action still queued or requiring first-run approval.
 
 For current guidance see Home Assistant [manifest](https://contributors.home-assistant.io/core/integrations/manifest/), [config flow](https://contributors.home-assistant.io/core/integrations/config-flow/) and [data fetching](https://contributors.home-assistant.io/core/integrations/fetching-data/) documentation, plus HACS [integration](https://www.hacs.dev/docs/publish/integration/) and [validation action](https://www.hacs.dev/docs/publish/action/) requirements.
+
+The frontend build writes directly into the installed component's `frontend/`
+directory. Run `npm --prefix frontend run build` before Python packaging tests.
+See [packaging/reproducibility](docs/HACS_DISTRIBUTION.md) for the local-only
+exporter and the explicit publication boundary. No workflow publishes releases.

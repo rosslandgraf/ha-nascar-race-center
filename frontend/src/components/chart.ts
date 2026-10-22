@@ -1,3 +1,4 @@
+import { defineOnce } from "../register";
 import { LitElement, css, html, svg, nothing } from "lit";
 import type { DataRow } from "../types";
 import { number } from "../format";
@@ -382,4 +383,4 @@ export class Chart extends LitElement {
       </details>`;
   }
 }
-customElements.define("nrc-chart", Chart);
+defineOnce("nrc-chart", Chart);
