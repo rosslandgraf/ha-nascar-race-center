@@ -136,3 +136,17 @@ polling does not create practice automation events or change session-progress
 sensor semantics. The full field remains in bounded runtime memory.
 
 See [executed validation and measured budgets](PHASE3DB_VALIDATION.md).
+
+## CF-readiness correction (0.1.2)
+
+Conservative CF now recognizes fresh on-track practice/qualifying at zero race
+laps and uses the existing configured conservative minimum (300 seconds by
+default). Empty/cold/withheld/regressed CF timing does not choose the activity
+branch. First reported activity may select that interval while its display says
+activity-unconfirmed; a cache read does not change the activity assessment.
+No CF adaptive activation or floor reduction is included. Between/completed
+sessions still use race-based 900/3,600/21,600-second discovery, not the permitted
+synthetic provider's faster approach/gap targets. Unknown schedule times can
+therefore mean six-hour discovery. The [exact targets and remaining limits](CF_READINESS_VALIDATION.md#polling-and-resource-decisions)
+and [owner acceptance procedure](CF_OWNER_ACCEPTANCE.md) supersede assumptions
+that CF refreshes every five minutes in every state.

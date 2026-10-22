@@ -143,6 +143,8 @@ export interface Driver extends API.LiveReportedDriver {
   laps_led: Preview<API.LedInterval>;
 }
 export interface Live {
+  session_state?: string | null;
+  observation_advancement?: string;
   identity: {
     series_id: number;
     season: number | null;

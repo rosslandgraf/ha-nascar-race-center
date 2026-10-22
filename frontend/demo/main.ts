@@ -4,7 +4,7 @@ import type { Section } from "../src/types";
 const params = new URLSearchParams(location.search);
 const resource =
   params.get("bundle") === "true"
-    ? "/dist/nascar-race-center-card-0.5.2.js"
+    ? "/dist/nascar-race-center-card-0.5.3.js"
     : "/src/card.ts";
 await import(/* @vite-ignore */ resource);
 const Card = customElements.get("nascar-race-center-card")!;

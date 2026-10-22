@@ -245,7 +245,7 @@ async def test_replay_positions_lead_runs_races_series_and_unreported_driver(
     assert er.async_get(hass).async_get(saved_id).device_id == device_id
     payload.update(run_id=9, run_type=1, lap_number=0, vehicles=[])
     await refresh(hass, entry, provider, payload)
-    assert state(hass, entry, "1_session_status").state == STATE_UNKNOWN
+    assert state(hass, entry, "1_session_status").state == "no_active_session"
     assert hass.states.get(saved_id).state == STATE_UNAVAILABLE
     assert entry.runtime_data.live.data.session_key == (1, 99002, 9)
     assert await hass.config_entries.async_reload(entry.entry_id)
@@ -260,7 +260,7 @@ async def test_replay_positions_lead_runs_races_series_and_unreported_driver(
         ({"flag_state": 2}, "active", "ok", "99001"),
         ({"flag_state": 3}, "active", "ok", "99001"),
         ({"flag_state": 99}, STATE_UNKNOWN, "ok", "99001"),
-        ({"flag_state": 9}, STATE_UNKNOWN, "ok", "99001"),
+        ({"flag_state": 9}, "latest_recorded", "ok", STATE_UNAVAILABLE),
         ({"lap_number": 0}, STATE_UNKNOWN, "ok", "99001"),
         (
             {"time_of_day_os": None},
@@ -506,7 +506,9 @@ async def test_unknown_or_track_only_flags_do_not_accelerate_polling(
 ):
     entry, provider = await live_setup()
     await refresh(hass, entry, provider, {**timing_payload(), "flag_state": flag_state})
-    assert state(hass, entry, "1_session_status").state == STATE_UNKNOWN
+    assert state(hass, entry, "1_session_status").state == (
+        "latest_recorded" if flag_state == 9 else STATE_UNKNOWN
+    )
     assert entry.runtime_data.live.update_interval >= timedelta(hours=6)
 
 

@@ -65,7 +65,9 @@ def legacy_decision(
     now: datetime,
     minimum: int,
 ) -> PollDecision:
-    """Keep the pre-3D-B CF request budget, including old constructor contracts."""
+    """Keep CF's conservative budget; on-track non-race runs need no race lap."""
+    if (kind := active_kind(snapshot, now)) in {"practice", "qualifying"}:
+        return PollDecision(minimum, f"legacy_active_{kind}")
     if (
         snapshot is not None
         and snapshot.source_updated_at is not None

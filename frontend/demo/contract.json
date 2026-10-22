@@ -235,7 +235,9 @@
         "season_basis": "not_reported"
       },
       "availability": "ok",
-      "source_updated_at": "2026-10-21T22:49:57.984901+00:00",
+      "session_state": "active",
+      "observation_advancement": "not_assessed",
+      "source_updated_at": "2026-10-22T19:32:57.194895+00:00",
       "stale": false,
       "session": {
         "run_name": "Fictional 300",
@@ -1286,7 +1288,7 @@
       "availability": "available",
       "failed_seasons": [],
       "catalog_scope": "retained_supported_schedules",
-      "updated_at": "2026-10-21T22:49:57.909612+00:00",
+      "updated_at": "2026-10-22T19:32:57.124621+00:00",
       "records": [
         {
           "kind": "race",
@@ -1430,7 +1432,7 @@
         "series_id": 1,
         "race_id": "99001",
         "run_id": "7",
-        "source_updated_at": "2026-10-21T22:49:57.984901+00:00"
+        "source_updated_at": "2026-10-22T19:32:57.194895+00:00"
       },
       "availability": "ok",
       "driver_id": "99002",
@@ -1479,7 +1481,7 @@
         "series_id": 1,
         "race_id": "99001",
         "run_id": "7",
-        "source_updated_at": "2026-10-21T22:49:57.984901+00:00"
+        "source_updated_at": "2026-10-22T19:32:57.194895+00:00"
       },
       "availability": "not_reported",
       "collection": "points",
@@ -1521,7 +1523,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998060+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.206559+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -1541,7 +1543,7 @@
             "validation": "path_context_only",
             "coverage": "unverified_context",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998922+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.207417+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -1561,7 +1563,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998389+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.206895+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -1581,7 +1583,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998506+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.206952+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -1601,7 +1603,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998595+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.207020+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -1621,7 +1623,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998657+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.207121+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -1641,7 +1643,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998752+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.207238+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -3408,7 +3410,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998060+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.206559+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -3428,7 +3430,7 @@
             "validation": "path_context_only",
             "coverage": "unverified_context",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998922+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.207417+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -3448,7 +3450,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998389+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.206895+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -3468,7 +3470,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998506+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.206952+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -3488,7 +3490,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998595+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.207020+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -3508,7 +3510,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998657+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.207121+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null
@@ -3528,7 +3530,7 @@
             "validation": "path_context_only",
             "coverage": "fictional",
             "delivery": "synthetic",
-            "retrieved_at": "2026-10-21T22:49:57.998752+00:00",
+            "retrieved_at": "2026-10-22T19:32:57.207238+00:00",
             "response_at": null,
             "http_status": null,
             "retry_after": null

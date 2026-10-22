@@ -1,11 +1,13 @@
 # NASCAR Race Center
 
-The focused **0.1.1 integration / 0.5.2 card** beta fix adds snapshot release and
-calm empty live observations. See [validation](docs/SNAPSHOT_FIX_VALIDATION.md)
-and [precise update/rollback instructions](docs/SNAPSHOT_FIX_UPGRADE.md) for the
-installed 0.1.0 / 0.5.1 pair. It is a review candidate, not a published release.
+The **0.1.2 integration / 0.5.3 card** CF-readiness candidate preserves merged
+PR #15 and improves reported practice/qualifying/race timing and retained-source
+handling. See [evidence and validation](docs/CF_READINESS_VALIDATION.md) and the
+[owner update, authorized acceptance and rollback guide](docs/CF_OWNER_ACCEPTANCE.md).
+Real active-source behavior and data-use/cadence permission remain unverified.
+No release or owner installation is performed.
 
-A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phases 1–5C are merged. Phase 6A prepares a controlled Demonstration-only beta for owner review; installation, physical acceptance and release gates remain open.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
+A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phases 1–6A and the PR #15 snapshot correction are merged. The owner reports successful Demonstration installation; broader physical acceptance, genuine active-source validation and release gates remain open.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
 
 The long-term target includes race-weekend schedules, timing/scoring, favorite drivers, championship points, historical analytics, automations and an optional responsive dashboard. See the complete [specification](NASCAR_Race_Center_Codex_Brief.md) and [phased roadmap](ROADMAP.md).
 
@@ -17,7 +19,7 @@ blocked at proxy CONNECT, before any NASCAR response. The separately supplied [o
 corroborates structures but exposes conflicting contexts; active-session behavior
 and permission remain unverified. See [Phase 3B evidence](docs/PHASE3B_EVIDENCE.md).
 
-Latest review: [Phase 6A beta validation](docs/PHASE6A_VALIDATION.md),
+Earlier beta documentation: [Phase 6A beta validation](docs/PHASE6A_VALIDATION.md),
 [beginner installation](docs/PHASE6A_INSTALLATION.md),
 [acceptance checklist](docs/PHASE6A_BETA_CHECKLIST.md),
 [update and rollback](docs/PHASE6A_ROLLBACK.md). No owner installation is performed.

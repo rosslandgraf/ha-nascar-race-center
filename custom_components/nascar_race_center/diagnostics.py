@@ -160,6 +160,21 @@ async def async_get_config_entry_diagnostics(
                 and bool(board.drivers)
                 for series in schedule.series
             },
+            "observation_advancement": live.observation_state,
+            "timing_unavailable_reason": live.view(
+                snapshot.series_id
+            ).leaderboard_unavailable_reason
+            if snapshot
+            else "no_active_session",
+            "leaderboard_availability": "available"
+            if snapshot and live.view(snapshot.series_id).leaderboard is not None
+            else "rejected"
+            if snapshot and snapshot.leaderboard_failed
+            else "empty"
+            if snapshot
+            and snapshot.leaderboard is not None
+            and not snapshot.leaderboard.drivers
+            else "withheld_or_not_reported",
             "session_progress": live.view(snapshot.series_id).session_status
             if snapshot
             else None,

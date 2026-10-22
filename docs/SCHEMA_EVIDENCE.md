@@ -201,3 +201,13 @@ race facts. See [Phase 3B evidence](PHASE3B_EVIDENCE.md) for field-specific rule
 [validation](PHASE3B_VALIDATION.md) for actual offline checks. Conflicting global
 races, zero IDs, missing context/time and distinct run namespaces prevent automatic
 live joins. No new network observation or data/polling permission is claimed.
+
+## October 22 all-session readiness comparison
+
+The [CF-readiness report](CF_READINESS_VALIDATION.md#existing-pipeline-and-evidence)
+pins the additional NascarApi and api-evangelist repositories and compares run
+kinds, flags, IDs, vehicles, source timestamps and practice sentinels against the
+imported cold Cup structural observation. Generated Swagger targets a different
+host, not the production CF contract. No new NASCAR response was requested.
+All nine series/session regression combinations are explicitly synthetic;
+practice/qualifying active-source meanings still require authorized observation.

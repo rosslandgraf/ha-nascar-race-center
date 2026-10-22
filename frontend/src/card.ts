@@ -49,7 +49,7 @@ import "./components/chart";
 import "./components/metric-chart";
 import type { ChartMode } from "./components/chart";
 import "./editor";
-export const VERSION = "0.5.2";
+export const VERSION = "0.5.3";
 export class NascarRaceCenterCard extends LitElement {
   static styles = styles;
   private config: CardConfig = { type: "custom:nascar-race-center-card" };
@@ -504,6 +504,8 @@ export class NascarRaceCenterCard extends LitElement {
     if (!this.client) return;
     if (
       !this.liveData?.identity.race_id ||
+      !this.liveData.identity.run_id ||
+      !this.liveData.session ||
       this.liveData.availability !== "ok"
     ) {
       this.closeDetail(false);
@@ -1000,10 +1002,14 @@ export class NascarRaceCenterCard extends LitElement {
           <p class="eyebrow">${SERIES[this.series]} · Timing tower</p>
           <h2>${session?.run_name ?? "Live Timing"}</h2>
           <p class="muted">
-            ${label(session?.status)}${session
+            ${label(session?.status)}${session && session.status === "race"
               ? ` · Reported lap ${this.formatNumber(session.lap)} / ${this.formatNumber(session.total_laps)}`
               : ""}
           </p>
+          <small class="muted">
+            Race ${live?.identity.race_id ?? "unreported"} · timing run
+            ${live?.identity.run_id ?? "unreported"}
+          </small>
         </div>
         <div class="actions">
           ${this.badge(health.text, health.tone)}${session
@@ -1022,7 +1028,7 @@ export class NascarRaceCenterCard extends LitElement {
         : this.state(
             live ? "No current timing" : "Connecting to the timing feed",
             live
-              ? `${label(live.availability)}. Fresh matching observations are required; stale results are withheld.`
+              ? `${label(live.availability === "ok" ? (live.session_state ?? live.availability) : live.availability)}. Fresh matching observations are required; stale results are withheld.`
               : "Waiting for an authenticated live snapshot.",
             !live,
           )}${session?.stage
