@@ -28,9 +28,37 @@ from .polling import (
     adaptive_decision,
     legacy_decision,
 )
-from .provider import RaceProvider
+from .provider import CFProvider, RaceProvider
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _observations(snapshot: LiveSnapshot) -> tuple[object, ...]:
+    """Compare reported activity without mistaking clock/name/car edits for racing."""
+    board = snapshot.leaderboard
+    drivers = (
+        tuple(
+            (
+                row.driver_id,
+                row.position,
+                row.laps_completed,
+                row.last_lap_time,
+                row.best_lap_time,
+                row.last_lap_speed,
+                row.best_lap_speed,
+                row.average_speed,
+                row.gap,
+                row.status_code,
+                row.is_on_track,
+                row.pit_stops,
+                row.laps_led,
+            )
+            for row in board.drivers
+        )
+        if board is not None
+        else None
+    )
+    return snapshot.lap, snapshot.flag, snapshot.stage, drivers
 
 
 @dataclass(frozen=True)
@@ -269,6 +297,8 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
         self._source_high_water: datetime | None = None
         self._clock_regressed = False
         self._has_read = False
+        self.observation_state = "not_observed"
+        self._observed_context: tuple[int, int, int | None] | None = None
         self._unsub_schedule = schedule.async_add_listener(self._schedule_changed)
         self.last_successful_update: datetime | None = None
         self.last_error_status: int | None = None
@@ -346,9 +376,20 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
             health = "not_reported"
         elif self.source_is_stale is None:
             health = "freshness_unknown"
+        elif self.source_is_stale:
+            health = "stale"
         else:
-            health = "stale" if self.source_is_stale else "ok"
-        return LiveView(snapshot if matching else None, health)
+            health = "freshness_unknown" if self._clock_regressed else "ok"
+        return LiveView(
+            snapshot if matching else None,
+            health,
+            self.observation_state
+            if isinstance(self.provider, CFProvider)
+            and matching
+            and snapshot is not None
+            and snapshot.session_key == self._observed_context
+            else None,
+        )
 
     def _next_interval(self, snapshot: LiveSnapshot | None) -> timedelta:
         """One scheduling owner applies evidence, provider, cache and failure limits."""
@@ -358,6 +399,16 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
             if snapshot and snapshot.series_id in self.schedule.series
             else None
         )
+        if (
+            isinstance(self.provider, CFProvider)
+            and selected is not None
+            and (
+                self._clock_regressed
+                or not LiveView(selected, "ok", self.observation_state).available
+                or selected.leaderboard is None
+            )
+        ):
+            selected = None
         known_series = {
             series
             for series in self.schedule.series
@@ -440,6 +491,8 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
             else None,
             "consecutive_failures": self._failure_count,
             "nonadvancing_reads": self._stale_reads,
+            "observation_advancement": self.observation_state,
+            "source_clock_regressed": self._clock_regressed,
             "network_eligible_in_seconds": api.request_delay(LIVE_FEED)
             if isinstance(api, NascarApiClient)
             else None,
@@ -467,6 +520,33 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
         self.last_error_status = None
         self._has_read = True
         self._failure_count = 0
+        previous = self.data
+        context = snapshot.session_key if snapshot else None
+        if context != self._observed_context:
+            self._stale_reads = 0
+        if snapshot is None:
+            self.observation_state = "no_session"
+        elif (
+            previous is None
+            or previous.session_key != context
+            or previous.run_type_code != snapshot.run_type_code
+        ):
+            self.observation_state = "first_observation"
+        elif (
+            isinstance(self.provider, CFProvider)
+            and self.provider.api.diagnostics().get(LIVE_FEED, {}).get("delivery")
+            == "cache"
+        ):
+            # A local consumer read supplies no new evidence about the source.
+            # Retain the assessment until a network observation or local expiry.
+            pass
+        elif snapshot.source_updated_at == previous.source_updated_at:
+            self.observation_state = "clock_unchanged"
+        elif _observations(snapshot) == _observations(previous):
+            self.observation_state = "timestamp_only"
+        else:
+            self.observation_state = "observations_changed"
+        self._observed_context = context
         clock = snapshot.source_updated_at if snapshot else None
         now = dt_util.utcnow()
         if (

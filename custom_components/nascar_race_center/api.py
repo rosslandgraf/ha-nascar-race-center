@@ -195,7 +195,13 @@ class NascarApiClient:
 
     def diagnostics(self) -> dict[str, dict[str, object]]:
         """Return only allowlisted paths and fixed outcome metadata, never bodies."""
-        return {path: asdict(result) for path, result in self._diagnostics.items()}
+        return {
+            path: {
+                **asdict(result),
+                "next_eligible_in_seconds": self.request_delay(path),
+            }
+            for path, result in self._diagnostics.items()
+        }
 
     def clear_history(self) -> None:
         """Release only ephemeral historical bodies/validators on entry shutdown."""

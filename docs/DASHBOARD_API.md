@@ -405,3 +405,17 @@ it should not poll the backend to detect live changes. Reconnect/reload reboots
 from bootstrap. No visual layout, media access or frontend packaging decision is
 part of this contract. Data-use, official finality, real source latency, coverage,
 units and standalone scoring evidence limits remain open.
+
+### CF-readiness source assessment (integration 0.1.2)
+
+Live envelopes add `session_state` and `observation_advancement` under API v1.
+Transport `availability=ok` can coexist with `latest_recorded`,
+`no_active_session`, `activity_unconfirmed`, `completed` or
+`observations_unavailable`; it does not establish active racing. Withheld timing
+has null `session`/`leaderboard` while its reported identity/clock remain context.
+First usable CF observations can supply reported timing with unconfirmed
+activity. Practice/qualifying omit race-only totals/stage; their reported driver
+fields retain the same contract. `active` requires supported progressing evidence.
+Unassessed synthetic/manual provider samples use `not_assessed`; unmatched
+series do not acquire another series' timing. Existing token/identity/change,
+release, security, size, concurrency and expiry contracts remain unchanged.

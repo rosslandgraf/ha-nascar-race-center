@@ -137,3 +137,12 @@ historical startup or ordinary scheduled detail requests. No alternate/legacy,
 SnappyTV, recap or Drive historical request is added. No NASCAR network call was
 performed in Phase 4A; original probe and imported snapshot evidence is unchanged.
 See [Phase 4A validation](PHASE4A_VALIDATION.md) for actual checks and unresolved gates.
+
+## October 22 CF-readiness review
+
+[Readiness validation](CF_READINESS_VALIDATION.md) compares the imported October 21
+cold Cup observation with pinned NascarApi and api-evangelist references. No new
+NASCAR request was made; cloud policy excludes CF and source permission remains
+unconfirmed. Generated `feed.nascar.com` Swagger is a different API, not a new
+allowlisted host. All-series/session tests remain explicitly synthetic. The
+[owner procedure](CF_OWNER_ACCEPTANCE.md) records the remaining live gates.

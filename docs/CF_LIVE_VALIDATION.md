@@ -1,5 +1,10 @@
 # Authorized end-to-end CF validation on Home Assistant OS
 
+For the **0.1.2 / 0.5.3** candidate on the owner's existing installation, use
+[the current update and before/during/after acceptance procedure](CF_OWNER_ACCEPTANCE.md)
+and [readiness evidence](CF_READINESS_VALIDATION.md). The older generic procedure
+below is retained as historical guidance; no source or hardware test is claimed.
+
 This is a future operator procedure. It has **not** been executed against NASCAR
 or the owner's HA OS system. Development permission and a passing PR do not grant
 NASCAR polling permission or permission to install on production.

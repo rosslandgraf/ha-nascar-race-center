@@ -133,3 +133,21 @@ describe("summary metric comparisons", () => {
     ).toBe(true);
   });
 });
+
+describe("CF session evidence", () => {
+  it.each([
+    ["latest_recorded", "Latest recorded session · timing withheld"],
+    ["no_active_session", "No current session"],
+    ["activity_unconfirmed", "Reported session · activity unconfirmed"],
+    ["completed", "Completed session · reported observations"],
+    ["observations_unavailable", "Session observations unavailable"],
+  ])("keeps %s distinct from fresh active timing", (session_state, text) => {
+    const live = structuredClone(fixtures.live.data) as Live;
+    live.session_state = session_state;
+    expect(freshness(live)).toEqual({ text, tone: "neutral" });
+    live.availability = "offline";
+    expect(freshness(live).text).toBe("offline");
+    live.availability = "stale";
+    expect(freshness(live).text).toContain("Stale");
+  });
+});

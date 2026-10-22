@@ -386,7 +386,7 @@ def parse_live(payload: object) -> LiveSnapshot | None:
             leaderboard_failed = True
     stage = None
     stage_failed = False
-    if "stage" in payload:
+    if run_type == 3 and "stage" in payload:
         try:
             stage = parse_current_stage(payload["stage"])
         except ValueError:
@@ -400,8 +400,10 @@ def parse_live(payload: object) -> LiveSnapshot | None:
         source_updated_at=_timestamp(payload.get("time_of_day_os")),
         run_id=_integer(payload.get("run_id"), positive=True),
         run_name=run_name[:160] if run_name is not None else None,
-        total_laps=_integer(payload.get("laps_in_race"), positive=True),
-        laps_remaining=_integer(payload.get("laps_to_go")),
+        total_laps=_integer(payload.get("laps_in_race"), positive=True)
+        if run_type == 3
+        else None,
+        laps_remaining=_integer(payload.get("laps_to_go")) if run_type == 3 else None,
         elapsed_seconds=_integer(payload.get("elapsed_time")),
         leaderboard=leaderboard,
         leaderboard_failed=leaderboard_failed,

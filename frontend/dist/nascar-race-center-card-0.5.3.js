@@ -1,4 +1,4 @@
-/*! NASCAR Race Center card 0.5.2
+/*! NASCAR Race Center card 0.5.3
 MIT License
 
 Copyright (c) 2026 Ross Landgraf
@@ -918,7 +918,13 @@ function At(a, e = Date.now()) {
 }
 function ce(a) {
   const e = a?.availability;
-  return e === "ok" && a?.stale === !1 ? { text: "Fresh source", tone: "green" } : e === "stale" || a?.stale === !0 ? { text: "Stale · timing withheld", tone: "yellow" } : e === "freshness_unknown" ? { text: "Freshness unknown", tone: "yellow" } : { text: e ? g(e) : "Awaiting source", tone: "neutral" };
+  return e === "ok" && a?.session_state === "latest_recorded" ? {
+    text: "Latest recorded session · timing withheld",
+    tone: "neutral"
+  } : e === "ok" && a?.session_state === "no_active_session" ? { text: "No current session", tone: "neutral" } : e === "ok" && a?.session_state === "activity_unconfirmed" ? { text: "Reported session · activity unconfirmed", tone: "neutral" } : e === "ok" && a?.session_state === "completed" ? {
+    text: "Completed session · reported observations",
+    tone: "neutral"
+  } : e === "ok" && a?.session_state === "observations_unavailable" ? { text: "Session observations unavailable", tone: "neutral" } : e === "ok" && a?.stale === !1 ? { text: "Fresh source", tone: "green" } : e === "stale" || a?.stale === !0 ? { text: "Stale · timing withheld", tone: "yellow" } : e === "freshness_unknown" ? { text: "Freshness unknown", tone: "yellow" } : { text: e ? g(e) : "Awaiting source", tone: "neutral" };
 }
 function Ie(a) {
   const e = {
@@ -3221,7 +3227,7 @@ class Vt extends E {
   }
 }
 customElements.define("nascar-race-center-card-editor", Vt);
-const Kt = "0.5.2";
+const Kt = "0.5.3";
 class Jt extends E {
   constructor() {
     super(...arguments), this.config = { type: "custom:nascar-race-center-card" }, this.signature = "", this.epoch = 0, this.liveEpoch = 0, this.bootPending = !1, this.liveChain = Promise.resolve(), this.entries = [], this.loading = !1, this.section = "Race Center", this.series = 1, this.schedules = /* @__PURE__ */ new Map(), this.snapshots = /* @__PURE__ */ new Map(), this.submitting = !1, this.compact = !1, this.historyKind = "all", this.chartMode = "time", this.chartWindow = 5, this.season = (/* @__PURE__ */ new Date()).getFullYear(), this.raceId = "", this.ready = () => {
@@ -3452,7 +3458,7 @@ class Jt extends E {
   }
   async loadDetail(e, t = !1) {
     if (!this.client) return;
-    if (!this.liveData?.identity.race_id || this.liveData.availability !== "ok") {
+    if (!this.liveData?.identity.race_id || !this.liveData.identity.run_id || !this.liveData.session || this.liveData.availability !== "ok") {
       this.closeDetail(!1), this.detailEmpty = this.liveData?.availability === "no_active_session" ? "No active session. Live observations will be available when a matching race is reported." : "Live observations are unavailable for the current source. Wait for a matching, fresh race observation.", this.requestUpdate();
       return;
     }
@@ -3808,8 +3814,12 @@ class Jt extends E {
           <p class="eyebrow">${M[this.series]} · Timing tower</p>
           <h2>${t?.run_name ?? "Live Timing"}</h2>
           <p class="muted">
-            ${g(t?.status)}${t ? ` · Reported lap ${this.formatNumber(t.lap)} / ${this.formatNumber(t.total_laps)}` : ""}
+            ${g(t?.status)}${t && t.status === "race" ? ` · Reported lap ${this.formatNumber(t.lap)} / ${this.formatNumber(t.total_laps)}` : ""}
           </p>
+          <small class="muted">
+            Race ${e?.identity.race_id ?? "unreported"} · timing run
+            ${e?.identity.run_id ?? "unreported"}
+          </small>
         </div>
         <div class="actions">
           ${this.badge(i.text, i.tone)}${t ? this.badge(s.text, s.tone, !0) : h}
@@ -3822,7 +3832,7 @@ class Jt extends E {
             @driver-open=${(r) => void this.openDriver(r.detail, r)}
           ></nrc-leaderboard>` : this.state(
       e ? "No current timing" : "Connecting to the timing feed",
-      e ? `${g(e.availability)}. Fresh matching observations are required; stale results are withheld.` : "Waiting for an authenticated live snapshot.",
+      e ? `${g(e.availability === "ok" ? e.session_state ?? e.availability : e.availability)}. Fresh matching observations are required; stale results are withheld.` : "Waiting for an authenticated live snapshot.",
       !e
     )}${t?.stage ? d`<div class="notice">
             Reported stage ${this.formatNumber(t.stage.number)} · finish

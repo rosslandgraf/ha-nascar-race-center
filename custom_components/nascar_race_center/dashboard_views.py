@@ -264,6 +264,9 @@ def live(entry: NascarConfigEntry, series_id: int) -> dict[str, Any]:
     return {
         "identity": identity,
         "availability": view.health,
+        "session_state": view.session_status,
+        "observation_advancement": view.observation_state
+        or ("no_session" if runtime.live.data is None else "not_assessed"),
         "source_updated_at": project(snap.source_updated_at) if snap else None,
         "stale": runtime.live.source_is_stale if snap else None,
         "session": {

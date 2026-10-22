@@ -496,3 +496,16 @@ new command, while the server remains authoritative for snapshot expiry/capacity
 [Phase 5C validation](docs/PHASE5C_VALIDATION.md) records executed browser,
 accessibility, performance and device acceptance evidence. Python behavior,
 authentication, providers, entities, Recorder and event behavior are unchanged.
+
+## CF readiness after merged PR #15
+
+Integration 0.1.2 keeps the same layers and one shared live coordinator. A bounded
+assessment of the current/previous normalized observation separates first,
+unchanged-clock, timestamp-only and changed observations for CF. Local cache
+reads preserve that assessment; source expiry and clock high-water validation
+remain independent. `LiveView` withholds retained/cold/empty/missing-identity
+current timing, while preserving diagnostic context and independent historical
+services. Practice/qualifying use on-track evidence without race-lap/stage
+semantics and retain the conservative 300-second floor. Card 0.5.3 consumes
+additive v1 session-state fields with calm labels and matched-detail guards.
+See [evidence, actual checks and limits](docs/CF_READINESS_VALIDATION.md).

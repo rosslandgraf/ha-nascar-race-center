@@ -1,33 +1,34 @@
-# Frontend: NASCAR Race Center card 0.5.2
+# Frontend: NASCAR Race Center card 0.5.3
 
 Phase 5C refines the existing custom Lovelace card, consuming the merged Phase 5A
 [dashboard API v1](DASHBOARD_API.md). The separately identified
 [`frontend/`](../frontend/) package owns its lockfile, source, tests and versioned
-local ES module. Python integration packaging, cadence, entities, Recorder,
-automation and authentication behavior are unchanged.
+local ES module. The integration and card retain separate packaging. Current CF assessment and
+conservative cadence changes are documented in the readiness report below;
+Recorder, entity identifiers and authentication contracts are preserved.
 
-For the current beta fix use the [0.1.1 / 0.5.2 update and rollback guide](SNAPSHOT_FIX_UPGRADE.md)
-and [validation report](SNAPSHOT_FIX_VALIDATION.md). The original
-[Phase 6A installation](PHASE6A_INSTALLATION.md), [acceptance](PHASE6A_BETA_CHECKLIST.md)
-and [rollback](PHASE6A_ROLLBACK.md) pin the earlier 0.1.0 / 0.5.1 pair and describe
-the production demo's deliberately unavailable live/lap sections.
-No resource or production configuration is modified automatically.
+For the current CF-readiness candidate use the
+[0.1.2 / 0.5.3 owner update/acceptance/rollback guide](CF_OWNER_ACCEPTANCE.md) and
+[evidence/validation](CF_READINESS_VALIDATION.md). The merged
+[snapshot fix](SNAPSHOT_FIX_VALIDATION.md) and historical Phase 6A guides retain
+their pinned artifact versions. No resource or production configuration is
+modified automatically. CF source/current-session and permission gates remain open.
 
 ## Manual development installation
 
 The user performs these steps on a development HA installation. Nothing in the
 repository installs files on HA OS or changes dashboards/resources automatically.
 
-1. From the reviewed 0.1.1 / 0.5.2 checkout, use Node 24 and `cd frontend &&
+1. From the reviewed 0.1.2 / 0.5.3 checkout, use Node 24 and `cd frontend &&
    npm ci && npm run build`. The committed bundle may also be used directly.
 2. Manually create `<HA config>/www/nascar-race-center/` and copy
-   `frontend/dist/nascar-race-center-card-0.5.2.js` into that directory. On HA OS,
+   `frontend/dist/nascar-race-center-card-0.5.3.js` into that directory. On HA OS,
    `<HA config>` is ordinarily `/config`; use the installation's supported file
    editor or file transfer method. Do not copy `node_modules`, `demo` or tests.
 3. With an administrator account, open **Settings → Dashboards → Resources**
    (enable Advanced Mode in the profile if necessary). Add a **JavaScript Module**
    resource with URL:
-   `/local/nascar-race-center/nascar-race-center-card-0.5.2.js`.
+   `/local/nascar-race-center/nascar-race-center-card-0.5.3.js`.
    YAML-managed resource users add that same URL with `type: module` to their
    existing resource list. Do not add the resource twice.
 4. Reload the browser, edit a dashboard and choose **NASCAR Race Center** from the
@@ -182,7 +183,8 @@ reproducible commands. In the restricted prepared cloud environment use `npm ci 
 actual-card screenshots/measurements. Test adapter/fixtures live only in
 `frontend/demo`; a Python HA contract test exports/rechecks synthetic projections.
 
-Compatibility: card 0.5.2 requires integration 0.1.1's API v1 release extension;
+Compatibility: use card 0.5.3 with integration 0.1.2 for session-state labels;
+the API v1 snapshot release extension was introduced in 0.1.1;
 update the backend first. The original API v1 began in PR #11 (`fb8d8d0`).
 Inspected installed HA **2026.10.2** / frontend **20260930.4**, including
 [custom-card interfaces](https://github.com/home-assistant/frontend/blob/20260930.4/src/panels/lovelace/types.ts)

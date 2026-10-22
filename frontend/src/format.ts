@@ -61,6 +61,22 @@ export function countdown(
 }
 export function freshness(live?: Live): { text: string; tone: string } {
   const code = live?.availability;
+  if (code === "ok" && live?.session_state === "latest_recorded")
+    return {
+      text: "Latest recorded session · timing withheld",
+      tone: "neutral",
+    };
+  if (code === "ok" && live?.session_state === "no_active_session")
+    return { text: "No current session", tone: "neutral" };
+  if (code === "ok" && live?.session_state === "activity_unconfirmed")
+    return { text: "Reported session · activity unconfirmed", tone: "neutral" };
+  if (code === "ok" && live?.session_state === "completed")
+    return {
+      text: "Completed session · reported observations",
+      tone: "neutral",
+    };
+  if (code === "ok" && live?.session_state === "observations_unavailable")
+    return { text: "Session observations unavailable", tone: "neutral" };
   return code === "ok" && live?.stale === false
     ? { text: "Fresh source", tone: "green" }
     : code === "stale" || live?.stale === true
