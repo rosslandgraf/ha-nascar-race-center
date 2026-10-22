@@ -55,9 +55,8 @@ export const styles = css`
   }
   button {
     cursor: pointer;
-    transition:
-      background 0.15s,
-      color 0.15s;
+    /* Theme changes must not animate through unreadable intermediate colors. */
+    transition: none;
   }
   button:hover {
     background: color-mix(in srgb, var(--nrc-accent), transparent 88%);
@@ -205,11 +204,8 @@ export const styles = css`
   }
   .nav button[aria-current="page"] {
     border-bottom-color: currentColor;
-    color: color-mix(
-      in srgb,
-      var(--nrc-accent) 35%,
-      var(--primary-text-color, #e8edf2)
-    );
+    color: var(--primary-text-color, #e8edf2);
+    font-weight: 650;
     background: color-mix(in srgb, var(--nrc-accent), transparent 92%);
   }
   main {
@@ -466,6 +462,8 @@ export const styles = css`
     flex: 1;
   }
   .filters fieldset {
+    min-inline-size: 0;
+    max-inline-size: 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
@@ -485,6 +483,8 @@ export const styles = css`
     min-height: 44px;
   }
   input[type="checkbox"] {
+    padding: 0;
+    flex-shrink: 0;
     width: 18px;
     height: 18px;
     min-height: 0;

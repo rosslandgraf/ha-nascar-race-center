@@ -54,6 +54,35 @@ async function noOverflow(page: Page) {
     await page.evaluate(() => document.documentElement.scrollWidth),
   ).toBeLessThanOrEqual(page.viewportSize()!.width);
   const card = page.locator("nascar-race-center-card");
+  if (
+    (await card.evaluate(
+      (el) => el.shadowRoot!.querySelector("ha-card")!.scrollWidth,
+    )) > Math.ceil((await card.boundingBox())!.width)
+  ) {
+    console.log(
+      "Card overflow diagnostics",
+      await card.evaluate((el) => {
+        const edge = el.getBoundingClientRect().right;
+        const nodes = [...el.shadowRoot!.querySelectorAll<HTMLElement>("*")];
+        for (const item of [...nodes])
+          if (item.shadowRoot)
+            nodes.push(...item.shadowRoot.querySelectorAll<HTMLElement>("*"));
+        return nodes
+          .filter(
+            (item) =>
+              !item.closest(
+                "svg,.table-scroll,.chart-scroll,.comparison-scroll",
+              ) && item.getBoundingClientRect().right > edge + 1,
+          )
+          .map((item) => ({
+            tag: item.tagName,
+            class: String(item.className),
+            width: item.getBoundingClientRect().width,
+            text: item.textContent?.slice(0, 70),
+          }));
+      }),
+    );
+  }
   expect(
     await card.evaluate(
       (el) => el.shadowRoot!.querySelector("ha-card")!.scrollWidth,

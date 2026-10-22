@@ -404,9 +404,9 @@ let H = class extends HTMLElement {
   }
 };
 H.elementStyles = [], H.shadowRootOptions = { mode: "open" }, H[G("elementProperties")] = /* @__PURE__ */ new Map(), H[G("finalized")] = /* @__PURE__ */ new Map(), ot?.({ ReactiveElement: H }), (ae.reactiveElementVersions ??= []).push("2.1.2");
-const fe = globalThis, ke = (r) => r, se = fe.trustedTypes, Ae = se ? se.createPolicy("lit-html", { createHTML: (r) => r }) : void 0, je = "$lit$", R = `lit$${Math.random().toFixed(9).slice(2)}$`, We = "?" + R, lt = `<${We}>`, I = document, Z = () => I.createComment(""), Y = (r) => r === null || typeof r != "object" && typeof r != "function", $e = Array.isArray, dt = (r) => $e(r) || typeof r?.[Symbol.iterator] == "function", le = `[ 	
+const fe = globalThis, ke = (r) => r, se = fe.trustedTypes, Ae = se ? se.createPolicy("lit-html", { createHTML: (r) => r }) : void 0, je = "$lit$", R = `lit$${Math.random().toFixed(9).slice(2)}$`, We = "?" + R, lt = `<${We}>`, T = document, Z = () => T.createComment(""), Y = (r) => r === null || typeof r != "object" && typeof r != "function", $e = Array.isArray, dt = (r) => $e(r) || typeof r?.[Symbol.iterator] == "function", le = `[ 	
 \f\r]`, B = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Se = /-->/g, Ce = />/g, D = RegExp(`>|${le}(?:([^\\s"'>=/]+)(${le}*=${le}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Ee = /'/g, Re = /"/g, Be = /^(?:script|style|textarea|title)$/i, Ve = (r) => (e, ...t) => ({ _$litType$: r, strings: e, values: t }), l = Ve(1), M = Ve(2), T = Symbol.for("lit-noChange"), h = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), z = I.createTreeWalker(I, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Ee = /'/g, Re = /"/g, Be = /^(?:script|style|textarea|title)$/i, Ve = (r) => (e, ...t) => ({ _$litType$: r, strings: e, values: t }), l = Ve(1), M = Ve(2), I = Symbol.for("lit-noChange"), h = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), z = T.createTreeWalker(T, 129);
 function Ke(r, e) {
   if (!$e(r) || !r.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return Ae !== void 0 ? Ae.createHTML(e) : e;
@@ -456,12 +456,12 @@ class X {
     }
   }
   static createElement(e, t) {
-    const i = I.createElement("template");
+    const i = T.createElement("template");
     return i.innerHTML = e, i;
   }
 }
 function F(r, e, t = r, i) {
-  if (e === T) return e;
+  if (e === I) return e;
   let s = i !== void 0 ? t._$Co?.[i] : t._$Cl;
   const a = Y(e) ? void 0 : e._$litDirective$;
   return s?.constructor !== a && (s?._$AO?.(!1), a === void 0 ? s = void 0 : (s = new a(r), s._$AT(r, t, i)), i !== void 0 ? (t._$Co ??= [])[i] = s : t._$Cl = s), s !== void 0 && (e = F(r, s._$AS(r, e.values), s, i)), e;
@@ -477,7 +477,7 @@ class ht {
     return this._$AM._$AU;
   }
   u(e) {
-    const { el: { content: t }, parts: i } = this._$AD, s = (e?.creationScope ?? I).importNode(t, !0);
+    const { el: { content: t }, parts: i } = this._$AD, s = (e?.creationScope ?? T).importNode(t, !0);
     z.currentNode = s;
     let a = z.nextNode(), n = 0, d = 0, o = i[0];
     for (; o !== void 0; ) {
@@ -487,7 +487,7 @@ class ht {
       }
       n !== o?.index && (a = z.nextNode(), n++);
     }
-    return z.currentNode = I, s;
+    return z.currentNode = T, s;
   }
   p(e) {
     let t = 0;
@@ -513,7 +513,7 @@ class j {
     return this._$AB;
   }
   _$AI(e, t = this) {
-    e = F(this, e, t), Y(e) ? e === h || e == null || e === "" ? (this._$AH !== h && this._$AR(), this._$AH = h) : e !== this._$AH && e !== T && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : dt(e) ? this.k(e) : this._(e);
+    e = F(this, e, t), Y(e) ? e === h || e == null || e === "" ? (this._$AH !== h && this._$AR(), this._$AH = h) : e !== this._$AH && e !== I && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : dt(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -522,7 +522,7 @@ class j {
     this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
   }
   _(e) {
-    this._$AH !== h && Y(this._$AH) ? this._$AA.nextSibling.data = e : this.T(I.createTextNode(e)), this._$AH = e;
+    this._$AH !== h && Y(this._$AH) ? this._$AA.nextSibling.data = e : this.T(T.createTextNode(e)), this._$AH = e;
   }
   $(e) {
     const { values: t, _$litType$: i } = e, s = typeof i == "number" ? this._$AC(e) : (i.el === void 0 && (i.el = X.createElement(Ke(i.h, i.h[0]), this.options)), i);
@@ -566,11 +566,11 @@ class ne {
   _$AI(e, t = this, i, s) {
     const a = this.strings;
     let n = !1;
-    if (a === void 0) e = F(this, e, t, 0), n = !Y(e) || e !== this._$AH && e !== T, n && (this._$AH = e);
+    if (a === void 0) e = F(this, e, t, 0), n = !Y(e) || e !== this._$AH && e !== I, n && (this._$AH = e);
     else {
       const d = e;
       let o, u;
-      for (e = a[0], o = 0; o < a.length - 1; o++) u = F(this, d[i + o], t, o), u === T && (u = this._$AH[o]), n ||= !Y(u) || u !== this._$AH[o], u === h ? e = h : e !== h && (e += (u ?? "") + a[o + 1]), this._$AH[o] = u;
+      for (e = a[0], o = 0; o < a.length - 1; o++) u = F(this, d[i + o], t, o), u === I && (u = this._$AH[o]), n ||= !Y(u) || u !== this._$AH[o], u === h ? e = h : e !== h && (e += (u ?? "") + a[o + 1]), this._$AH[o] = u;
     }
     n && !s && this.j(e);
   }
@@ -599,7 +599,7 @@ class mt extends ne {
     super(e, t, i, s, a), this.type = 5;
   }
   _$AI(e, t = this) {
-    if ((e = F(this, e, t, 0) ?? h) === T) return;
+    if ((e = F(this, e, t, 0) ?? h) === I) return;
     const i = this._$AH, s = e === h && i !== h || e.capture !== i.capture || e.once !== i.once || e.passive !== i.passive, a = e !== h && (i === h || s);
     s && this.element.removeEventListener(this.name, this, i), a && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
@@ -649,7 +649,7 @@ let E = class extends H {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return T;
+    return I;
   }
 };
 E._$litElement$ = !0, E.finalized = !0, be.litElementHydrateSupport?.({ LitElement: E });
@@ -1062,9 +1062,8 @@ const w = {
   }
   button {
     cursor: pointer;
-    transition:
-      background 0.15s,
-      color 0.15s;
+    /* Theme changes must not animate through unreadable intermediate colors. */
+    transition: none;
   }
   button:hover {
     background: color-mix(in srgb, var(--nrc-accent), transparent 88%);
@@ -1212,11 +1211,8 @@ const w = {
   }
   .nav button[aria-current="page"] {
     border-bottom-color: currentColor;
-    color: color-mix(
-      in srgb,
-      var(--nrc-accent) 35%,
-      var(--primary-text-color, #e8edf2)
-    );
+    color: var(--primary-text-color, #e8edf2);
+    font-weight: 650;
     background: color-mix(in srgb, var(--nrc-accent), transparent 92%);
   }
   main {
@@ -1473,6 +1469,8 @@ const w = {
     flex: 1;
   }
   .filters fieldset {
+    min-inline-size: 0;
+    max-inline-size: 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
@@ -1492,6 +1490,8 @@ const w = {
     min-height: 44px;
   }
   input[type="checkbox"] {
+    padding: 0;
+    flex-shrink: 0;
     width: 18px;
     height: 18px;
     min-height: 0;
@@ -1943,7 +1943,7 @@ function te(r, e) {
   )}
   </div>`;
 }
-function Ie(r, e) {
+function Te(r, e) {
   const t = r.evidence ?? r.datasets ?? [];
   return l`<div class="evidence">
     ${t.map(
@@ -1972,7 +1972,7 @@ function Ie(r, e) {
   )}
   </div>`;
 }
-function Te(r, e) {
+function Ie(r, e) {
   return l`<div class="panel metric">
     <h3>${v(r.name)}</h3>
     <strong>${f(r.value, e, 3)}</strong>
@@ -2073,7 +2073,7 @@ const qe = (r, e, t) => {
   const i = /* @__PURE__ */ new Map();
   for (let s = e; s <= t; s++) i.set(r[s], s);
   return i;
-}, It = Dt(class extends Nt {
+}, Tt = Dt(class extends Nt {
   constructor(r) {
     if (super(r), r.type !== Rt.CHILD) throw Error("repeat() can only be used in text expressions");
   }
@@ -2116,10 +2116,10 @@ const qe = (r, e, t) => {
       const y = s[p++];
       y !== null && he(y);
     }
-    return this.ut = n, Mt(r, o), T;
+    return this.ut = n, Mt(r, o), I;
   }
 });
-class Tt extends E {
+class It extends E {
   constructor() {
     super(...arguments), this.rows = [], this.sort = "position", this.descending = !1, this.expanded = !1, this.compact = !1;
   }
@@ -2438,7 +2438,7 @@ class Tt extends E {
             </tr>
           </thead>
           <tbody>
-            ${It(
+            ${Tt(
       At(this.rows, this.sort, this.descending),
       (t) => t.driver_id,
       (t) => l`<tr class=${t.favorite ? "favorite-row" : ""}>
@@ -2509,7 +2509,7 @@ class Tt extends E {
       </p>`;
   }
 }
-customElements.define("nrc-leaderboard", Tt);
+customElements.define("nrc-leaderboard", It);
 function Lt(r, e) {
   const t = /* @__PURE__ */ new Map();
   for (const i of r) {
@@ -4092,7 +4092,7 @@ class Bt extends E {
               </h3>
               ${this.badge(v(t.status))}
             </div>
-            ${Ie(t, this.hass)}${this.pager(e)}${Et(
+            ${Te(t, this.hass)}${this.pager(e)}${Et(
       t.records,
       this.hass
     )}${t.records.length ? l`<label class="field"
@@ -4159,7 +4159,7 @@ class Bt extends E {
               drivers, comparisons and reported performance; retention is
               bounded to 1,600 records.
             </p>
-            ${Ie(t, this.hass)}${this.pager(e)}
+            ${Te(t, this.hass)}${this.pager(e)}
             <p class="notice" role="status">
               Loaded record ranges:
               ${[...e.pages.values()].sort((a, n) => a.pagination.offset - n.pagination.offset).map(
@@ -4219,7 +4219,7 @@ class Bt extends E {
                     </h3>
                     <div class="metric-grid">
                       ${a.value?.metrics.map(
-        (n) => Te(n, S(this.hass))
+        (n) => Ie(n, S(this.hass))
       )}
                     </div>
                     <details>
@@ -4230,7 +4230,7 @@ class Bt extends E {
                   </section>`
     )}${t.race_metrics?.length ? l`<div class="metric-grid">
                   ${t.race_metrics.map(
-      (a) => Te(a, S(this.hass))
+      (a) => Ie(a, S(this.hass))
     )}
                 </div>` : h}
             <details>
