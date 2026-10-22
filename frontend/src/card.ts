@@ -1,3 +1,4 @@
+import { defineOnce } from "./register";
 import { LitElement, html, nothing } from "lit";
 import type {
   Bootstrap,
@@ -49,7 +50,7 @@ import "./components/chart";
 import "./components/metric-chart";
 import type { ChartMode } from "./components/chart";
 import "./editor";
-export const VERSION = "0.5.3";
+export const VERSION = "0.6.0";
 export class NascarRaceCenterCard extends LitElement {
   static styles = styles;
   private config: CardConfig = { type: "custom:nascar-race-center-card" };
@@ -1774,7 +1775,11 @@ export class NascarRaceCenterCard extends LitElement {
                     )}
                 >
                   ${b.series_ids.map(
-                    (s) => html`<option value=${s}>${SERIES[s]}</option>`,
+                    (s) => html`
+                      <option value=${s} ?selected=${s === this.series}>
+                        ${SERIES[s]}
+                      </option>
+                    `,
                   )}
                 </select></label
               >
@@ -1872,7 +1877,7 @@ export class NascarRaceCenterCard extends LitElement {
     >`;
   }
 }
-customElements.define("nascar-race-center-card", NascarRaceCenterCard);
+defineOnce("nascar-race-center-card", NascarRaceCenterCard);
 const registry = window as unknown as {
   customCards?: {
     type: string;

@@ -1,15 +1,14 @@
-# NASCAR Race Center card 0.5.3
+# NASCAR Race Center card 0.6.0
 
-Use integration **0.1.2** with this source-status update. See the
-[owner upgrade/acceptance/rollback guide](../docs/CF_OWNER_ACCEPTANCE.md) and
-[actual validation/evidence](../docs/CF_READINESS_VALIDATION.md). Merged snapshot
-release and calm empty-state behavior remain supported. Real active CF sessions
-remain an owner acceptance gate.
+Use integration **0.2.0**, which installs this compiled card inside its managed
+directory. Follow the [one-time resource migration and update guide](../docs/HACS_MIGRATION.md)
+and [packaging audit](../docs/HACS_DISTRIBUTION.md). Existing snapshot and source
+assessment behavior remains supported; CF acceptance gates remain open.
 
 A local, independently built Lit custom Lovelace card for dashboard API v1.
 Five connected views: Race Center, Live Timing, Race Weekend, History and Analytics.
 
-See [configuration, manual installation and architecture](../docs/FRONTEND.md)
+See [configuration, bundled installation and architecture](../docs/FRONTEND.md)
 and [executed validation with actual-card screenshots](../docs/PHASE5C_VALIDATION.md).
 
 ```sh
@@ -26,7 +25,11 @@ npx playwright install --with-deps chromium firefox webkit
 CHROMIUM_PATH=bundled npm run test:browser
 ```
 
-The versioned ES module is `dist/nascar-race-center-card-0.5.3.js`; Lit is included.
+The versioned ES module is
+`../custom_components/nascar_race_center/frontend/nascar-race-center-card-0.6.0.js`;
+Lit and license notices are included. `npm run build` also writes the compatible
+integration/card identity and SHA-256 in `bundle.json`. Register only
+`/nascar_race_center/card.js` in HA; do not copy this file into `/config/www/`.
 No runtime package installation, CDN, remote font or additional JS request.
 `npm run dev` serves `/demo/`, a clearly fictional development-only contract
 preview. `?bundle=true` exercises the committed production bundle. Neither the
@@ -34,7 +37,7 @@ preview adapter nor its test data is included in the production module.
 
 This package is private development software. It does not publish, deploy,
 register a resource, install into HA, or constitute a HACS dashboard plugin.
-The integration's existing HACS packaging remains separate. MIT applies to code,
+The source package builds directly into the single HACS Integration directory. MIT applies to code,
 not NASCAR data, brands or media; no controlled assets are bundled.
 
 Phase 5C extends the existing Lit components: card-local density, touch timing

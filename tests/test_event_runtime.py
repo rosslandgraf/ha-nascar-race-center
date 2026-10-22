@@ -5,6 +5,7 @@ from datetime import timedelta
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 from test_events import BASE, sample
@@ -168,13 +169,20 @@ async def test_invalid_ledger_leaves_events_disabled_but_setup_usable(hass, free
     entry = demo_entry(["1"])
     entry.add_to_hass(hass)
     hass.config_entries.async_update_entry(entry, options=event_options())
+    invalid_store = Store(hass, 1, f"nascar_race_center.{entry.entry_id}.events")
     with (
         patch(
             "custom_components.nascar_race_center.DemoProvider",
             return_value=provider_mock(),
         ),
         patch(
-            "custom_components.nascar_race_center.event_runtime.Store.async_load",
+            "custom_components.nascar_race_center.event_runtime.Store",
+            return_value=invalid_store,
+        ),
+        # Corrupt only the integration ledger, not HA's HTTP/config stores.
+        patch.object(
+            invalid_store,
+            "async_load",
             return_value={"schema": 42},
         ),
     ):

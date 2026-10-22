@@ -6,10 +6,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
+from homeassistant.helpers.typing import ConfigType
 
 from .analytics_runtime import AnalyticsService
 from .const import (
@@ -38,6 +40,7 @@ from .dashboard import DashboardRuntime
 from .event_runtime import EventRuntime
 from .events import EventPreferences
 from .favorites import FavoriteDriverRegistry
+from .frontend import async_setup_frontend
 from .history import HistoryService
 from .history_provider import CFHistoryProvider, DemoHistoryProvider
 from .polling_storage import LiveRequestGuard
@@ -70,6 +73,14 @@ class RuntimeData:
 
 
 type NascarConfigEntry = ConfigEntry[RuntimeData]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Expose the optional bundled card once, without changing any resource list."""
+    await async_setup_frontend(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: NascarConfigEntry) -> bool:

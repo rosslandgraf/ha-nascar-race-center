@@ -13,6 +13,11 @@ from merged PR #15 (`68e917e`), improves all-series/session source assessment an
 conservative non-race polling, and prepares an [owner-operated authorized test](docs/CF_OWNER_ACCEPTANCE.md).
 It does not complete source permission/live acceptance gates or begin Phase 6B.
 
+The next focused [bundled packaging candidate](docs/HACS_DISTRIBUTION.md) starts
+from merged PR #16 (`7ca9d4d`). Integration 0.2.0 includes card 0.6.0 in one HACS
+Integration download, with stable resource setup and an [owner migration guide](docs/HACS_MIGRATION.md).
+It prepares public distribution without publishing it or completing Phase 6B.
+
 ## Phase 1 — Foundation and feasibility
 
 **Status:** reviewed and merged. Its entities, settings, IDs and regression protections remain supported.
@@ -261,9 +266,9 @@ release, visibility change or HACS publication is included. Phase 6B is not begu
 | Anonymous endpoint and active-session access | Supplied single-snapshot observations; this environment blocked | Authorized current-session observation with identity/time provenance |
 | Live race/session behavior | Unverified | Authorized active-session observation and replay fixtures |
 | Historical source coverage and analytics | Phase 4A merged; Phase 4B merged numerical analytics, cross-context coverage unverified | Authorized per-context source/units/conditions evidence; retain formula/sample/provenance limits |
-| Dashboard/card packaging | Phase 5B local versioned artifact; plugin release deferred | Separate future HACS dashboard distribution review |
+| Dashboard/card packaging | Single Integration bundle candidate, 0.2.0 / 0.6.0 | Public distribution approval and physical migration acceptance |
 | Full HACS validation | Action rejects private repositories | Validate after an explicitly approved public-distribution decision; do not change visibility merely to pass CI |
-| HACS brands requirement | Deferred | Authorized neutral branding submission; remove CI exception |
+| HACS brands requirement | Original local NRC icon; exception removed | Full official validator on approved public repository; owner asset approval |
 | Production/release approval | Not granted | Explicit owner authorization after review |
 
 
@@ -294,4 +299,4 @@ source/live/data-use and release gates above still apply.
 - [ ] Physical devices, assistive-reader acceptance and remaining Phase 6A matrix (see Phase 6A checklist).
 - [ ] Owner HA OS beta installation/acceptance and household reliability sign-off (Phase 6A manual tests NOT TESTED).
 - [ ] Remaining Beta & Release Readiness: beta feedback, translations and release workflows (later separately authorized Phase 6 work).
-- [ ] HACS-ready distribution: permission/asset review, branding, no validation exceptions, distinct integration/card artifacts and explicit release authorization (Phase 6).
+- [ ] Public HACS distribution: bundled candidate prepared; official public validation, asset/privacy review and explicit publication authorization remain open.

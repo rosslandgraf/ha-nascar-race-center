@@ -1,43 +1,30 @@
-# Frontend: NASCAR Race Center card 0.5.3
+# Frontend: NASCAR Race Center card 0.6.0
 
-Phase 5C refines the existing custom Lovelace card, consuming the merged Phase 5A
-[dashboard API v1](DASHBOARD_API.md). The separately identified
-[`frontend/`](../frontend/) package owns its lockfile, source, tests and versioned
-local ES module. The integration and card retain separate packaging. Current CF assessment and
-conservative cadence changes are documented in the readiness report below;
-Recorder, entity identifiers and authentication contracts are preserved.
+The Lit/TypeScript source package consumes dashboard API v1 and builds one
+versioned module into integration **0.2.0**. The single HACS Integration directory
+contains Python, compiled JS, identity metadata and licenses. Source/test files
+remain in `frontend/`; HACS does not install them. See [packaging evidence](HACS_DISTRIBUTION.md).
+Earlier snapshot/CF fixes and permission gates are preserved.
 
-For the current CF-readiness candidate use the
-[0.1.2 / 0.5.3 owner update/acceptance/rollback guide](CF_OWNER_ACCEPTANCE.md) and
-[evidence/validation](CF_READINESS_VALIDATION.md). The merged
-[snapshot fix](SNAPSHOT_FIX_VALIDATION.md) and historical Phase 6A guides retain
-their pinned artifact versions. No resource or production configuration is
-modified automatically. CF source/current-session and permission gates remain open.
+## Bundled installation and one-time resource setup
 
-## Manual development installation
+Follow [migration, updates and rollback](HACS_MIGRATION.md) for an existing entry.
+HACS adoption requires an approved public distribution; private repositories are
+unsupported. A reviewed manual preview can copy the complete integration directory
+once. Do not delete the existing entry, dashboard or card settings.
 
-The user performs these steps on a development HA installation. Nothing in the
-repository installs files on HA OS or changes dashboards/resources automatically.
+After installing the compatible pair and restarting Core, edit the existing
+NASCAR resource to `/nascar_race_center/card.js`, **JavaScript Module** (YAML
+`type: module`). Keep exactly one NASCAR resource and preserve unrelated entries.
+Reload each browser document. The non-cached loader imports this release's
+versioned/hashed static module. Future managed updates need Core restart and
+browser reload, without changing the resource URL or copying JS separately.
+Never load an old `/local/` module alongside the new loader.
 
-1. From the reviewed 0.1.2 / 0.5.3 checkout, use Node 24 and `cd frontend &&
-   npm ci && npm run build`. The committed bundle may also be used directly.
-2. Manually create `<HA config>/www/nascar-race-center/` and copy
-   `frontend/dist/nascar-race-center-card-0.5.3.js` into that directory. On HA OS,
-   `<HA config>` is ordinarily `/config`; use the installation's supported file
-   editor or file transfer method. Do not copy `node_modules`, `demo` or tests.
-3. With an administrator account, open **Settings → Dashboards → Resources**
-   (enable Advanced Mode in the profile if necessary). Add a **JavaScript Module**
-   resource with URL:
-   `/local/nascar-race-center/nascar-race-center-card-0.5.3.js`.
-   YAML-managed resource users add that same URL with `type: module` to their
-   existing resource list. Do not add the resource twice.
-4. Reload the browser, edit a dashboard and choose **NASCAR Race Center** from the
-   custom-card picker. Use its editor to select the loaded integration entry,
-   initial monitored series, initial view and optional title. Save the card.
-5. As a manual alternative, use the configuration below. Copy the exact
-   `entry_id` from the editor's authenticated entry selector/manual-ID field;
-   do not infer it from entity names. The empty default card opens an entry
-   chooser. Use the editor to persist an entry selection in Lovelace.
+For a new dashboard, choose **NASCAR Race Center** in the custom-card picker.
+Select the loaded entry, monitored series, initial view and optional title.
+The editor obtains the exact `entry_id` through authenticated HA entry discovery;
+manual configuration uses that same ID:
 
 ```yaml
 type: custom:nascar-race-center-card
@@ -183,9 +170,9 @@ reproducible commands. In the restricted prepared cloud environment use `npm ci 
 actual-card screenshots/measurements. Test adapter/fixtures live only in
 `frontend/demo`; a Python HA contract test exports/rechecks synthetic projections.
 
-Compatibility: use card 0.5.3 with integration 0.1.2 for session-state labels;
-the API v1 snapshot release extension was introduced in 0.1.1;
-update the backend first. The original API v1 began in PR #11 (`fb8d8d0`).
+Compatibility: this distribution pins card 0.6.0 to integration 0.2.0.
+The API v1 snapshot release extension began in 0.1.1; session labels in 0.1.2.
+Update the complete compatible directory and restart Core before browser reload. The original API v1 began in PR #11 (`fb8d8d0`).
 Inspected installed HA **2026.10.2** / frontend **20260930.4**, including
 [custom-card interfaces](https://github.com/home-assistant/frontend/blob/20260930.4/src/panels/lovelace/types.ts)
 and [entry discovery](https://github.com/home-assistant/frontend/blob/20260930.4/src/data/config_entries.ts).
@@ -208,14 +195,11 @@ actual card width; phones prioritize position/car/driver/start/status and expose
 measurements by horizontal scrolling or driver disclosure. See validation for
 320–1920 px viewport/container checks and screenshots and automated axe findings.
 
-This is manual development distribution, **not** a HACS dashboard-plugin release.
-The repository's existing `hacs.json` still describes the Python integration.
-`frontend/package.json`, versioned `dist` and documentation make the card build
-independently identifiable. A future separately reviewed plugin packaging/release
-workflow must establish appropriate HACS dashboard assets/metadata/repository
-rules. No second repository, public release, resource auto-registration or
-visibility change is made here. MIT remains code-only; no NASCAR logos, photos,
-sponsor graphics, video, remote fonts or controlled media are included.
+The source package is private development software; the compiled module ships in
+one Integration package. The [publication gates](HACS_DISTRIBUTION.md) remain
+open. No second repository, public release, automatic resource registration or
+visibility change is performed. MIT applies to project code; NASCAR data/media
+rights are separate. No controlled assets are included.
 
 ## Phase 5C refinements
 
