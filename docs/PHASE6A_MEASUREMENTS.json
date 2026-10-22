@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-22",
+  "timezone": "America/New_York",
+  "runtime_commit": "ec35f257ccaa37c6a4d15a26d2fd4ea6e0257972",
+  "environment": "Prepared Debian 13 x86_64 development environment; actual HA fixture server and synthetic intercepted/mock inputs. No owner hardware or NASCAR network.",
+  "backend": {
+    "DASHBOARD_PAGE_MEASUREMENTS": [
+      {
+        "history_50000_laps": {
+          "first_build_seconds": 0.4045850279999854,
+          "first_read_seconds": 0.0009550780000040504,
+          "next_read_seconds": 0.0004541740000263417,
+          "budgeted_bytes": 10749010,
+          "retained_bytes": 9948669,
+          "peak_bytes": 10394344,
+          "response_bytes": 32108,
+          "total_records": 50010
+        },
+        "analytics_60000_projected_windows": {
+          "first_build_seconds": 0.7815931860000092,
+          "first_read_seconds": 0.0007140050000202791,
+          "next_read_seconds": 0.0006063229999995201,
+          "budgeted_bytes": 19001876,
+          "retained_bytes": 17776739,
+          "peak_bytes": 18493217,
+          "response_bytes": 55150,
+          "total_records": 79316
+        }
+      }
+    ],
+    "DASHBOARD_DELIVERY_MEASUREMENTS": [
+      {
+        "seconds": [
+          0.10478477099997008,
+          0.10541655200000832,
+          0.10467102100000147,
+          0.10576241299997946,
+          0.10627691899998126
+        ],
+        "hundred_driver_payload_bytes": 70669
+      }
+    ],
+    "CF_CURSOR_MEASUREMENTS": [
+      {
+        "command": "history",
+        "records": 50028,
+        "first_seconds": 0.593504849999988,
+        "next_mean_seconds": 0.0030368316520007284,
+        "next_max_seconds": 0.0064294129999780125,
+        "retained_bytes": 10906062,
+        "max_response_bytes": 36254,
+        "continuation_gets": 0
+      },
+      {
+        "command": "analytics",
+        "records": 79324,
+        "first_seconds": 1.3115039919999845,
+        "next_mean_seconds": 0.003323263386363638,
+        "next_max_seconds": 0.007746132000022499,
+        "retained_bytes": 19086650,
+        "max_response_bytes": 217526,
+        "continuation_gets": 0
+      }
+    ]
+  },
+  "browser_two_card_100_driver_changed_updates": {
+    "chromium": {
+      "independent": true,
+      "stable": true,
+      "rowCount": 100,
+      "subscriptions": 2,
+      "idleRequests": 0,
+      "memory": 10000000,
+      "mean_ms": 1.789000000001397,
+      "max_ms": 4.599999999860302,
+      "remaining_subscriptions": 0,
+      "remaining_listeners": 0
+    },
+    "firefox": {
+      "independent": true,
+      "stable": true,
+      "rowCount": 100,
+      "subscriptions": 2,
+      "idleRequests": 0,
+      "mean_ms": 3.21,
+      "max_ms": 9,
+      "remaining_subscriptions": 0,
+      "remaining_listeners": 0
+    },
+    "webkit": {
+      "independent": true,
+      "stable": true,
+      "rowCount": 100,
+      "subscriptions": 2,
+      "idleRequests": 0,
+      "mean_ms": 2.18,
+      "max_ms": 4,
+      "remaining_subscriptions": 0,
+      "remaining_listeners": 0
+    }
+  },
+  "chromium_single_card_20_update_harness": {
+    "first_render_ms": 4.100000000093132,
+    "data_ready_ms": 867.3000000000466,
+    "update_mean_ms": 1.1150000000023284,
+    "update_max_ms": 9.600000000093132,
+    "rendered_rows": 100
+  },
+  "caveats": [
+    "Browser harness mocks HA transport and rich racing data.",
+    "Chromium heap reporting can be coarse; not process RSS or proof of a plateau.",
+    "Single-card workload includes repeated identical arrays; not comparable to two-card changed cells.",
+    "No CPU, RAM, disk growth, OS boot or physical-device timing measured on owner hardware."
+  ]
+}

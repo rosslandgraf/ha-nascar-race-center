@@ -1,5 +1,10 @@
 # Current validation report
 
+Current controlled-beta evidence: [Phase 6A validation](PHASE6A_VALIDATION.md),
+[installation](PHASE6A_INSTALLATION.md), [acceptance](PHASE6A_BETA_CHECKLIST.md)
+and [rollback](PHASE6A_ROLLBACK.md). Owner hardware/device results remain NOT TESTED.
+The earlier evidence below retains its original phase scope.
+
 Phase 3A checks and evidence limits are recorded in
 [PHASE3A_VALIDATION.md](PHASE3A_VALIDATION.md). The Phase 2 and Phase 1 reports
 below are historical records, not the current inventory or check results.
