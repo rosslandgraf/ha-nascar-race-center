@@ -251,3 +251,17 @@ The focused PR's checks and completion description record hosted workflow URLs,
 head SHA and conclusions separately from these local results. HACS remains
 conditionally skipped for the private repository with its existing brands
 exception; no visibility/branding exception was changed to claim approval.
+
+Hosted implementation validation for **`7a5611241a733867f968cd5bbd9ab2c24c7c80f7`**
+completed successfully on October 22. All six push/PR workflows passed; hosted
+Python reports **1,009 passed**, and both frontend runs passed **162 browser
+scenarios**. HACS is skipped within integration validation because the repository
+remains private; Hassfest passed. This evidence pins the tested implementation;
+the follow-up commit adds only these CI links. Current head checks remain visible
+in [PR #14](https://github.com/rosslandgraf/ha-nascar-race-center/pull/14/checks).
+
+| Hosted workflow | Push | Pull request |
+| --- | --- | --- |
+| Tests and quality | [PASS](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39784173536) | [PASS](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39784246647) |
+| Frontend quality | [PASS](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39784173965) | [PASS](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39784246749) |
+| Integration validation | [PASS](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39784173564) | [PASS](https://github.com/rosslandgraf/ha-nascar-race-center/actions/runs/39784246674) |
