@@ -576,23 +576,43 @@ test("fifteen minutes of virtual idle does not poll or allocate snapshots", asyn
   ).toBe(1);
 });
 
-test("analytics and summary labels fit narrow card containers", async ({
-  page,
-}) => {
-  await analyze(page);
-  await page
-    .getByText("Coverage and exclusions", { exact: true })
-    .first()
-    .click();
-  for (const width of [320, 375, 390, 480, 834]) {
-    await page.setViewportSize({ width, height: 1000 });
-    await noOverflow(page);
-    const select = page.getByRole("combobox", {
-      name: "Metric and measurement basis",
-    });
-    expect((await select.boundingBox())!.width).toBeLessThan(width - 32);
-  }
-});
+for (const font of ["default", "DejaVu Sans"]) {
+  test(`analytics and summary labels fit narrow card containers${font === "default" ? "" : ` with ${font}`}`, async ({
+    page,
+  }) => {
+    await analyze(page);
+    if (font !== "default")
+      await page.locator("nascar-race-center-card").evaluate((el, family) => {
+        // Match the wider Linux font that exposed WebKit's native select overflow.
+        (el as HTMLElement).style.setProperty(
+          "--paper-font-body1_-_font-family",
+          `"${family}", sans-serif`,
+        );
+      }, font);
+    await page
+      .getByText("Coverage and exclusions", { exact: true })
+      .first()
+      .click();
+    for (const width of [320, 375, 390, 480, 834]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await noOverflow(page);
+      const select = page.getByRole("combobox", {
+        name: "Metric and measurement basis",
+      });
+      expect((await select.boundingBox())!.width).toBeLessThan(width - 32);
+      // A select's border box can fit while its internal text overflows the label.
+      for (const control of [
+        page.getByRole("combobox", { name: "Known retained race" }),
+        select,
+      ]) {
+        const label = control.locator("..");
+        expect(
+          await label.evaluate((el) => el.scrollWidth),
+        ).toBeLessThanOrEqual(await label.evaluate((el) => el.clientWidth));
+      }
+    }
+  });
+}
 
 test("snapshot capacity explains reuse without allocating another selection", async ({
   page,

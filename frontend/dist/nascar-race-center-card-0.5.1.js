@@ -1088,6 +1088,9 @@ const w = {
   select {
     max-width: 100%;
     min-width: 0;
+    /* WebKit's native white-space: pre leaks selected-text overflow to the
+       parent grid even when the select's border box fits its track. */
+    white-space: normal;
   }
   .field select {
     width: 100%;

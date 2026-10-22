@@ -236,6 +236,92 @@ release packaging. No gate is closed by synthetic screenshots or passing CI.
 
 ## Hosted review checks
 
-Hosted workflow results and PR link will be recorded after the development branch
-is pushed. Local Firefox/WebKit execution remains blocked as described above;
-no unexecuted engine or physical-device acceptance is claimed.
+The original PR-creation browser limitations are superseded by the WebKit
+correction and local matrix evidence below. Final-head hosted workflow results
+are linked from [PR #13](https://github.com/rosslandgraf/ha-nascar-race-center/pull/13/checks).
+No physical-device acceptance is claimed.
+
+## WebKit overflow correction — October 22, 2026
+
+This follow-up continues PR #13 on `phase5c-dashboard-polish` from committed
+head `00ee3a3`; it supersedes the earlier local browser-download limitation.
+WebKit **26.0**, Playwright build **2215**, downloaded successfully from
+`cdn.playwright.dev` and launched/rendered locally on Debian 13. The host lacks
+root/sudo access, so missing Debian runtime libraries were downloaded and
+extracted under ignored `work/` and copied into the browser's local `sys/lib`
+directories. The local launch used `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1`
+because Playwright checks the system `ldconfig` cache for GLES, which does not
+list workspace libraries. The actual GLES library loaded and WebKit rendered;
+no browser assertions or repository configuration were bypassed. WebKit and
+Chromium first ran with the execution sandbox's network grant for local
+browser/server sockets. The initial combined run completed Chromium
+54/54, then stalled at Firefox startup because the nested command sandbox
+blocked `/proc/self/uid_map` writes (`EROFS`). A standalone Firefox launch
+succeeded outside that nested sandbox without disabling Firefox sandbox
+features. The complete matrix was then run outside the nested command sandbox;
+no test/configuration changes were made for that launch issue.
+
+### Reproduction and computed-style diagnosis
+
+The unmodified targeted test passed with this host's default OpenAI Sans font.
+Selecting **DejaVu Sans**, the wider Linux font, reproduced the hosted failure
+exactly before the CSS change: at a **320 px viewport**, preview padding leaves
+a **304 px card**, whose `ha-card.scrollWidth` was **320 px**. The added font
+variant failed the existing card-width assertion before the fix.
+
+[Computed-style measurements](PHASE5C_WEBKIT_OVERFLOW.json) record the native
+`white-space: pre` baseline and corrected layout. Both the Known retained race
+and Metric and measurement basis selects already had **236 px border boxes**,
+`width: 236px`, `min-width: 0px`, `max-width: 100%`, and parent grid tracks of
+**236 px**. Nevertheless, the labels had scroll widths of **285 / 287 px**.
+WebKit's native nonwrapping selected text contributed overflow outside the
+correctly constrained select/grid boxes. Wider glyphs made this reach the card
+boundary; further grid/fieldset minimum-width changes did not address it.
+
+The shared select rule now sets **`white-space: normal`**, allowing the native
+selected text to wrap within the existing control. Both labels then have
+**236 px client/scroll widths**; the card's inner scroll width is **302 px**
+inside its **304 px border box**. The selected text visibly wraps:
+[before](screenshots/phase5c/webkit-select-before.png) and [after](screenshots/phase5c/webkit-select-after.png). Native appearance,
+complete option labels, keyboard selection, focus styles, and intentional
+chart/table scrolling remain.
+Direct experiments with `text-overflow: ellipsis`, `overflow: hidden`, and
+`white-space: nowrap` did not fix the parent-label overflow. No extra clipping,
+relaxed width allowance, test retry, timeout increase, or skipped test was added.
+
+The regression retains every original viewport/card/select assertion and adds
+a DejaVu Sans variant plus direct scroll-width checks on both labels at all five
+existing analytics widths. The targeted WebKit regression ran first and passed
+**2/2** after the fix. The full matrix now contains **54 scenarios per engine**.
+
+### Follow-up validation
+
+Frontend ESLint/Prettier, strict TypeScript, **68 unit/component tests**, build,
+and bundle-budget/fixture-exclusion/license checks passed. The rebuilt 0.5.1
+module is **149,263 bytes raw / 37,506 bytes gzip**, SHA-256
+`dd23b8e40704f7d5b0766d5d8ac12816c08e19832e241e8d75616fd2591dae2c`.
+These measurements supersede the earlier pre-correction bundle measurements.
+Fresh Python validation also passed: Ruff lint/format, mypy (44 source files),
+and **1,007 tests in 79.22 s**. The Python suite ran outside the nested command
+sandbox so the HA fixtures could create local sockets.
+
+The complete local matrix passed **162/162 scenarios in 4.8 minutes** after
+that targeted regression, with no retries or failures:
+
+| Engine (Playwright 1.56.1 bundled builds) | Complete suite |
+| --- | --- |
+| Chromium 141.0.7390.37 / build 1194 | **54 passed** |
+| Firefox 142.0.1 / build 1495 | **54 passed** |
+| WebKit 26.0 / build 2215 | **54 passed** |
+
+All original 53 scenarios per engine remain; the additional font variant brings
+each engine to 54. Automated accessibility checks are included in these suites.
+Generated full-matrix captures/logs are retained under ignored `work/`; the two
+focused native-select screenshots and computed-style evidence are committed.
+
+Final-head hosted workflow results are linked from
+[PR #13's checks](https://github.com/rosslandgraf/ha-nascar-race-center/pull/13/checks).
+The existing HACS private-repository skip and brands exception remain. This
+correction makes no backend/API, endpoint, source-data, polling, licensing or
+packaging change; all existing data-use assumptions and physical-device/manual
+acceptance limits above remain open. No merge, deployment or Phase 6 work.
