@@ -1181,6 +1181,7 @@ const w = {
   }
   .series-label {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 3px;
   }
   .demo {
@@ -1236,6 +1237,7 @@ const w = {
   .section-head,
   .row {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: 16px;
     align-items: center;
@@ -1248,6 +1250,7 @@ const w = {
   }
   .badge {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 7px;
     border: 1px solid var(--nrc-line);
@@ -1451,6 +1454,7 @@ const w = {
   }
   .field {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 6px;
     font-size: 12px;
     color: var(--nrc-muted);

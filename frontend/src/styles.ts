@@ -174,6 +174,7 @@ export const styles = css`
   }
   .series-label {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 3px;
   }
   .demo {
@@ -229,6 +230,7 @@ export const styles = css`
   .section-head,
   .row {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: 16px;
     align-items: center;
@@ -241,6 +243,7 @@ export const styles = css`
   }
   .badge {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 7px;
     border: 1px solid var(--nrc-line);
@@ -444,6 +447,7 @@ export const styles = css`
   }
   .field {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 6px;
     font-size: 12px;
     color: var(--nrc-muted);
