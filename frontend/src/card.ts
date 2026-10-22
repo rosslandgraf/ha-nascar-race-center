@@ -30,6 +30,7 @@ import {
   numberLocale,
 } from "./format";
 import { PageView } from "./state";
+import { messages } from "./messages";
 import { styles } from "./styles";
 import {
   evidence,
@@ -43,7 +44,7 @@ import "./components/chart";
 import "./components/metric-chart";
 import type { ChartMode } from "./components/chart";
 import "./editor";
-export const VERSION = "0.5.0";
+export const VERSION = "0.5.1";
 export class NascarRaceCenterCard extends LitElement {
   static styles = styles;
   private config: CardConfig = { type: "custom:nascar-race-center-card" };
@@ -74,6 +75,8 @@ export class NascarRaceCenterCard extends LitElement {
   private detailFocus?: HTMLElement;
   private detailError?: unknown;
   private formError?: unknown;
+  private compact = false;
+  private historyKind = "all";
   private chartMode: ChartMode = "time";
   private chartWindow = 5;
   private season = new Date().getFullYear();
@@ -441,6 +444,16 @@ export class NascarRaceCenterCard extends LitElement {
     this.detailDriver = undefined;
     this.detailError = undefined;
     if (restore) this.detailFocus?.focus();
+    else if (
+      this.renderRoot
+        .querySelector(".detail-panel")
+        ?.contains(this.shadowRoot?.activeElement ?? null)
+    )
+      (
+        this.renderRoot.querySelector(
+          '.nav [aria-current="page"]',
+        ) as HTMLElement
+      )?.focus();
     this.detailFocus = undefined;
     this.requestUpdate();
   }
@@ -537,8 +550,11 @@ export class NascarRaceCenterCard extends LitElement {
         view = new PageView(command, selection);
         this.snapshots.set(key, view);
       }
-      if (analytics) this.analytics = view;
-      else this.history = view;
+      if (analytics) {
+        this.analytics = view;
+        if (!selection.windows?.includes(this.chartWindow))
+          this.chartWindow = selection.windows?.[0] ?? 5;
+      } else this.history = view;
       this.season = season;
       this.raceId = raceId;
       if (!view.current) {
@@ -567,8 +583,10 @@ export class NascarRaceCenterCard extends LitElement {
         : nothing}
     </div>`;
   }
-  private badge(text: string, tone = "neutral") {
-    return html`<span class=${`badge ${tone}`}>${text}</span>`;
+  private badge(text: string, tone = "neutral", raceFlag = false) {
+    return html`<span class=${`badge ${tone}${raceFlag ? " race-flag" : ""}`}
+      >${text}</span
+    >`;
   }
   private pager(view: PageView) {
     const p = view.current?.pagination;
@@ -587,6 +605,36 @@ export class NascarRaceCenterCard extends LitElement {
             : "No records loaded"}${view.loading ? " · Loading…" : ""}</small
         >
         <div class="actions">
+          ${view.pages.size > 1
+            ? html`<label class="field"
+                >Loaded page<select
+                  aria-label="Return to loaded page"
+                  .value=${String(p?.offset ?? 0)}
+                  ?disabled=${view.loading || view.expired}
+                  @change=${async (e: Event) => {
+                    if (!this.client) return;
+                    await view.jump(
+                      this.client,
+                      Number((e.target as HTMLSelectElement).value),
+                    );
+                    this.requestUpdate();
+                  }}
+                >
+                  ${[...view.pages.values()]
+                    .sort((a, b) => a.pagination.offset - b.pagination.offset)
+                    .map(
+                      (page) =>
+                        html`<option value=${page.pagination.offset}>
+                          ${this.formatNumber(
+                            page.pagination.offset + 1,
+                          )}–${this.formatNumber(
+                            page.pagination.offset + page.pagination.returned,
+                          )}
+                        </option>`,
+                    )}
+                </select></label
+              >`
+            : nothing}
           <button
             ?disabled=${view.loading || !view.canPrevious}
             @click=${() => void this.page(view, "previous")}
@@ -650,11 +698,11 @@ export class NascarRaceCenterCard extends LitElement {
                 ? "Next known event"
                 : "Schedule & live coverage"}
           </p>
-          <h1>
+          <h3 class="race-title">
             ${session?.run_name ??
             race?.name ??
             "Waiting for the next green flag."}
-          </h1>
+          </h3>
           <p class="hero-track">
             ${race?.track ?? "Track not reported"}${race?.season
               ? ` · ${race.season}`
@@ -662,7 +710,7 @@ export class NascarRaceCenterCard extends LitElement {
           </p>
           <div class="actions">
             ${session
-              ? this.badge(raceFlag.text, raceFlag.tone)
+              ? this.badge(raceFlag.text, raceFlag.tone, true)
               : this.badge(race?.status ?? "No active session")}${session
               ? this.badge(
                   `${label(session.status)} · ${label(session.progress)}`,
@@ -800,6 +848,38 @@ export class NascarRaceCenterCard extends LitElement {
           </button>
         </section>
       </div>
+      ${live?.leaderboard?.length
+        ? html`<section class="panel overview-field">
+            <div class="row">
+              <h3>${messages.front}</h3>
+              <button @click=${() => this.navigate("Live Timing")}>
+                Full timing tower →
+              </button>
+            </div>
+            <div class="front-grid">
+              ${live.leaderboard
+                .slice()
+                .sort(
+                  (a, b) => (a.position ?? Infinity) - (b.position ?? Infinity),
+                )
+                .slice(0, 5)
+                .map(
+                  (d) =>
+                    html`<button
+                      @click=${(e: Event) => void this.openDriver(d, e)}
+                    >
+                      <span class="muted"
+                        >P${this.formatNumber(d.position)}</span
+                      ><span class="car">${d.car_number ?? "—"}</span
+                      ><strong
+                        >${d.favorite ? "★ " : ""}${d.name ??
+                        `Driver ${d.driver_id}`}</strong
+                      >
+                    </button>`,
+                )}
+            </div>
+          </section>`
+        : nothing}
       ${!session
         ? this.state(
             "Session coverage",
@@ -829,7 +909,7 @@ export class NascarRaceCenterCard extends LitElement {
         </div>
         <div class="actions">
           ${this.badge(health.text, health.tone)}${session
-            ? this.badge(raceFlag.text, raceFlag.tone)
+            ? this.badge(raceFlag.text, raceFlag.tone, true)
             : nothing}
         </div>
       </div>
@@ -837,6 +917,7 @@ export class NascarRaceCenterCard extends LitElement {
         ? html`<nrc-leaderboard
             .rows=${live.leaderboard}
             .hass=${this.hass}
+            .compact=${this.compact}
             @driver-open=${(e: CustomEvent<Driver>) =>
               void this.openDriver(e.detail, e)}
           ></nrc-leaderboard>`
@@ -932,7 +1013,7 @@ export class NascarRaceCenterCard extends LitElement {
             </div>
             <details>
               <summary>Reported driver measurements</summary>
-              ${values(d)}
+              ${values(d, 0, numberLocale(this.hass))}
             </details>`
         : nothing}${this.detailError
         ? this.errorView(this.detailError)
@@ -946,7 +1027,11 @@ export class NascarRaceCenterCard extends LitElement {
                 ${v.current.provenance
                   ? html`<details>
                       <summary>Source provenance</summary>
-                      ${values(v.current.provenance)}
+                      ${values(
+                        v.current.provenance,
+                        0,
+                        numberLocale(this.hass),
+                      )}
                     </details>`
                   : nothing}
                 <p class="notice">
@@ -954,7 +1039,7 @@ export class NascarRaceCenterCard extends LitElement {
                   unverified.
                 </p>
                 ${v.current.records.length
-                  ? records(v.current.records)
+                  ? records(v.current.records, this.hass)
                   : this.state(
                       "No detail records",
                       "This source has no supported records for the selected collection.",
@@ -1282,9 +1367,47 @@ export class NascarRaceCenterCard extends LitElement {
       ${this.formError ? this.errorView(this.formError) : nothing}
     </form>`;
   }
+  private retainedSelections() {
+    return this.snapshots.size
+      ? html`<details class="selection-library">
+          <summary>${messages.retained}</summary>
+          <div class="actions">
+            ${[...this.snapshots.values()].map(
+              (v) =>
+                html`<button
+                  @click=${() => {
+                    this.formError = undefined;
+                    this.selectSeries(v.selection.series_id);
+                    this.season = v.selection.season!;
+                    this.raceId = String(v.selection.race_id);
+                    if (v.command === "history") this.history = v;
+                    else {
+                      this.analytics = v;
+                      if (!v.selection.windows?.includes(this.chartWindow))
+                        this.chartWindow = v.selection.windows?.[0] ?? 5;
+                    }
+                    this.navigate(
+                      v.command === "history" ? "History" : "Analytics",
+                    );
+                    this.requestUpdate();
+                  }}
+                >
+                  ${v.command === "history" ? "History" : "Analytics"} ·
+                  ${SERIES[v.selection.series_id]} · ${v.selection.season} /
+                  ${v.selection.race_id}${v.expired ? " · expired" : ""}
+                </button>`,
+            )}
+          </div>
+          <p class="muted"><small>${messages.snapshotHint}</small></p>
+        </details>`
+      : nothing;
+  }
   private renderHistory() {
     const view = this.history,
-      page = view?.current;
+      page = view?.current,
+      kind = page?.records.some((r) => r.kind === this.historyKind)
+        ? this.historyKind
+        : "all";
     return html`<div class="stack">
       <div class="section-head">
         <div>
@@ -1295,7 +1418,7 @@ export class NascarRaceCenterCard extends LitElement {
           </p>
         </div>
       </div>
-      ${this.renderForm(false)}${page
+      ${this.retainedSelections()}${this.renderForm(false)}${page
         ? html`<div class="section-head">
               <h3>
                 ${page.records.find((r) => r.kind === "weekend")?.value?.name ??
@@ -1303,17 +1426,40 @@ export class NascarRaceCenterCard extends LitElement {
               </h3>
               ${this.badge(label(page.status))}
             </div>
-            ${evidence(page, this.hass)}${resultTable(
+            ${evidence(page, this.hass)}${this.pager(view!)}${resultTable(
               page.records,
               this.hass,
             )}${page.records.length
-              ? html`<details>
-                  <summary>
-                    Explore ${page.records.length} records on this page ·
-                    metadata, stages, laps, notes & pits
-                  </summary>
-                  ${records(page.records)}
-                </details>`
+              ? html`<label class="field"
+                    >${messages.records}<select
+                      aria-label=${messages.records}
+                      .value=${kind}
+                      @change=${(e: Event) => {
+                        this.historyKind = (
+                          e.target as HTMLSelectElement
+                        ).value;
+                        this.requestUpdate();
+                      }}
+                    >
+                      <option value="all">All supported record types</option>
+                      ${[...new Set(page.records.map((r) => r.kind))].map(
+                        (kind) =>
+                          html`<option value=${kind}>${label(kind)}</option>`,
+                      )}
+                    </select></label
+                  >
+                  <details ?open=${kind !== "all"}>
+                    <summary>
+                      Explore ${page.records.length} records on this page ·
+                      metadata, stages, laps, notes & pits
+                    </summary>
+                    ${records(
+                      page.records.filter(
+                        (r) => kind === "all" || r.kind === kind,
+                      ),
+                      this.hass,
+                    )}
+                  </details>`
               : this.state(
                   "No historical records",
                   "This selection returned no records. Review dataset availability above.",
@@ -1327,7 +1473,7 @@ export class NascarRaceCenterCard extends LitElement {
           : this.state(
               "Choose a race to begin",
               "Select a season and retained race, or enter a valid manual race key.",
-            )}${view ? this.pager(view) : nothing}
+            )}${view && !page ? this.pager(view) : nothing}
     </div>`;
   }
   private renderAnalytics() {
@@ -1349,7 +1495,7 @@ export class NascarRaceCenterCard extends LitElement {
           </p>
         </div>
       </div>
-      ${this.renderForm(true)}${page
+      ${this.retainedSelections()}${this.renderForm(true)}${page
         ? html`<div class="row">
               <h3>
                 Selected race ${page.query?.key.race_id ?? "—"} · laps
@@ -1363,7 +1509,19 @@ export class NascarRaceCenterCard extends LitElement {
               drivers, comparisons and reported performance; retention is
               bounded to 1,600 records.
             </p>
-            ${evidence(page, this.hass)}
+            ${evidence(page, this.hass)}${this.pager(view!)}
+            <p class="notice" role="status">
+              Loaded record ranges:
+              ${[...view!.pages.values()]
+                .sort((a, b) => a.pagination.offset - b.pagination.offset)
+                .map(
+                  (p) =>
+                    `${this.formatNumber(p.pagination.offset + 1)}–${this.formatNumber(p.pagination.offset + p.pagination.returned)}`,
+                )
+                .join(", ")}
+              of ${this.formatNumber(page.pagination.total)}. These ranges
+              include headers and metrics, not only lap samples.
+            </p>
             <div class="filters">
               <label class="field"
                 >Chart<select
@@ -1377,7 +1535,12 @@ export class NascarRaceCenterCard extends LitElement {
                   <option value="time">Lap-time progression</option>
                   <option value="position">Position progression</option>
                   <option value="delta">Consecutive-lap change</option>
-                  <option value="window">Consecutive-window mean</option>
+                  <option
+                    value="window"
+                    ?disabled=${!page.query?.windows.length}
+                  >
+                    Consecutive-window mean
+                  </option>
                 </select></label
               >${this.chartMode === "window"
                 ? html`<label class="field"
@@ -1418,19 +1581,19 @@ export class NascarRaceCenterCard extends LitElement {
                     </h3>
                     <div class="metric-grid">
                       ${r.value?.metrics.map((m) =>
-                        metricCard(m, this.hass?.locale?.language),
+                        metricCard(m, numberLocale(this.hass)),
                       )}
                     </div>
                     <details>
                       <summary>Coverage and exclusions</summary>
-                      ${values(r.value?.coverage)}
+                      ${values(r.value?.coverage, 0, numberLocale(this.hass))}
                       <p>${label(r.value?.reason)}</p>
                     </details>
                   </section>`,
               )}${page.race_metrics?.length
               ? html`<div class="metric-grid">
                   ${page.race_metrics.map((m) =>
-                    metricCard(m, this.hass?.locale?.language),
+                    metricCard(m, numberLocale(this.hass)),
                   )}
                 </div>`
               : nothing}
@@ -1439,7 +1602,10 @@ export class NascarRaceCenterCard extends LitElement {
                 Comparisons, consecutive windows & reported performance ·
                 current page
               </summary>
-              ${records(page.records.filter((r) => r.kind !== "samples"))}
+              ${records(
+                page.records.filter((r) => r.kind !== "samples"),
+                this.hass,
+              )}
             </details>
             <details>
               <summary>Analytics caveats</summary>
@@ -1454,27 +1620,42 @@ export class NascarRaceCenterCard extends LitElement {
           : this.state(
               "Build a comparison",
               "Choose drivers, lap range, datasets and a supported window.",
-            )}${view ? this.pager(view) : nothing}
+            )}${view && !page ? this.pager(view) : nothing}
     </div>`;
   }
   render() {
     const b = this.bootstrapData,
       health = freshness(this.liveData);
-    return html`<ha-card
+    return html`<ha-card ?data-compact=${this.compact}
       ><header class="masthead">
         <div class="brand">
           <span class="brand-mark" aria-hidden="true"
             ><i></i><i></i><i></i
           ></span>
           <div>
-            <p class="brand-title">
+            <h1 class="brand-title">
               ${this.config.title ?? "NASCAR Race Center"}
-            </p>
+            </h1>
             <p class="eyebrow">Race intelligence · Home Assistant</p>
           </div>
         </div>
         ${b
           ? html`<div class="tools">
+              <label class="series-label"
+                ><span class="eyebrow">${messages.density}</span
+                ><select
+                  aria-label=${messages.density}
+                  .value=${this.compact ? "compact" : "comfortable"}
+                  @change=${(e: Event) => {
+                    this.compact =
+                      (e.target as HTMLSelectElement).value === "compact";
+                    this.requestUpdate();
+                  }}
+                >
+                  <option value="comfortable">${messages.comfortable}</option>
+                  <option value="compact">${messages.compact}</option>
+                </select></label
+              >
               <label class="series-label"
                 ><span class="eyebrow">Series</span
                 ><select
@@ -1511,7 +1692,13 @@ export class NascarRaceCenterCard extends LitElement {
             )}
           </nav>`
         : nothing}
-      <main aria-busy=${this.loading ? "true" : "false"}>
+      <main
+        @keydown=${(e: KeyboardEvent) => {
+          if (e.key === "Escape" && (this.detailDriver || this.detail))
+            this.closeDetail();
+        }}
+        aria-busy=${this.loading ? "true" : "false"}
+      >
         ${this.loading
           ? this.state(
               "Preparing your Race Center",

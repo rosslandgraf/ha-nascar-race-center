@@ -15,7 +15,7 @@ concurrency:
 jobs:
   frontend:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: frontend
@@ -35,8 +35,8 @@ jobs:
       - run: npm run build && npm run check:bundle
       - name: Verify committed bundle is reproducible
         run: git diff --exit-code -- dist/
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium, Firefox and WebKit
+        run: npx playwright install --with-deps chromium firefox webkit
       - name: Browser rendering and accessibility
         env:
           CHROMIUM_PATH: bundled
@@ -45,8 +45,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: phase5b-browser-validation
+          name: phase5c-browser-validation
           path: |
-            docs/screenshots/phase5b/
+            docs/screenshots/phase5c/
             frontend/test-results/
           retention-days: 14

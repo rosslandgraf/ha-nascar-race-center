@@ -121,7 +121,11 @@ export class MetricChart extends LitElement {
       :host {
         display: block;
       }
+      .comparison-scroll {
+        overflow-x: auto;
+      }
       .bars {
+        min-width: 560px;
         width: 100%;
         display: block;
       }
@@ -187,24 +191,31 @@ export class MetricChart extends LitElement {
           ${label(selected.method)}. Loaded observations only.</small
         >
       </p>
-      <svg
-        class="bars"
-        viewBox=${`0 0 700 ${selected.observations.length * 44 + 20}`}
-        role="img"
-        aria-label=${`${selected.name} comparison; exact values in the table below.`}
+      <div
+        class="comparison-scroll"
+        tabindex="0"
+        role="region"
+        aria-label="Summary comparison plot. Scroll for readable labels."
       >
-        <line
-          class="baseline"
-          x1=${x(0)}
-          x2=${x(0)}
-          y1="0"
-          y2=${selected.observations.length * 44}
-        ></line>
-        ${selected.observations.map(
-          (o, i) =>
-            svg`<text class="axis" x="8" y=${i * 44 + 24}>Driver ${o.driver}</text>${o.value !== null ? svg`<rect class="bar" x=${Math.min(x(0), x(o.value))} y=${i * 44 + 7} width=${Math.max(1, Math.abs(x(o.value) - x(0)))} height="25" rx="3"></rect>` : svg`<text class="axis" x="165" y=${i * 44 + 24}>Unavailable</text>`}<text class="axis" x="620" y=${i * 44 + 24}>${number(o.value, this.locale, 3)}</text>`,
-        )}
-      </svg>
+        <svg
+          class="bars"
+          viewBox=${`0 0 700 ${selected.observations.length * 44 + 20}`}
+          role="img"
+          aria-label=${`${selected.name} comparison; exact values in the table below.`}
+        >
+          <line
+            class="baseline"
+            x1=${x(0)}
+            x2=${x(0)}
+            y1="0"
+            y2=${selected.observations.length * 44}
+          ></line>
+          ${selected.observations.map(
+            (o, i) =>
+              svg`<text class="axis" x="8" y=${i * 44 + 24}>Driver ${o.driver}</text>${o.value !== null ? svg`<rect class="bar" x=${Math.min(x(0), x(o.value))} y=${i * 44 + 7} width=${Math.max(1, Math.abs(x(o.value) - x(0)))} height="25" rx="3"></rect>` : svg`<text class="axis" x="165" y=${i * 44 + 24}>Unavailable</text>`}<text class="axis" x="620" y=${i * 44 + 24}>${number(o.value, this.locale, 3)}</text>`,
+          )}
+        </svg>
+      </div>
       <div
         class="table-scroll"
         tabindex="0"

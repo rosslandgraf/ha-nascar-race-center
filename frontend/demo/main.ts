@@ -4,11 +4,12 @@ import type { Section } from "../src/types";
 const params = new URLSearchParams(location.search);
 const resource =
   params.get("bundle") === "true"
-    ? "/dist/nascar-race-center-card-0.5.0.js"
+    ? "/dist/nascar-race-center-card-0.5.1.js"
     : "/src/card.ts";
 await import(/* @vite-ignore */ resource);
 const Card = customElements.get("nascar-race-center-card")!;
 const hass = new MockHass();
+if (params.get("loading") === "true") hass.delay = 2000;
 const card = new Card() as NascarRaceCenterCard;
 if (params.get("state")) hass.connection.availability = params.get("state")!;
 if (params.get("admin") === "false") hass.user.is_admin = false;

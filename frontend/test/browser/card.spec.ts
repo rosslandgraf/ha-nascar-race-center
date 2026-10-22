@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import type { Live, Envelope } from "../../src/types";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
-const screenshots = "../docs/screenshots/phase5b";
+const screenshots = "../work/phase5b-regression";
 async function open(page: Page, section = "Race Center") {
   await page.goto("/demo/?section=" + encodeURIComponent(section));
   await expect(
@@ -235,7 +235,7 @@ test("versioned production bundle, no external requests, and render measurements
     };
   });
   expect(
-    requests.some((url) => url.includes("nascar-race-center-card-0.5.0.js")),
+    requests.some((url) => url.includes("nascar-race-center-card-0.5.1.js")),
   ).toBe(true);
   expect(requests.every((url) => new URL(url).hostname === "127.0.0.1")).toBe(
     true,
