@@ -6,6 +6,12 @@ Phase 5C refines the existing custom Lovelace card, consuming the merged Phase 5
 local ES module. Python integration packaging, cadence, entities, Recorder,
 automation and authentication behavior are unchanged.
 
+For the owner-operated HA OS beta, use [Phase 6A installation](PHASE6A_INSTALLATION.md),
+[acceptance](PHASE6A_BETA_CHECKLIST.md) and [rollback](PHASE6A_ROLLBACK.md). They pin
+the reviewed 0.5.1 hash, require backup/conflict checks and a separate dashboard,
+and describe the production demo's deliberately unavailable live/lap sections.
+No resource or production configuration is modified automatically.
+
 ## Manual development installation
 
 The user performs these steps on a development HA installation. Nothing in the
@@ -177,7 +183,7 @@ No private HA frontend imports or external helper dependency are used.
 
 Target current evergreen browsers with custom elements, Shadow DOM, ES2022,
 Resize/container CSS and `color-mix` (Chrome/Edge 111+, Firefox 113+, Safari 16.4+;
-local Phase 5C validation uses installed Chromium; hosted CI runs Chromium, Firefox and WebKit, with executed results recorded in PHASE5C_VALIDATION.md). No legacy browser polyfill/download is supplied.
+final Phase 5C local and hosted checks exercised Chromium, Firefox and WebKit; see PHASE5C_VALIDATION.md and the independent Phase 6A rerun). No legacy browser polyfill/download is supplied.
 
 ## Accessibility, responsive behavior and distribution
 

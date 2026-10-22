@@ -1,6 +1,6 @@
 # NASCAR Race Center
 
-A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phases 1–3D-A are merged; Phase 3D-B adaptive polling is prepared for review, with live source validation and release gates outstanding.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
+A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phases 1–5C are merged. Phase 6A prepares a controlled Demonstration-only beta for owner review; installation, physical acceptance and release gates remain open.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
 
 The long-term target includes race-weekend schedules, timing/scoring, favorite drivers, championship points, historical analytics, automations and an optional responsive dashboard. See the complete [specification](NASCAR_Race_Center_Codex_Brief.md) and [phased roadmap](ROADMAP.md).
 
@@ -12,7 +12,11 @@ blocked at proxy CONNECT, before any NASCAR response. The separately supplied [o
 corroborates structures but exposes conflicting contexts; active-session behavior
 and permission remain unverified. See [Phase 3B evidence](docs/PHASE3B_EVIDENCE.md).
 
-Latest review: [Phase 3D-B adaptive polling validation](docs/PHASE3DB_VALIDATION.md),
+Latest review: [Phase 6A beta validation](docs/PHASE6A_VALIDATION.md),
+[beginner installation](docs/PHASE6A_INSTALLATION.md),
+[acceptance checklist](docs/PHASE6A_BETA_CHECKLIST.md),
+[update and rollback](docs/PHASE6A_ROLLBACK.md). No owner installation is performed.
+Earlier evidence: [Phase 3D-B adaptive polling validation](docs/PHASE3DB_VALIDATION.md),
 [polling targets and authorization boundary](docs/POLLING.md),
 [Phase 3D-A compatibility](docs/PHASE3DA_VALIDATION.md),
 with a future [authorized HA OS CF test procedure](docs/CF_LIVE_VALIDATION.md).
@@ -29,7 +33,11 @@ with a future [authorized HA OS CF test procedure](docs/CF_LIVE_VALIDATION.md).
 - Race leader, reported lap totals/remaining laps and evidence-limited session progress; favorite-driver live sensors independent of the reference directory.
 - Mocked provider and Home Assistant lifecycle tests, Ruff/mypy checks, Hassfest and HACS validation workflows.
 
-Phase 3B adds embedded pit/current-stage observations and conservative standalone scoring adapters; live association of standalone feeds remains blocked where identity/freshness is unproven. Phase 3C adds opt-in racing events and user-enabled notification/lighting blueprints. Phases 4A/4B add bounded on-demand historical data and evidence-limited analytics. Phase 5A adds the [authenticated dashboard API v1](docs/DASHBOARD_API.md) for cached bootstrap, schedule navigation, live subscriptions and paged history/analytics. It requires an active Home Assistant administrator. Phase 5A is reviewed and merged in PR #11 (`fb8d8d0`). Phase 5B adds the [separate custom card](docs/FRONTEND.md); Phase 5C retains additional device and interaction polish. The [validation report](docs/VALIDATION.md) records precisely which checks ran; configured CI is not a claim that every check passed. Real CF response schemas, cancellation/status fields and timestamp semantics remain unverified; [schema evidence](docs/SCHEMA_EVIDENCE.md) distinguishes community references from current service validation.
+Phase 3B adds embedded pit/current-stage observations and conservative standalone scoring adapters; live association of standalone feeds remains blocked where identity/freshness is unproven. Phase 3C adds opt-in racing events and user-enabled notification/lighting blueprints. Phases 4A/4B add bounded on-demand historical data and evidence-limited analytics. Phase 5A adds the [authenticated dashboard API v1](docs/DASHBOARD_API.md) for cached bootstrap, schedule navigation, live subscriptions and paged history/analytics. It requires an active Home Assistant administrator. Phase 5A is reviewed and merged in PR #11 (`fb8d8d0`). Phases 5B/5C deliver the [separate custom card 0.5.1](docs/FRONTEND.md), responsive/interaction refinements and three-engine automated checks. Physical-device acceptance remains in the Phase 6A checklist. The [validation report](docs/VALIDATION.md) records precisely which checks ran; configured CI is not a claim that every check passed. Real CF response schemas, cancellation/status fields and timestamp semantics remain unverified; [schema evidence](docs/SCHEMA_EVIDENCE.md) distinguishes community references from current service validation.
+
+## Controlled beta installation
+
+For an approved owner beta, follow the complete [Phase 6A installation guide](docs/PHASE6A_INSTALLATION.md) before copying files or restarting HA OS. It pins the reviewed commit and artifact hashes, requires a full backup and recovery route, preserves household configuration and creates a separate dashboard. [Rollback](docs/PHASE6A_ROLLBACK.md) separates card removal from integration recovery. No installation, production change or restart is authorized merely by this documentation.
 
 ## Development installation
 

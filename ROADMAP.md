@@ -1,6 +1,6 @@
 # Phased implementation roadmap
 
-The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 5B are reviewed and merged into `main`, including PR #12 (`177f81c`) and the observed API reference package. Phase 5C starts from that merge and preserves its 1,007-test Python baseline. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
+The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 5C are reviewed and merged into `main`, including PR #13 (`ec35f25`) and the observed API reference package. Phase 6A starts from that merge and preserves its 1,007-test Python baseline, adding two acceptance journeys. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
 ## Phase 1 — Foundation and feasibility
 
@@ -157,7 +157,7 @@ extra Recorder rows, frontend or authenticated transport is introduced.
 **Gates:** source units, conditions, sentinel meanings, official classification,
 cross-context historical coverage and NASCAR data-use remain unverified. No tire
 strategy, pit-driver join, rating formula, invented score or championship standings.
-Phases 5A and 5B are merged. Phase 5C refinement is implemented for independent review; Phase 6 remains deferred.
+Phases 5A–5C are merged. Phase 6A beta procedures are prepared for review below; Phase 6B and public release remain deferred.
 
 ## Phase 5A — Authenticated dashboard data interface
 
@@ -183,13 +183,13 @@ policy if separately authorized, and the visual frontend. Phase 5B below impleme
 
 **Boundaries:** one selected-series subscription; authenticated HA transport only; exact immutable snapshot offsets, two retained selections and eight cached pages/view; no NASCAR polling, backend contract change, new entities/Recorder rows, controlled assets, production installation or resource registration. Frontend CI/lockfile/versioned bundle are separate from existing integration/HACS packaging.
 
-**Remaining:** Phase 5C physical-device/additional-browser/assistive-reader and interaction polish, broader localization and record presentation. NASCAR rights, active-source units/semantics, public HACS packaging and release gates remain open. Phase 5C is implemented below; Phase 6 is not begun.
+**Remaining:** physical-device/assistive-reader acceptance, broader localization and rare-record presentation. NASCAR rights, active-source units/semantics, public HACS packaging and release gates remain open. Phase 5C is merged below; Phase 6A prepares the controlled offline beta.
 
 ## Phase 5C — Dashboard refinement and expanded verification
 
-**Status:** implemented for independent review from merged Phase 5B. See
+**Status:** reviewed and merged in PR #13 (`ec35f25`) from Phase 5B. See
 [Phase 5C validation](docs/PHASE5C_VALIDATION.md) for executed checks, screenshots,
-measurements and explicit limitations. No merge, deployment or release is included.
+measurements and explicit limitations. Deployment and release remain unperformed.
 
 **Delivered:** card-local comfortable/compact density; responsive five-view
 navigation; pinned, accessible timing identity/columns; keyboard driver movement
@@ -201,8 +201,8 @@ remains a separately versioned reproducible local module over API v1.
 
 **Acceptance limits:** browser rendering and mocked lifecycle checks do not close
 physical-device/HA OS/companion WebView or VoiceOver/TalkBack acceptance. Those
-remain exact manual Phase 6A checklist items, alongside translations, source
-rights/semantics/cadence and separate HACS distribution gates. Phase 6 has not begun.
+remain exact manual [Phase 6A checklist](docs/PHASE6A_BETA_CHECKLIST.md) items,
+alongside translations, source rights/semantics/cadence and separate HACS distribution gates.
 
 ## Phase 5 — Premium Dashboard and dedicated data interface
 
@@ -212,9 +212,31 @@ rights/semantics/cadence and separate HACS distribution gates. Phase 6 has not b
 
 **Acceptance:** browser/accessibility tests and screenshots at phone, desktop and wall-tablet sizes; large data views avoid state-attribute inflation; card distribution and integration distribution validated independently. No media proxying, restricted logos, photos or video included.
 
+## Phase 6A — Controlled offline beta readiness
+
+**Status:** prepared for independent review from merged Phase 5C. See the
+[installation guide](docs/PHASE6A_INSTALLATION.md),
+[checkable acceptance matrix](docs/PHASE6A_BETA_CHECKLIST.md),
+[update/rollback procedure](docs/PHASE6A_ROLLBACK.md) and
+[executed validation](docs/PHASE6A_VALIDATION.md).
+
+**Delivered:** compatibility/security/lifecycle review; pinned runtime artifact
+hashes; full-backup verification and independent recovery prerequisites;
+conflict-safe manual integration/resource installation and separate dashboard;
+accurate production-demo expectations; observational household/CPU/memory/Recorder/
+browser baselines; explicit NOT TESTED physical/device/accessibility acceptance;
+two actual-HA authenticated demo install/options/reload/removal smoke journeys.
+Production behavior, API permissions, source authorization and card 0.5.1 are unchanged.
+
+**Gates:** owner installation/restart approval, actual HA OS compatibility,
+backup/recovery verification and all unperformed owner/device checks remain open.
+Readiness to attempt an offline beta does not require or establish CF/data/public
+release permission. No owner installation, deployment, UniFi change, merge,
+release, visibility change or HACS publication is included. Phase 6B is not begun.
+
 ## Phase 6 — Beta and release readiness
 
-**Depends on:** reviewed prior phases and resolved public distribution/data permissions.
+**Depends on:** reviewed prior phases; public distribution/data permissions must be resolved before the public release portion. Phase 6A offline preparation is scoped separately above.
 
 **Work:** supported HA/Python matrix; upgrade/migration/uninstall checks; replay/end-to-end tests; diagnostics/redaction audit; translation coverage; polling/cache/storage budgets; authorized branding submission; external beta; release notes; security reporting; integration/card release automation and HACS documentation.
 
@@ -256,7 +278,9 @@ source/live/data-use and release gates above still apply.
 - [ ] Historical cross-context coverage, source units/conditions and semantic acceptance.
 - [x] Authenticated dedicated dashboard transport v1 (Phase 5A, reviewed and merged).
 - [x] Functional premium dashboard and separate frontend package (Phase 5B, merged).
-- [x] Responsive/interaction polish and expanded automated verification (Phase 5C, for review).
-- [ ] Physical devices, assistive-reader acceptance and remaining Phase 6A matrix (see Phase 5C validation).
-- [ ] Beta & Release Readiness: compatibility matrix, beta feedback, translations, diagnostics and release workflows (Phase 6).
+- [x] Responsive/interaction polish and expanded automated verification (Phase 5C, merged PR #13).
+- [x] Controlled offline beta installation, backup, rollback and automated acceptance preparation (Phase 6A, for review).
+- [ ] Physical devices, assistive-reader acceptance and remaining Phase 6A matrix (see Phase 6A checklist).
+- [ ] Owner HA OS beta installation/acceptance and household reliability sign-off (Phase 6A manual tests NOT TESTED).
+- [ ] Remaining Beta & Release Readiness: beta feedback, translations and release workflows (later separately authorized Phase 6 work).
 - [ ] HACS-ready distribution: permission/asset review, branding, no validation exceptions, distinct integration/card artifacts and explicit release authorization (Phase 6).
