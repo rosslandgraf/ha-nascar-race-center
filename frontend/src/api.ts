@@ -41,7 +41,7 @@ const hints: Record<string, string> = {
   snapshot_changed:
     "The source changed while paging. Restart the selection to avoid mixing records.",
   snapshot_limit:
-    "Snapshot capacity is in use (two per user, four globally). Reuse an open selection or wait up to five minutes before retrying.",
+    "Active selections are using the snapshot budget. Close an unused selection or card, then retry.",
   request_limit:
     "Too many simultaneous requests. Wait for the current request to finish, then retry.",
   rate_limited: "Request limit reached. Wait at least 10 seconds, then retry.",
@@ -125,19 +125,34 @@ function laneFor(connection: Connection, entry: string) {
 }
 export class DashboardClient {
   private readonly controller = new AbortController();
+  private readonly snapshots = new Set<string>();
+  private readonly releases = new Map<string, Promise<void>>();
   dispose() {
     this.controller.abort();
+    for (const token of this.snapshots)
+      void this.releaseSnapshot(token).catch(() => undefined);
+  }
+  releaseSnapshot(snapshot: string): Promise<void> {
+    const pending = this.releases.get(snapshot);
+    if (pending) return pending;
+    if (!this.snapshots.has(snapshot)) return Promise.resolve();
+    const work = this.paced(async () => {
+      await this.hass.callWS(this.message("release_snapshot", { snapshot }));
+      this.snapshots.delete(snapshot);
+    }, true).finally(() => this.releases.delete(snapshot));
+    this.releases.set(snapshot, work);
+    return work;
   }
   constructor(
     public hass: Hass,
     public entry: string,
     private active: () => boolean = () => true,
   ) {}
-  private async paced<T>(work: () => Promise<T>): Promise<T> {
+  private async paced<T>(work: () => Promise<T>, cleanup = false): Promise<T> {
     const lane = laneFor(this.hass.connection, this.entry);
     const run = lane.tail.then(async () => {
       const delay = Math.max(0, 370 - (Date.now() - lane.last));
-      if (this.controller.signal.aborted)
+      if (!cleanup && this.controller.signal.aborted)
         throw new DashboardError("connection_error");
       if (delay)
         await new Promise<void>((resolve, reject) => {
@@ -149,11 +164,12 @@ export class DashboardClient {
             this.controller.signal.removeEventListener("abort", stop);
             resolve();
           }, delay);
-          this.controller.signal.addEventListener("abort", stop, {
-            once: true,
-          });
+          if (!cleanup)
+            this.controller.signal.addEventListener("abort", stop, {
+              once: true,
+            });
         });
-      if (this.controller.signal.aborted || !this.active())
+      if (!cleanup && (this.controller.signal.aborted || !this.active()))
         throw new DashboardError("connection_error");
       lane.last = Date.now();
       return work();
@@ -175,10 +191,12 @@ export class DashboardClient {
   async request<T>(
     command: string,
     params: Record<string, unknown> = {},
+    active: () => boolean = () => true,
   ): Promise<T> {
-    const wire = await this.paced(() =>
-      this.hass.callWS<unknown>(this.message(command, params)),
-    );
+    const wire = await this.paced(() => {
+      if (!active()) throw new DashboardError("connection_error");
+      return this.hass.callWS<unknown>(this.message(command, params));
+    });
     return decode<T>(wire, this.entry).data;
   }
   async bootstrap(): Promise<Bootstrap> {
@@ -238,49 +256,70 @@ export class DashboardClient {
     selection: PageSelection,
     offset = 0,
     snapshot?: string,
+    active: () => boolean = () => true,
   ): Promise<Page> {
-    const p = await this.request<Page>(command, {
-      ...selection,
-      offset,
-      limit: 200,
-      ...(snapshot ? { snapshot } : {}),
-    });
-    if (command === "analytics" && p.contract_version !== 1)
-      throw new DashboardError("api_version");
-    const key =
-      command === "history"
-        ? p.race
-        : command === "analytics"
-          ? p.query?.key
-          : undefined;
+    const p = await this.request<Page>(
+      command,
+      {
+        ...selection,
+        offset,
+        limit: 200,
+        ...(snapshot ? { snapshot } : {}),
+      },
+      active,
+    );
     if (
       (command === "history" || command === "analytics") &&
-      (!key ||
-        key.series_id !== selection.series_id ||
-        key.season !== selection.season ||
-        key.race_id !== String(selection.race_id))
-    )
-      throw new DashboardError("invalid_response");
-    const page = p.pagination;
-    if (
-      !page ||
-      page.offset !== offset ||
-      !Array.isArray(p.records) ||
-      p.records.length > 200 ||
-      page.returned !== p.records.length ||
-      !/^([a-f0-9]{64})$/.test(page.snapshot) ||
-      !Number.isInteger(page.total) ||
-      page.total < offset + p.records.length ||
-      (snapshot && page.snapshot !== snapshot) ||
-      (page.next_offset !== null &&
-        (page.next_offset !== offset + p.records.length ||
-          page.next_offset <= offset)) ||
-      page.complete !== (page.next_offset === null)
-    )
-      throw new DashboardError("invalid_response");
-    if (command === "live_driver" || command === "live_scoring")
-      p.records = p.records.map((row) => ({ ...row, kind: "detail" }));
-    return p;
+      /^[a-f0-9]{64}$/.test(p.pagination?.snapshot)
+    ) {
+      this.snapshots.add(p.pagination.snapshot);
+      if (this.controller.signal.aborted || !this.active()) {
+        await this.releaseSnapshot(p.pagination.snapshot);
+        throw new DashboardError("connection_error");
+      }
+    }
+    try {
+      if (command === "analytics" && p.contract_version !== 1)
+        throw new DashboardError("api_version");
+      const key =
+        command === "history"
+          ? p.race
+          : command === "analytics"
+            ? p.query?.key
+            : undefined;
+      if (
+        (command === "history" || command === "analytics") &&
+        (!key ||
+          key.series_id !== selection.series_id ||
+          key.season !== selection.season ||
+          key.race_id !== String(selection.race_id))
+      )
+        throw new DashboardError("invalid_response");
+      const page = p.pagination;
+      if (
+        !page ||
+        page.offset !== offset ||
+        !Array.isArray(p.records) ||
+        p.records.length > 200 ||
+        page.returned !== p.records.length ||
+        !/^([a-f0-9]{64})$/.test(page.snapshot) ||
+        !Number.isInteger(page.total) ||
+        page.total < offset + p.records.length ||
+        (snapshot && page.snapshot !== snapshot) ||
+        (page.next_offset !== null &&
+          (page.next_offset !== offset + p.records.length ||
+            page.next_offset <= offset)) ||
+        page.complete !== (page.next_offset === null)
+      )
+        throw new DashboardError("invalid_response");
+      if (command === "live_driver" || command === "live_scoring")
+        p.records = p.records.map((row) => ({ ...row, kind: "detail" }));
+      return p;
+    } catch (error) {
+      if (!snapshot && ["history", "analytics"].includes(command))
+        await this.releaseSnapshot(p.pagination?.snapshot);
+      throw error;
+    }
   }
   schedule(selection: PageSelection, offset = 0, snapshot?: string) {
     return this.page("schedule", selection, offset, snapshot);

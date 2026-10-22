@@ -17,6 +17,7 @@ import {
   DashboardError,
   discoverEntries,
   errorMessage,
+  errorCode,
   requestId,
 } from "./api";
 import {
@@ -29,7 +30,11 @@ import {
   number,
   numberLocale,
 } from "./format";
-import { PageView } from "./state";
+import {
+  PageView,
+  registerSnapshotCleanup,
+  releaseUnusedSnapshot,
+} from "./state";
 import { messages } from "./messages";
 import { styles } from "./styles";
 import {
@@ -44,7 +49,7 @@ import "./components/chart";
 import "./components/metric-chart";
 import type { ChartMode } from "./components/chart";
 import "./editor";
-export const VERSION = "0.5.1";
+export const VERSION = "0.5.2";
 export class NascarRaceCenterCard extends LitElement {
   static styles = styles;
   private config: CardConfig = { type: "custom:nascar-race-center-card" };
@@ -74,6 +79,9 @@ export class NascarRaceCenterCard extends LitElement {
   private detailDriver?: Driver;
   private detailFocus?: HTMLElement;
   private detailError?: unknown;
+  private detailEmpty?: string;
+  private submitting = false;
+  private unregisterSnapshots?: () => void;
   private formError?: unknown;
   private compact = false;
   private historyKind = "all";
@@ -176,6 +184,8 @@ export class NascarRaceCenterCard extends LitElement {
   private clearRuntime() {
     this.epoch++;
     this.stopLive();
+    this.unregisterSnapshots?.();
+    this.unregisterSnapshots = undefined;
     this.client?.dispose();
     this.client = undefined;
     this.currentRace = undefined;
@@ -188,6 +198,7 @@ export class NascarRaceCenterCard extends LitElement {
     this.detail = undefined;
     this.detailDriver = undefined;
     this.detailError = undefined;
+    this.detailEmpty = undefined;
     this.detailFocus = undefined;
     for (const p of [...this.schedules.values(), ...this.snapshots.values()])
       p.invalidate();
@@ -243,6 +254,22 @@ export class NascarRaceCenterCard extends LitElement {
         () => epoch === this.epoch && this.isConnected,
       );
       this.client = client;
+      this.unregisterSnapshots = registerSnapshotCleanup(client, async () => {
+        if (epoch !== this.epoch) return false;
+        const visible =
+          this.section === "History"
+            ? this.history
+            : this.section === "Analytics"
+              ? this.analytics
+              : undefined;
+        const idle = [...this.snapshots].find(
+          ([, view]) => view !== visible && !view.loading,
+        );
+        if (!idle) return false;
+        await this.discardSnapshot(...idle);
+        this.requestUpdate();
+        return true;
+      });
       const data = await client.bootstrap();
       if (epoch !== this.epoch) return;
       this.bootstrapData = data;
@@ -362,6 +389,21 @@ export class NascarRaceCenterCard extends LitElement {
     if (section === this.section) return;
     const wasLive = ["Race Center", "Live Timing"].includes(this.section);
     this.section = section;
+    const retained =
+      section === "History"
+        ? this.history
+        : section === "Analytics"
+          ? this.analytics
+          : undefined;
+    if (retained) {
+      const key = [...this.snapshots].find(
+        ([, view]) => view === retained,
+      )?.[0];
+      if (key) {
+        this.snapshots.delete(key);
+        this.snapshots.set(key, retained);
+      }
+    }
     this.closeDetail(false);
     if (wasLive !== ["Race Center", "Live Timing"].includes(section))
       this.syncLive();
@@ -443,6 +485,7 @@ export class NascarRaceCenterCard extends LitElement {
     this.detail = undefined;
     this.detailDriver = undefined;
     this.detailError = undefined;
+    this.detailEmpty = undefined;
     if (restore) this.detailFocus?.focus();
     else if (
       this.renderRoot
@@ -459,9 +502,22 @@ export class NascarRaceCenterCard extends LitElement {
   }
   private async loadDetail(collection: string, scoring = false) {
     if (!this.client) return;
+    if (
+      !this.liveData?.identity.race_id ||
+      this.liveData.availability !== "ok"
+    ) {
+      this.closeDetail(false);
+      this.detailEmpty =
+        this.liveData?.availability === "no_active_session"
+          ? "No active session. Live observations will be available when a matching race is reported."
+          : "Live observations are unavailable for the current source. Wait for a matching, fresh race observation.";
+      this.requestUpdate();
+      return;
+    }
     const epoch = this.epoch;
     try {
       this.detailError = undefined;
+      this.detailEmpty = undefined;
       const selection: PageSelection = { series_id: this.series, collection };
       if (!scoring)
         selection.driver_id = requestId(
@@ -488,7 +544,10 @@ export class NascarRaceCenterCard extends LitElement {
   }
   private async submit(event: SubmitEvent, analytics = false) {
     event.preventDefault();
-    if (!this.client) return;
+    if (!this.client || this.submitting) return;
+    this.submitting = true;
+    const client = this.client;
+    const epoch = this.epoch;
     const form = event.target as HTMLFormElement;
     const data = new FormData(form);
     try {
@@ -544,12 +603,22 @@ export class NascarRaceCenterCard extends LitElement {
       let view = this.snapshots.get(key);
       if (!view) {
         for (const [k, v] of this.snapshots)
-          if (v.expired || (!v.loading && !v.current)) this.snapshots.delete(k);
-        if (this.snapshots.size >= 2)
-          throw new DashboardError("snapshot_limit");
+          if (v.expired || (!v.loading && !v.current))
+            await this.discardSnapshot(k, v);
+        if (this.snapshots.size >= 2) {
+          const [k, v] =
+            [...this.snapshots].find(
+              ([, candidate]) => candidate.command === command,
+            ) ?? this.snapshots.entries().next().value!;
+          await this.discardSnapshot(k, v);
+        }
+        if (epoch !== this.epoch) return;
         view = new PageView(command, selection);
         this.snapshots.set(key, view);
       }
+      // Touch the retained selection so eviction keeps the most recently used.
+      this.snapshots.delete(key);
+      this.snapshots.set(key, view);
       if (analytics) {
         this.analytics = view;
         if (!selection.windows?.includes(this.chartWindow))
@@ -558,15 +627,31 @@ export class NascarRaceCenterCard extends LitElement {
       this.season = season;
       this.raceId = raceId;
       if (!view.current) {
-        const task = view.load(this.client);
+        const task = view.load(client);
         this.requestUpdate();
         await task;
+        if (epoch !== this.epoch) return;
+        // Ask a cooperating card on this socket/entry to release one hidden,
+        // idle selection, then make one paced retry of the submitted choice.
+        if (errorCode(view.error) === "snapshot_limit") {
+          if (await releaseUnusedSnapshot(client)) {
+            if (epoch === this.epoch) await view.load(client);
+          }
+        }
       }
-      this.requestUpdate();
+      if (epoch === this.epoch) this.requestUpdate();
     } catch (error) {
-      this.formError = error;
+      if (epoch === this.epoch) this.formError = error;
+    } finally {
+      this.submitting = false;
       this.requestUpdate();
     }
+  }
+  private async discardSnapshot(key: string, view: PageView) {
+    this.snapshots.delete(key);
+    if (this.history === view) this.history = undefined;
+    if (this.analytics === view) this.analytics = undefined;
+    await view.invalidate();
   }
   private state(title: string, message: string, loading = false) {
     return html`<div class=${`state${loading ? " loading" : ""}`} role="status">
@@ -575,8 +660,21 @@ export class NascarRaceCenterCard extends LitElement {
     </div>`;
   }
   private errorView(error: unknown, retry?: () => void) {
-    return html`<div class="state error" role="alert">
-      <h3>Unable to load this view</h3>
+    const calm = [
+      "no_active_session",
+      "no_records",
+      "not_reported",
+      "unavailable",
+      "snapshot_expired",
+      "snapshot_invalid",
+      "snapshot_changed",
+      "snapshot_limit",
+    ].includes(errorCode(error));
+    return html`<div
+      class=${calm ? "state" : "state error"}
+      role=${calm ? "status" : "alert"}
+    >
+      <h3>${calm ? "Selection unavailable" : "Unable to load this view"}</h3>
       <p>${errorMessage(error)}</p>
       ${retry
         ? html`<div><button @click=${retry}>Retry / reconnect</button></div>`
@@ -963,7 +1061,7 @@ export class NascarRaceCenterCard extends LitElement {
   private renderDetail() {
     const d = this.detailDriver,
       v = this.detail;
-    if (!d && !v && !this.detailError) return nothing;
+    if (!d && !v && !this.detailError && !this.detailEmpty) return nothing;
     return html`<section
       class="panel stack detail-panel"
       aria-label="Driver and scoring details"
@@ -1015,6 +1113,8 @@ export class NascarRaceCenterCard extends LitElement {
               <summary>Reported driver measurements</summary>
               ${values(d, 0, numberLocale(this.hass))}
             </details>`
+        : nothing}${this.detailEmpty
+        ? this.state("No live observations", this.detailEmpty)
         : nothing}${this.detailError
         ? this.errorView(this.detailError)
         : nothing}${v
@@ -1351,15 +1451,16 @@ export class NascarRaceCenterCard extends LitElement {
         <small
           >Manual keys permit valid selections outside the retained schedule;
           endpoint coverage is unverified across seasons. Datasets are requested
-          only on submission. At most two five-minute snapshots per user, four
-          globally.</small
+          only on submission. Recent selections are retained for reuse; older
+          selections are released as you explore.</small
         >
       </p>
       <div>
         <button
           class="primary"
           type="submit"
-          ?disabled=${(analytics ? this.analytics : this.history)?.loading}
+          ?disabled=${this.submitting ||
+          (analytics ? this.analytics : this.history)?.loading}
         >
           ${analytics ? "Analyze selection" : "Load race records"}
         </button>

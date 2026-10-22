@@ -235,6 +235,9 @@ class DashboardRuntime:
         )
         if offset and not snapshot:
             raise PageError("snapshot_required")
+        if command == "release_snapshot":
+            self.snapshots.release_token(msg["snapshot"], self, connection)
+            return {}
         if command == "bootstrap":
             return bootstrap(self.entry)
         if command == "live":
@@ -290,7 +293,12 @@ class DashboardRuntime:
                     view.snapshot, "series_id race_id run_id source_updated_at"
                 )
                 if view.snapshot
-                else None,
+                else {
+                    "series_id": msg["series_id"],
+                    "race_id": None,
+                    "run_id": None,
+                    "source_updated_at": None,
+                },
                 "availability": view.health,
             }
             if command == "live_driver":

@@ -2,6 +2,12 @@
 
 The complete [brief](NASCAR_Race_Center_Codex_Brief.md) defines the target product. Phases 1 through 5C are reviewed and merged into `main`, including PR #13 (`ec35f25`) and the observed API reference package. Phase 6A starts from that merge and preserves its 1,007-test Python baseline, adding two acceptance journeys. Each phase has an acceptance gate; planned later work is not a feature list of the current implementation.
 
+The post-installation beta correction is prepared separately from Phase 6B:
+[snapshot/empty-state validation](docs/SNAPSHOT_FIX_VALIDATION.md) and
+[0.1.0 / 0.5.1 update/rollback](docs/SNAPSHOT_FIX_UPGRADE.md). The candidate
+0.1.1 / 0.5.2 pair fixes confirmed owner-reported usability defects without
+changing provider, polling, household configuration or the release gates.
+
 ## Phase 1 — Foundation and feasibility
 
 **Status:** reviewed and merged. Its entities, settings, IDs and regression protections remain supported.

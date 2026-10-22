@@ -67,6 +67,9 @@ def async_register(hass: HomeAssistant) -> None:
     }
     commands: dict[str, dict[Any, Any]] = {
         "bootstrap": {},
+        "release_snapshot": {
+            vol.Required("snapshot"): vol.Match(r"^[0-9a-f]{64}$"),
+        },
         "schedule": {
             **series,
             **pagination,

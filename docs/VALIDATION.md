@@ -1,5 +1,9 @@
 # Current validation report
 
+Current focused beta fix: [snapshot/empty-state validation](SNAPSHOT_FIX_VALIDATION.md)
+and [0.1.0 / 0.5.1 update/rollback](SNAPSHOT_FIX_UPGRADE.md). Earlier phase reports
+retain their original scope and artifact hashes.
+
 Current controlled-beta evidence: [Phase 6A validation](PHASE6A_VALIDATION.md),
 [installation](PHASE6A_INSTALLATION.md), [acceptance](PHASE6A_BETA_CHECKLIST.md)
 and [rollback](PHASE6A_ROLLBACK.md). Owner hardware/device results remain NOT TESTED.

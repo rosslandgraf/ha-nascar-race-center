@@ -149,6 +149,23 @@ class SnapshotStore:
             self.leases.pop(lease.token, None)
             lease.index = None
 
+    def release_token(
+        self, token: str, owner: object, connection: ActiveConnection
+    ) -> None:
+        """Idempotent, non-disclosing release scoped to entry, user and socket.
+
+        Retirement blocks new readers immediately. Existing readers retain their
+        reserved slot and immutable index until their executor work drains.
+        """
+        lease = self.leases.get(token)
+        if (
+            lease is not None
+            and lease.owner is owner
+            and lease.connection is connection
+            and lease.user_id == connection.user.id
+        ):
+            self.release(lease)
+
     def finish_read(self, lease: SnapshotLease) -> None:
         lease.readers -= 1
         if lease.retired:

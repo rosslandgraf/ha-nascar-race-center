@@ -89,6 +89,9 @@ export class MockHass implements Hass {
   requests: Record<string, unknown>[] = [];
   fail?: string;
   delay = 0;
+  snapshotBudget = false;
+  snapshots = new Map<string, string>();
+  private nextSnapshot = 0;
   async callWS<T>(request: Record<string, unknown>): Promise<T> {
     this.requests.push(clone(request));
     if (this.delay)
@@ -104,6 +107,10 @@ export class MockHass implements Hass {
         },
       ] as T;
     const command = String(request.type).replace(PREFIX, "");
+    if (command === "release_snapshot") {
+      this.snapshots.delete(String(request.snapshot));
+      return { api_version: 1, entry_id: "FICTIONAL_ENTRY", data: {} } as T;
+    }
     if (command === "live")
       return this.connection.live(Number(request.series_id)) as T;
     const envelope = clone(fixtures[command]);
@@ -145,7 +152,28 @@ export class MockHass implements Hass {
     const offset = Number(request.offset ?? 0),
       limit = Number(request.limit ?? 200);
     const total = page.records.length;
-    if (request.snapshot && request.snapshot !== "a".repeat(64))
+    const stored =
+      this.snapshotBudget && ["history", "analytics"].includes(command);
+    let token = "a".repeat(64);
+    if (stored) {
+      const key = JSON.stringify(
+        Object.fromEntries(
+          Object.entries(request).filter(
+            ([key]) => !["offset", "limit", "snapshot"].includes(key),
+          ),
+        ),
+      );
+      if (request.snapshot) {
+        token = String(request.snapshot);
+        if (this.snapshots.get(token) !== key)
+          throw { code: "snapshot_invalid" };
+      } else {
+        if (this.snapshots.size >= 2) throw { code: "snapshot_limit" };
+        token = (++this.nextSnapshot).toString(16).padStart(64, "0");
+        this.snapshots.set(token, key);
+      }
+    }
+    if (!stored && request.snapshot && request.snapshot !== "a".repeat(64))
       throw { code: "snapshot_invalid" };
     page.records = page.records.slice(offset, offset + limit);
     const end = offset + page.records.length;
@@ -156,7 +184,7 @@ export class MockHass implements Hass {
       returned: page.records.length,
       next_offset: end < total ? end : null,
       complete: end >= total,
-      snapshot: "a".repeat(64),
+      snapshot: token,
     };
     return envelope as T;
   }
