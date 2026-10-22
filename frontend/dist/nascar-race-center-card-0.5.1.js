@@ -404,7 +404,7 @@ let H = class extends HTMLElement {
   }
 };
 H.elementStyles = [], H.shadowRootOptions = { mode: "open" }, H[G("elementProperties")] = /* @__PURE__ */ new Map(), H[G("finalized")] = /* @__PURE__ */ new Map(), ot?.({ ReactiveElement: H }), (ae.reactiveElementVersions ??= []).push("2.1.2");
-const fe = globalThis, ke = (r) => r, se = fe.trustedTypes, Ae = se ? se.createPolicy("lit-html", { createHTML: (r) => r }) : void 0, je = "$lit$", R = `lit$${Math.random().toFixed(9).slice(2)}$`, We = "?" + R, lt = `<${We}>`, T = document, Z = () => T.createComment(""), Y = (r) => r === null || typeof r != "object" && typeof r != "function", $e = Array.isArray, dt = (r) => $e(r) || typeof r?.[Symbol.iterator] == "function", le = `[ 	
+const fe = globalThis, ke = (r) => r, se = fe.trustedTypes, Ae = se ? se.createPolicy("lit-html", { createHTML: (r) => r }) : void 0, We = "$lit$", R = `lit$${Math.random().toFixed(9).slice(2)}$`, je = "?" + R, lt = `<${je}>`, T = document, Z = () => T.createComment(""), Y = (r) => r === null || typeof r != "object" && typeof r != "function", $e = Array.isArray, dt = (r) => $e(r) || typeof r?.[Symbol.iterator] == "function", le = `[ 	
 \f\r]`, B = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Se = /-->/g, Ce = />/g, D = RegExp(`>|${le}(?:([^\\s"'>=/]+)(${le}*=${le}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), Ee = /'/g, Re = /"/g, Be = /^(?:script|style|textarea|title)$/i, Ve = (r) => (e, ...t) => ({ _$litType$: r, strings: e, values: t }), l = Ve(1), M = Ve(2), I = Symbol.for("lit-noChange"), h = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), z = T.createTreeWalker(T, 129);
 function Ke(r, e) {
@@ -419,7 +419,7 @@ const ct = (r, e) => {
     let u, b, p = -1, c = 0;
     for (; c < o.length && (n.lastIndex = c, b = n.exec(o), b !== null); ) c = n.lastIndex, n === B ? b[1] === "!--" ? n = Se : b[1] !== void 0 ? n = Ce : b[2] !== void 0 ? (Be.test(b[2]) && (s = RegExp("</" + b[2], "g")), n = D) : b[3] !== void 0 && (n = D) : n === D ? b[0] === ">" ? (n = s ?? B, p = -1) : b[1] === void 0 ? p = -2 : (p = n.lastIndex - b[2].length, u = b[1], n = b[3] === void 0 ? D : b[3] === '"' ? Re : Ee) : n === Re || n === Ee ? n = D : n === Se || n === Ce ? n = B : (n = D, s = void 0);
     const m = n === D && r[d + 1].startsWith("/>") ? " " : "";
-    a += n === B ? o + lt : p >= 0 ? (i.push(u), o.slice(0, p) + je + o.slice(p) + R + m) : o + R + (p === -2 ? d : m);
+    a += n === B ? o + lt : p >= 0 ? (i.push(u), o.slice(0, p) + We + o.slice(p) + R + m) : o + R + (p === -2 ? d : m);
   }
   return [Ke(r, a + (r[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), i];
 };
@@ -435,7 +435,7 @@ class X {
     }
     for (; (s = z.nextNode()) !== null && o.length < d; ) {
       if (s.nodeType === 1) {
-        if (s.hasAttributes()) for (const p of s.getAttributeNames()) if (p.endsWith(je)) {
+        if (s.hasAttributes()) for (const p of s.getAttributeNames()) if (p.endsWith(We)) {
           const c = b[n++], m = s.getAttribute(p).split(R), $ = /([.?@])?(.*)/.exec(c);
           o.push({ type: 1, index: a, name: $[2], strings: m, ctor: $[1] === "." ? pt : $[1] === "?" ? ut : $[1] === "@" ? mt : ne }), s.removeAttribute(p);
         } else p.startsWith(R) && (o.push({ type: 6, index: a }), s.removeAttribute(p));
@@ -447,7 +447,7 @@ class X {
             s.append(p[c], Z());
           }
         }
-      } else if (s.nodeType === 8) if (s.data === We) o.push({ type: 2, index: a });
+      } else if (s.nodeType === 8) if (s.data === je) o.push({ type: 2, index: a });
       else {
         let p = -1;
         for (; (p = s.data.indexOf(R, p + 1)) !== -1; ) o.push({ type: 7, index: a }), p += R.length - 1;
@@ -483,7 +483,7 @@ class ht {
     for (; o !== void 0; ) {
       if (n === o.index) {
         let u;
-        o.type === 2 ? u = new j(a, a.nextSibling, this, e) : o.type === 1 ? u = new o.ctor(a, o.name, o.strings, this, e) : o.type === 6 && (u = new gt(a, this, e)), this._$AV.push(u), o = i[++d];
+        o.type === 2 ? u = new W(a, a.nextSibling, this, e) : o.type === 1 ? u = new o.ctor(a, o.name, o.strings, this, e) : o.type === 6 && (u = new gt(a, this, e)), this._$AV.push(u), o = i[++d];
       }
       n !== o?.index && (a = z.nextNode(), n++);
     }
@@ -494,7 +494,7 @@ class ht {
     for (const i of this._$AV) i !== void 0 && (i.strings !== void 0 ? (i._$AI(e, i, t), t += i.strings.length - 2) : i._$AI(e[t])), t++;
   }
 }
-class j {
+class W {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
@@ -540,7 +540,7 @@ class j {
     $e(this._$AH) || (this._$AH = [], this._$AR());
     const t = this._$AH;
     let i, s = 0;
-    for (const a of e) s === t.length ? t.push(i = new j(this.O(Z()), this.O(Z()), this, this.options)) : i = t[s], i._$AI(a), s++;
+    for (const a of e) s === t.length ? t.push(i = new W(this.O(Z()), this.O(Z()), this, this.options)) : i = t[s], i._$AI(a), s++;
     s < t.length && (this._$AR(i && i._$AB.nextSibling, s), t.length = s);
   }
   _$AR(e = this._$AA.nextSibling, t) {
@@ -618,14 +618,14 @@ class gt {
     F(this, e);
   }
 }
-const vt = { I: j }, ft = fe.litHtmlPolyfillSupport;
-ft?.(X, j), (fe.litHtmlVersions ??= []).push("3.3.3");
+const vt = { I: W }, ft = fe.litHtmlPolyfillSupport;
+ft?.(X, W), (fe.litHtmlVersions ??= []).push("3.3.3");
 const $t = (r, e, t) => {
   const i = t?.renderBefore ?? e;
   let s = i._$litPart$;
   if (s === void 0) {
     const a = t?.renderBefore ?? null;
-    i._$litPart$ = s = new j(e.insertBefore(Z(), a), a, void 0, t ?? {});
+    i._$litPart$ = s = new W(e.insertBefore(Z(), a), a, void 0, t ?? {});
   }
   return s._$AI(r), s;
 };
@@ -1586,6 +1586,10 @@ const w = {
     border-radius: 8px;
     padding: 12px 16px;
   }
+  /* Explicitly suppress closed disclosure layout in WebKit, including grids. */
+  details:not([open]) > :not(summary) {
+    display: none;
+  }
   summary {
     cursor: pointer;
     min-height: 44px;
@@ -1884,6 +1888,16 @@ const w = {
     }
     .notice {
       padding: 12px;
+    }
+    dl {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+    }
+    dt {
+      font-weight: 650;
+    }
+    dd {
+      margin-bottom: 8px;
     }
     .event-number {
       font-size: 24px;
@@ -2649,7 +2663,7 @@ class qt extends E {
       </div>`;
     const s = e.find((g) => g.id === this.inspected?.id) ?? e[0], a = s.points.find((g) => g.lap === this.inspected?.lap) ?? s.points[0], n = s.points.indexOf(a), d = (g, _) => {
       this.inspected = { id: g, lap: _ };
-    }, o = e.flatMap((g) => g.points.map((_) => _.lap)), u = t.length ? t.map((g) => g.value) : [0], b = Math.min(...o), p = Math.max(...o), c = Math.min(...u), m = Math.max(...u), $ = Math.max((m - c) * 0.12, 0.25), y = this.mode === "position" ? c : c - $, k = this.mode === "position" ? m : m + $, A = (g) => b === p ? 380 : 55 + (g - b) / (p - b) * 650, W = (g) => this.mode === "position" ? k === y ? 135 : 30 + (g - y) / (k - y) * 210 : 240 - (g - y) / (k - y || 1) * 210, oe = [
+    }, o = e.flatMap((g) => g.points.map((_) => _.lap)), u = t.length ? t.map((g) => g.value) : [0], b = Math.min(...o), p = Math.max(...o), c = Math.min(...u), m = Math.max(...u), $ = Math.max((m - c) * 0.12, 0.25), y = this.mode === "position" ? c : c - $, k = this.mode === "position" ? m : m + $, A = (g) => b === p ? 380 : 55 + (g - b) / (p - b) * 650, j = (g) => this.mode === "position" ? k === y ? 135 : 30 + (g - y) / (k - y) * 210 : 240 - (g - y) / (k - y || 1) * 210, oe = [
       "#a8ef75",
       "#84c5ff",
       "#f3c574",
@@ -2683,7 +2697,7 @@ class qt extends E {
               >
                 ${[0, 1, 2, 3, 4].map((g) => {
       const _ = y + (k - y) * g / 4;
-      return M`<line class="grid" x1="55" x2="705" y1=${W(_)} y2=${W(_)}></line><text class="axis" x="48" y=${W(_) + 4} text-anchor="end">${f(_, this.locale, 2)}</text>`;
+      return M`<line class="grid" x1="55" x2="705" y1=${j(_)} y2=${j(_)}></line><text class="axis" x="48" y=${j(_) + 4} text-anchor="end">${f(_, this.locale, 2)}</text>`;
     })}
                 <text class="axis" x="55" y="267">
                   Lap ${f(b, this.locale)}
@@ -2693,7 +2707,7 @@ class qt extends E {
                 </text>
                 ${e.map(
       (g, _) => Ht(g.points).map(
-        (L) => M`<path d=${L.map((C, Ye) => `${Ye ? "L" : "M"}${A(C.lap)},${W(C.value)}`).join(" ")} fill="none" stroke=${oe[_ % 8]} stroke-width="2.5" stroke-linejoin="round"></path>${L.map((C) => M`<circle cx=${A(C.lap)} cy=${W(C.value)} r=${g.id === s.id && C.lap === a.lap ? "5" : "3"} fill=${oe[_ % 8]} @pointerenter=${() => d(g.id, C.lap)} @click=${() => d(g.id, C.lap)}><title>Driver ${g.id} · lap ${C.lap} · ${C.value}</title></circle>`)}`
+        (L) => M`<path d=${L.map((C, Ye) => `${Ye ? "L" : "M"}${A(C.lap)},${j(C.value)}`).join(" ")} fill="none" stroke=${oe[_ % 8]} stroke-width="2.5" stroke-linejoin="round"></path>${L.map((C) => M`<circle cx=${A(C.lap)} cy=${j(C.value)} r=${g.id === s.id && C.lap === a.lap ? "5" : "3"} fill=${oe[_ % 8]} @pointerenter=${() => d(g.id, C.lap)} @click=${() => d(g.id, C.lap)}><title>Driver ${g.id} · lap ${C.lap} · ${C.value}</title></circle>`)}`
       )
     )}
                 ${a.value !== null ? M`<line x1=${A(a.lap)} x2=${A(a.lap)} y1="25" y2="245" stroke="currentColor" stroke-dasharray="3 5" opacity="0.4"></line>` : h}
@@ -3027,7 +3041,7 @@ class Ft extends E {
   }
 }
 customElements.define("nrc-metric-chart", Ft);
-class jt extends E {
+class Wt extends E {
   constructor() {
     super(...arguments), this.config = { type: "custom:nascar-race-center-card" }, this.entries = [], this.generation = 0;
   }
@@ -3132,8 +3146,8 @@ class jt extends E {
     </div>`;
   }
 }
-customElements.define("nascar-race-center-card-editor", jt);
-const Wt = "0.5.1";
+customElements.define("nascar-race-center-card-editor", Wt);
+const jt = "0.5.1";
 class Bt extends E {
   constructor() {
     super(...arguments), this.config = { type: "custom:nascar-race-center-card" }, this.signature = "", this.epoch = 0, this.liveEpoch = 0, this.bootPending = !1, this.liveChain = Promise.resolve(), this.entries = [], this.loading = !1, this.section = "Race Center", this.series = 1, this.schedules = /* @__PURE__ */ new Map(), this.snapshots = /* @__PURE__ */ new Map(), this.compact = !1, this.historyKind = "all", this.chartMode = "time", this.chartWindow = 5, this.season = (/* @__PURE__ */ new Date()).getFullYear(), this.raceId = "", this.ready = () => {
@@ -4360,7 +4374,7 @@ class Bt extends E {
         ><span
           >Content updated:
           ${U(this.liveData?.source_updated_at, this.hass)}</span
-        ><span>Card ${Wt} · API v1</span>
+        ><span>Card ${jt} · API v1</span>
       </footer></ha-card
     >`;
   }
@@ -4376,5 +4390,5 @@ me.customCards.some((r) => r.type === "nascar-race-center-card") || me.customCar
 });
 export {
   Bt as NascarRaceCenterCard,
-  Wt as VERSION
+  jt as VERSION
 };

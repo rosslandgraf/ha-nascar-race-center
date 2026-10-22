@@ -40,7 +40,8 @@ jobs:
       - name: Browser rendering and accessibility
         env:
           CHROMIUM_PATH: bundled
-        run: npm run test:browser
+          NRC_BROWSERS: webkit,firefox,chromium
+        run: npm run test:browser -- --max-failures=1
       - name: Retain actual-card screenshots and measurements
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

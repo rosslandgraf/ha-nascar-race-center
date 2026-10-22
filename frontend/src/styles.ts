@@ -579,6 +579,10 @@ export const styles = css`
     border-radius: 8px;
     padding: 12px 16px;
   }
+  /* Explicitly suppress closed disclosure layout in WebKit, including grids. */
+  details:not([open]) > :not(summary) {
+    display: none;
+  }
   summary {
     cursor: pointer;
     min-height: 44px;
@@ -877,6 +881,16 @@ export const styles = css`
     }
     .notice {
       padding: 12px;
+    }
+    dl {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+    }
+    dt {
+      font-weight: 650;
+    }
+    dd {
+      margin-bottom: 8px;
     }
     .event-number {
       font-size: 24px;

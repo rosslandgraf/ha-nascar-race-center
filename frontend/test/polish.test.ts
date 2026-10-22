@@ -85,22 +85,12 @@ describe("chart inspection and sparse observations", () => {
   });
   it("keeps all-null pages accessible without inventing a plot", async () => {
     const chart = mount(new Chart());
-    chart.rows = [
-      {
-        kind: "window",
-        driver_id: "99002",
-        size: 5,
-        value: {
-          first_lap: 1,
-          last_lap: 5,
-          mean: null,
-          sample_count: 0,
-          minimum: null,
-          maximum: null,
-        },
-      },
-    ] as unknown as DataRow[];
-    chart.mode = "window";
+    const missing = (fixtures.analytics.data as Page).records.find(
+      (row): row is Extract<DataRow, { kind: "samples" }> =>
+        row.kind === "samples" && row.value?.valid_time === false,
+    )!;
+    chart.rows = [{ ...missing, value: { ...missing.value!, lap: 5 } }];
+    chart.mode = "time";
     await chart.updateComplete;
     expect(chart.shadowRoot!.querySelector("svg")).toBeNull();
     expect(chart.shadowRoot!.querySelector("tbody")?.textContent).toContain(

@@ -545,6 +545,10 @@ test("analytics and summary labels fit narrow card containers", async ({
   page,
 }) => {
   await analyze(page);
+  await page
+    .getByText("Coverage and exclusions", { exact: true })
+    .first()
+    .click();
   for (const width of [320, 375, 390, 480, 834]) {
     await page.setViewportSize({ width, height: 1000 });
     await noOverflow(page);
