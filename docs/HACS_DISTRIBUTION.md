@@ -139,7 +139,7 @@ Local checks on Python 3.14.8, HA 2026.10.2, Node 24.19 / npm 11.9:
 | Hassfest | Passed against pinned Core 2026.10.2, one integration, zero invalid integrations. |
 | Independent authenticated HA runtime/service smoke and config check | Passed (one runtime test; config checker exit 0). These are development environment checks, not physical owner acceptance. |
 | Frontend lint / TypeScript / Vitest | Passed; **84 tests**. |
-| Full Chromium / Firefox / WebKit | Final run in progress; results will be recorded before delivery. |
+| Full Chromium / Firefox / WebKit | **183 passed** (61 per engine, 7.2 min), including all nine new packaging scenarios and existing snapshot/source/empty-state/accessibility checks. |
 | Clean offline npm install/rebuild | All four bundled runtime files byte-for-byte identical. Original PNG/SVG regenerate identically. Two preview archives byte-for-byte identical. |
 | Official HACS | **Blocked/skipped: private repository**, not a pass. No brands ignore remains. Public-destination metadata and full validation remain gates. |
 
@@ -172,3 +172,8 @@ list models the documented one-time resource edit; tests do not mutate an owner'
 Lovelace storage or claim to automate the HACS UI. Synthetic 0.6.1/legacy modules
 exercise version transitions; they are not real releases or redistributed old
 0.5.3 artifacts.
+
+Hosted validation is linked from [PR #17](https://github.com/rosslandgraf/ha-nascar-race-center/pull/17).
+Check that PR's latest-head results; local successes above do not imply a pending
+hosted job has passed. Browser screenshots/measurements are retained as CI
+artifacts; historical Phase 5C committed captures are preserved.
