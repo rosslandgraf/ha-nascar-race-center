@@ -8,7 +8,7 @@ The integration defaults to offline demonstration data. The CF provider is exper
 
 Before public release, broad distribution, production collection, or an increase in polling frequency, the owner must review applicable terms and establish permission where required. Record the scope, rate limits, retention, redistribution and attribution requirements in this document. Public URL accessibility alone is insufficient. Do not claim that a passing HACS or Hassfest check grants data rights.
 
-No NASCAR-controlled logos, driver photographs, video assets or full captured feed datasets are included. Fixtures are minimal handmade structural examples and must be marked as synthetic with source-shape provenance. Driver and track fixtures use fictional names and IDs; source media URL fields are ignored and not fetched. No third-party implementation or source dataset is vendored. Future optional dashboards use neutral placeholders or properly authorized user-supplied assets. Do not scrape NASCAR Drive, infer access tokens, proxy video, or treat SnappyTV metadata as permission for playback.
+No NASCAR-controlled logos, driver photographs, video assets or full captured feed datasets are included. Fixtures are minimal handmade structural examples and must be marked as synthetic with source-shape provenance. Driver and track fixtures use fictional values except tiny owner-supplied identity regression cases; source media URL fields are ignored and not fetched. No third-party implementation or source dataset is vendored. Future optional dashboards use neutral placeholders or properly authorized user-supplied assets. Do not scrape NASCAR Drive, infer access tokens, proxy video, or treat SnappyTV metadata as permission for playback.
 
 ## Outstanding decisions
 
@@ -27,10 +27,19 @@ until a separate rights/content review; excluded/no-store bodies are not saved.
 | Automated access and permitted polling cadence | Unresolved |
 | Data storage, historical retention and redistribution | Unresolved |
 | Public integration/dashboard distribution | Owner approval and permission review pending |
-| Branding/assets and Home Assistant brands submission | Deferred; no NASCAR assets distributed |
-| Production installation/public release | Not authorized by the Phase 3A task |
+| Branding/assets | Original local NRC assets supplied; owner publication approval pending |
+| Production installation/public release | Owner-controlled; this PR does not install, deploy or publish |
 
-HACS integration requirements include a Home Assistant brands entry. CI continues to skip the `brands` validation while authorized branding is unresolved; this exception is a release blocker. The official HACS action was attempted during Phase 1 and refused this private repository. Its workflow job runs only for public repositories, without changing visibility or making private-development CI fail. Full HACS validation remains unexecuted. The validator is configured with comments disabled and no release/deployment workflow is provided.
+The bundled distribution supplies original local NRC brand assets, supported by
+current Home Assistant and HACS; no global Brands submission or brands ignore is
+required. The old brands exception was removed in PR #17. Owner asset approval
+remains a publication gate. The official HACS action rejects private repositories,
+so its workflow job runs only for public repositories. A private skip is not a
+pass. Public metadata, full unskipped validation and publication remain open;
+visibility is unchanged and no release/deployment workflow is provided. The
+exported preview uses a self-contained [distribution guide](DISTRIBUTION_DATA_USE.md)
+with no private archive links. The current [CF correction](REAL_CF_VALIDATION.md)
+made no CF requests and grants no additional data-use or cadence permission.
 
 
 Phase 3D-B's [polling capability](POLLING.md) does not resolve any permission

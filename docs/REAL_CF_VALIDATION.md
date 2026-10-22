@@ -122,7 +122,7 @@ npm 11.9, TypeScript 5.9.3 and Playwright 1.56.1; existing environment reused.
 | Check | Result |
 | --- | --- |
 | Complete Python suite | **1,138 passed** in 68.05 s; 86 additional cases beyond PR #17 |
-| Ruff / format | Passed; 173 Python files formatted |
+| Ruff / format | Passed |
 | mypy | Passed; 45 source files |
 | Hassfest | Passed against pinned Core 2026.10.2; zero invalid integrations |
 | Independent authenticated HA runtime/service smoke | **1 passed**; separate Core configuration check exit 0 |
@@ -159,14 +159,14 @@ distribution artifact remains a private, unpublished preview.
 The bundled card is **157,418 bytes**, gzip **39,311 bytes**, within unchanged
 180,000 /50,000-byte limits. SHA-256:
 `3940a7481faee061209e66d0d98de31ee8cd8809ba985d735b4a16f5cce8a310`.
-The local preview ZIP is **186,544 bytes**, SHA-256
-`ce3408eae8446d2f8067ed8574f3335c6ab9c3175e7866cbcd605cc0f78b4d54`
+The local preview ZIP is **185,052 bytes**, SHA-256
+`00787375c31d4679c9dd0c027ecac2daaeca5a8260b8d23bd8b99b59cbba5388`
 for destination `rosslandgraf/ha-nascar-race-center` (64 files plus `SHA256SUMS`).
 The [57-file runtime/license manifest](REAL_CF_ARTIFACTS.sha256) pins the complete
 candidate. Each distribution also contains its own `SHA256SUMS` after approved
 destination URL rewriting; fixed timestamps/order/modes produce deterministic ZIPs.
 The exporter includes all integration runtime files, licenses, local branding,
-both upgrade guides and the artifact manifest. It includes no captured raw data,
+both upgrade guides, self-contained data-use guidance and the artifact manifest. It includes no captured raw data,
 credentials, tests, local HA storage or private development history.
 
 Follow the [exact 0.2.0 → 0.2.1 upgrade and rollback guide](REAL_CF_UPGRADE.md).

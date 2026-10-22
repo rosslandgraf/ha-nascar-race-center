@@ -85,7 +85,7 @@ def build(output: Path, repository: str, *, root: Path = ROOT) -> Path:
         ("HACS_MIGRATION.md", "UPGRADE.md"),
         ("REAL_CF_UPGRADE.md", "REAL_CF_UPGRADE.md"),
         ("REAL_CF_ARTIFACTS.sha256", "REAL_CF_ARTIFACTS.sha256"),
-        ("DATA_USE.md", "DATA_USE.md"),
+        ("DISTRIBUTION_DATA_USE.md", "DATA_USE.md"),
     ):
         shutil.copyfile(root / "docs" / source_name, tree / target_name)
     upgrade_path = tree / "REAL_CF_UPGRADE.md"
