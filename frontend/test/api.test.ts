@@ -481,3 +481,41 @@ it("coalesces repeated restart clicks while cleanup is pending", async () => {
   ).toHaveLength(1);
   await view.invalidate();
 });
+
+it("failed cleanup retires local ownership without accumulating disposal retries", async () => {
+  vi.useFakeTimers();
+  try {
+    const hass = new MockHass();
+    const original = hass.callWS.bind(hass);
+    let issued = 0;
+    hass.callWS = vi.fn(async <T>(request: Record<string, unknown>) => {
+      if (String(request.type).endsWith("/release_snapshot"))
+        throw { code: "rate_limited" };
+      const result = await original<Envelope<Page>>(request);
+      result.data.pagination.snapshot = (++issued)
+        .toString(16)
+        .padStart(64, "0");
+      return result as T;
+    }) as typeof hass.callWS;
+    const client = new DashboardClient(hass, "FICTIONAL_ENTRY");
+    for (let i = 0; i < 20; i++) {
+      const work = client
+        .history({
+          series_id: 1,
+          season: 2024,
+          race_id: 88001,
+          datasets: ["laps"],
+        })
+        .then((page) => client.releaseSnapshot(page.pagination.snapshot))
+        .catch((error) => error);
+      await vi.advanceTimersByTimeAsync(800);
+      expect((await work).code).toBe("rate_limited");
+    }
+    const before = vi.mocked(hass.callWS).mock.calls.length;
+    client.dispose();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(hass.callWS).toHaveBeenCalledTimes(before);
+  } finally {
+    vi.useRealTimers();
+  }
+});

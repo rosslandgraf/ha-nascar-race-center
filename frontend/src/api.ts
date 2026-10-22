@@ -138,8 +138,12 @@ export class DashboardClient {
     if (!this.snapshots.has(snapshot)) return Promise.resolve();
     const work = this.paced(async () => {
       await this.hass.callWS(this.message("release_snapshot", { snapshot }));
+    }, true).finally(() => {
+      // Retirement is final locally even if the socket rejects cleanup. Backend
+      // disconnect/TTL cleanup bounds the lease; failed tokens must not collect.
       this.snapshots.delete(snapshot);
-    }, true).finally(() => this.releases.delete(snapshot));
+      this.releases.delete(snapshot);
+    });
     this.releases.set(snapshot, work);
     return work;
   }

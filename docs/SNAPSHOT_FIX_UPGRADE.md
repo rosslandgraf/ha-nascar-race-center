@@ -16,7 +16,7 @@ to other integrations or the owner's installation by an agent.
    that exact commit run `sha256sum -c docs/SNAPSHOT_FIX_ARTIFACTS.sha256` (or compare
    SHA-256 with PowerShell `Get-FileHash` / macOS `shasum -a 256`). The manifest must
    say **0.1.1**. The 0.5.2 module SHA-256 is
-   `f124cc6585433fc26d2f5eedfab06d1aecb3bc880822708f109dc39f50d01f0b`.
+   `4af4d4eed4c3416af422ffeb54e90198c29a02e02c9f98400db88deffa14d11f`.
    Do not use source TypeScript, a moving main, or a partial Python set.
 3. Stage Python files privately away from the active integration. At the approved
    window replace only `/config/custom_components/nascar_race_center/` as a complete

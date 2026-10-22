@@ -754,8 +754,10 @@ class kt {
     if (t) return t;
     if (!this.snapshots.has(e)) return Promise.resolve();
     const i = this.paced(async () => {
-      await this.hass.callWS(this.message("release_snapshot", { snapshot: e })), this.snapshots.delete(e);
-    }, !0).finally(() => this.releases.delete(e));
+      await this.hass.callWS(this.message("release_snapshot", { snapshot: e }));
+    }, !0).finally(() => {
+      this.snapshots.delete(e), this.releases.delete(e);
+    });
     return this.releases.set(e, i), i;
   }
   async paced(e, t = !1) {

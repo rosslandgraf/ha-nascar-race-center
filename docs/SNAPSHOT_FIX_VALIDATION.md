@@ -35,7 +35,8 @@ slots are actively needed, the capacity notice remains an honest resource limit.
 Invalidation/restart waits for pending page work, releases late first-page tokens,
 and ignores obsolete responses. Client disposal cancels queued reads while paced
 cleanup can finish after card removal. Native socket disconnect, entry unload,
-reload, shutdown and the original TTL remain backend cleanup backstops. An
+reload, shutdown and the original TTL remain backend cleanup backstops. Failed release also drops retired client token bookkeeping,
+avoiding unbounded token retention or later disposal retry bursts. An
 explicit release immediately prevents new reads but retains its accounted slot
 and immutable index until existing page workers drain. A retry cannot steal that
 reservation. Cleanup failures during an interrupted or rate-limited connection
@@ -95,9 +96,9 @@ TypeScript 5.9.3 and Playwright 1.56.1.
 | Independent actual-HA REST/state/service smoke | **1 passed**, 0.25 seconds |
 | Prepared HA configuration validation | PASS, exit 0 |
 | Frontend ESLint / Prettier / TypeScript | PASS |
-| All frontend unit/component tests | **78 passed**, 4 files, 16.31 seconds |
+| All frontend unit/component tests | **79 passed**, 4 files, 16.88 seconds |
 | Production build and transfer/license/import/fixture budgets | PASS; 180,000 raw / 50,000 gzip ceilings unchanged |
-| Three-engine browser scenarios | **171 passed**, 6.0 minutes; **57 per engine**, no failed scenarios/retries in the final full run |
+| Three-engine browser scenarios | **171 passed**, 6.0 minutes; **57 per engine** on initial implementation `e748992`. The failure-bookkeeping follow-up is rerun locally and in [PR #15 checks](https://github.com/rosslandgraf/ha-nascar-race-center/pull/15/checks); the PR description records its final result. |
 | Lockfile install / committed bundle reproduction / SHA-256 verification | PASS |
 | HACS | Private-repository skip and existing brands exception retained; no full HACS approval |
 
@@ -121,7 +122,8 @@ source states, zoom, idle, reconnect, performance and production bundle assertio
 still pass. Generated captures/measurements remain in ignored development work;
 Phase 5C historical artifacts are not overwritten by this fix.
 
-Frontend regressions cover late-token release after disposal, cancellation before
+Frontend regressions cover repeated failed releases without accumulated disposal
+retries, late-token release after disposal, cancellation before
 sending a queued selection, repeated restart clicks during cleanup, cached-page
 reuse, null and structured empty identities, and independent series/race/run/
 disappearance source-change rejection. Browser tests add 20 dataset selections,
@@ -170,8 +172,8 @@ integration file is covered. The card is rebuilt under its new 0.5.2 filename.
 
 | Artifact | SHA-256 |
 | --- | --- |
-| `frontend/dist/nascar-race-center-card-0.5.2.js` (154,351 raw / 38,649 gzip bytes) | `f124cc6585433fc26d2f5eedfab06d1aecb3bc880822708f109dc39f50d01f0b` |
-| `docs/SNAPSHOT_FIX_ARTIFACTS.sha256` | `86284f9c4678e69058e0a0d02fc73ffbeff6b4ea3d42b06774aacf20d3efcb1c` |
+| `frontend/dist/nascar-race-center-card-0.5.2.js` (154,366 raw / 38,649 gzip bytes) | `4af4d4eed4c3416af422ffeb54e90198c29a02e02c9f98400db88deffa14d11f` |
+| `docs/SNAPSHOT_FIX_ARTIFACTS.sha256` | `4f0e1596da30d9d70ad5a59aed079529289358864662ae7dd66322ffc2e1ac9d` |
 
 The historical Phase 6A manifest still pins 0.1.0 / 0.5.1; it is not rewritten to
 claim the earlier release contained these fixes. Verify it on the pinned PR #14
