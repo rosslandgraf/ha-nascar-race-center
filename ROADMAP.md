@@ -18,6 +18,13 @@ from merged PR #16 (`7ca9d4d`). Integration 0.2.0 includes card 0.6.0 in one HAC
 Integration download, with stable resource setup and an [owner migration guide](docs/HACS_MIGRATION.md).
 It prepares public distribution without publishing it or completing Phase 6B.
 
+The current [real-CF correction](docs/REAL_CF_VALIDATION.md) starts from merged
+PR #17 (`986e49f`): narrow UTC schedule normalization, safe driver-ID quarantine,
+all-session conservative discovery, upcoming-weekend presentation and bounded
+troubleshooting diagnostics. Integration 0.2.1 /card 0.6.1 preserves the bundled
+HACS architecture. Active-source/rights/publication and physical acceptance gates
+remain open; no unrelated Phase 6B work is included.
+
 ## Phase 1 — Foundation and feasibility
 
 **Status:** reviewed and merged. Its entities, settings, IDs and regression protections remain supported.

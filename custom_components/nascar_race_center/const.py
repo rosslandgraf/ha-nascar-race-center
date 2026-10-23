@@ -25,8 +25,8 @@ MAX_LIVE_INTERVAL = 3600
 DEFAULT_SERIES = ["1", "2", "3"]
 SERIES_NAMES = {
     1: "NASCAR Cup Series",
-    2: "NASCAR National Series 2",
-    3: "NASCAR Truck Series",
+    2: "NASCAR O'Reilly Auto Parts Series",
+    3: "NASCAR Craftsman Truck Series",
 }
 SCHEDULE_INTERVAL = timedelta(hours=6)
 LIVE_IDLE_INTERVAL = timedelta(hours=1)

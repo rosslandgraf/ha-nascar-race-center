@@ -3,7 +3,7 @@
 A Home Assistant custom integration with its bundled Lovelace dashboard. One
 HACS **Integration** installation manages both Python and the compiled card.
 Requires Home Assistant Core 2026.10.2 or newer; this candidate is integration
-0.2.0 / card 0.6.0. Code and original NRC icon: MIT; bundled Lit notices are
+0.2.1 / card 0.6.1. Code and original NRC icon: MIT; bundled Lit notices are
 included. This independent project is not endorsed by NASCAR.
 
 This is a distribution preview until its owner approves public publication,
@@ -36,3 +36,8 @@ The existing conservative 300-second floor is unchanged; it is not a promise of
 five-minute refreshes or a NASCAR-approved rate. Live source behavior, standalone
 scoring associations and data redistribution rights remain evidence gates.
 See [data-use boundaries](DATA_USE.md).
+
+Named UTC schedule fields accept offset-free UTC; generic local dates remain
+unknown. Driver-name conflicts are isolated per NASCAR ID, and current O'Reilly
+and legacy Xfinity slugs both map to series 2. Session-aware discovery respects
+the same 300-second CF floor, user minimum, caching and backoff.

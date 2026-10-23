@@ -1,5 +1,6 @@
 """Independent on-demand history providers; no coordinator or polling loops."""
 
+from collections import OrderedDict
 from dataclasses import replace
 from typing import Literal, Protocol
 
@@ -35,9 +36,30 @@ class CFHistoryProvider:
 
     def __init__(self, api: NascarApiClient) -> None:
         self.api = api
+        self.dataset_diagnostics: OrderedDict[
+            tuple[HistoricalRaceKey, HistoryDataset], dict[str, object]
+        ] = OrderedDict()
+
+    def _result(self, result: HistoryResult) -> HistoryResult:
+        provenance = result.provenance
+        key = (provenance.requested, provenance.dataset)
+        self.dataset_diagnostics[key] = {
+            "season": provenance.requested.season,
+            "series_id": provenance.requested.series_id,
+            "race_id": provenance.requested.race_id,
+            "dataset": provenance.dataset.value,
+            "status": result.status.value,
+            "http_status": provenance.http_status,
+            "reason": result.reason,
+        }
+        self.dataset_diagnostics.move_to_end(key)
+        while len(self.dataset_diagnostics) > 24:
+            self.dataset_diagnostics.popitem(last=False)
+        return result
 
     def clear(self) -> None:
         self.api.clear_history()
+        self.dataset_diagnostics.clear()
 
     async def async_get_history(
         self, key: HistoricalRaceKey, dataset: HistoryDataset
@@ -63,10 +85,12 @@ class CFHistoryProvider:
                 data = PARSERS[dataset](payload, key)
             except ValueError, TypeError, OverflowError, RecursionError:
                 self.api.discard_history(path)
-                return HistoryResult(
-                    HistoryStatus.INVALID,
-                    self._metadata(path, provenance),
-                    reason="schema_or_identity",
+                return self._result(
+                    HistoryResult(
+                        HistoryStatus.INVALID,
+                        self._metadata(path, provenance),
+                        reason="schema_or_identity",
+                    )
                 )
         except ProviderError as error:
             # 404 alone cannot distinguish never supported from not yet published.
@@ -82,14 +106,18 @@ class CFHistoryProvider:
                 http_status=error.status,
                 retry_after=error.retry_after,
             )
-            return HistoryResult(
-                status,
-                provenance,
-                reason="not_found_publication_unknown"
-                if error.status in (404, 410)
-                else "invalid_json_or_size"
-                if isinstance(error, SchemaError)
-                else "transport_or_access",
+            return self._result(
+                HistoryResult(
+                    status,
+                    provenance,
+                    reason="not_found_publication_unknown"
+                    if error.status in (404, 410)
+                    else "invalid_json_or_size"
+                    if isinstance(error, SchemaError)
+                    else "access_denied"
+                    if error.status in (401, 403)
+                    else "transport_or_access",
+                )
             )
         validation: Literal["reported_identity", "path_context_only"] = (
             "reported_identity"
@@ -99,10 +127,12 @@ class CFHistoryProvider:
             else "path_context_only"
         )
         provenance = replace(self._metadata(path, provenance), validation=validation)
-        return HistoryResult(
-            HistoryStatus.EMPTY if data.empty else HistoryStatus.AVAILABLE,
-            provenance,
-            data,
+        return self._result(
+            HistoryResult(
+                HistoryStatus.EMPTY if data.empty else HistoryStatus.AVAILABLE,
+                provenance,
+                data,
+            )
         )
 
     def _metadata(self, path: str, provenance: HistoryProvenance) -> HistoryProvenance:

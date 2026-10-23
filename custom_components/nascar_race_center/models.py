@@ -137,8 +137,28 @@ def _timestamp(value: object) -> datetime | None:
         return None
     try:
         result = datetime.fromisoformat(value)
-        if result.utcoffset() is None:
+        if result.year == 1 or result.utcoffset() is None:
             return None
+        return result.astimezone(UTC)
+    except ValueError, OverflowError:
+        return None
+
+
+def schedule_timestamp(value: object) -> datetime | None:
+    """Named schedule *_utc fields are UTC; local/other naive fields are not.
+
+    Owner evidence, independently published event times and the shared source
+    contract are recorded in docs/REAL_CF_VALIDATION.md. Never use this helper
+    for live clocks, date_scheduled, or track-local start_time/end_time.
+    """
+    if not isinstance(value, str) or len(value) < 16 or value[10] not in {"T", " "}:
+        return None
+    try:
+        result = datetime.fromisoformat(value)
+        if result.year == 1:
+            return None
+        if result.utcoffset() is None:
+            return result.replace(tzinfo=UTC)
         return result.astimezone(UTC)
     except ValueError, OverflowError:
         return None
@@ -167,8 +187,8 @@ def _session(
     key = f"{run_type}:{name.casefold()}"
     digest = sha256(key.encode()).hexdigest()[:24]
     session_id = f"{series_id}:{season or 'unknown'}:{race_id}:{digest}"
-    start = _timestamp(row.get("start_time_utc"))
-    end = _timestamp(row.get("end_time_utc")) if detailed else None
+    start = schedule_timestamp(row.get("start_time_utc"))
+    end = schedule_timestamp(row.get("end_time_utc")) if detailed else None
     if start is None or end is not None and end <= start:
         end = None
     return Session(
@@ -200,7 +220,15 @@ def _sessions(
             raise SchemaError("Ambiguous duplicate schedule session identity")
         seen.add(session.session_id)
         sessions.append(session)
-    return tuple(sessions)
+    return tuple(
+        sorted(
+            sessions,
+            key=lambda item: (
+                item.start_time or datetime.max.replace(tzinfo=UTC),
+                item.session_id,
+            ),
+        )
+    )
 
 
 def parse_schedule(
@@ -246,7 +274,8 @@ def parse_schedule(
                 series_id=series_id,
                 race_id=race_id,
                 name=name,
-                start_time=_timestamp(row.get("date_scheduled")),
+                start_time=_timestamp(row.get("date_scheduled"))
+                or _race_session_start(sessions),
                 track=_text(row.get("track_name")),
                 season=season,
                 track_id=_integer(row.get("track_id"), positive=True),
@@ -260,8 +289,8 @@ def parse_schedule(
 def parse_schedule_feed(payload: object, series_id: int, year: int) -> tuple[Race, ...]:
     """Read the third-party documented per-series session-array contract.
 
-    Only explicit-offset UTC-named timestamps are used. Local start_time and
-    end_time fields have no independently verified timezone and are ignored.
+    Named *_utc schedule fields accept offset-free UTC. Local start_time and
+    end_time are ignored; their zone can depend on the track.
     """
     if series_id not in (1, 2, 3) or not 1948 <= year <= 9999:
         raise ValueError("Invalid NASCAR series or season")
@@ -304,7 +333,15 @@ def parse_schedule_feed(payload: object, series_id: int, year: int) -> tuple[Rac
         replace(
             race,
             start_time=_race_session_start(tuple(sessions[race_id])),
-            sessions=tuple(sessions[race_id]),
+            sessions=tuple(
+                sorted(
+                    sessions[race_id],
+                    key=lambda item: (
+                        item.start_time or datetime.max.replace(tzinfo=UTC),
+                        item.session_id,
+                    ),
+                )
+            ),
         )
         for race_id, race in races.items()
     )
@@ -351,6 +388,81 @@ def merge_schedule(
             sessions_failed=False,
         )
     return tuple(races.values())
+
+
+def schedule_quality(
+    payload: object, races: tuple[Race, ...], series_id: int, *, detailed: bool
+) -> dict[str, object]:
+    """Bounded normalization counts, not source rows, names or raw timestamps."""
+    rows = (
+        payload
+        if detailed
+        else payload.get(f"series_{series_id}", [])
+        if isinstance(payload, dict)
+        else []
+    )
+    assert isinstance(rows, list)
+    reasons: dict[str, dict[str, int]] = {}
+
+    def count(field_name: str, value: object, *, named_utc: bool) -> None:
+        reason = "invalid"
+        if value is None or value == "":
+            reason = "missing"
+        elif isinstance(value, str):
+            try:
+                parsed = datetime.fromisoformat(value)
+                normalized = (
+                    schedule_timestamp(value) if named_utc else _timestamp(value)
+                )
+                if parsed.year == 1:
+                    reason = "unknown_year_one"
+                elif normalized is not None:
+                    reason = (
+                        "named_utc" if parsed.utcoffset() is None else "explicit_offset"
+                    )
+                elif not named_utc and parsed.utcoffset() is None:
+                    reason = "ambiguous_timezone"
+            except ValueError, OverflowError:
+                pass
+        bucket = reasons.setdefault(field_name, {})
+        bucket[reason] = bucket.get(reason, 0) + 1
+
+    invalid_duration = 0
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        if detailed:
+            sessions = [row]
+        else:
+            count("date_scheduled", row.get("date_scheduled"), named_utc=False)
+            nested = row.get("schedule", [])
+            sessions = nested[:100] if isinstance(nested, list) else []
+        for session in sessions:
+            if not isinstance(session, dict):
+                continue
+            count("start_time_utc", session.get("start_time_utc"), named_utc=True)
+            if detailed:
+                count("end_time_utc", session.get("end_time_utc"), named_utc=True)
+                start = schedule_timestamp(session.get("start_time_utc"))
+                end = schedule_timestamp(session.get("end_time_utc"))
+                invalid_duration += int(
+                    start is not None and end is not None and end <= start
+                )
+    return {
+        "source": "detailed_sessions" if detailed else "basic_races",
+        "source_rows": len(rows),
+        "race_count": len(races),
+        "session_count": sum(len(race.sessions) for race in races),
+        "unknown_race_starts": sum(race.start_time is None for race in races),
+        "unknown_session_starts": sum(
+            session.start_time is None for race in races for session in race.sessions
+        ),
+        "unknown_session_ends": sum(
+            session.end_time is None for race in races for session in race.sessions
+        ),
+        "invalid_duration_count": invalid_duration,
+        "timestamp_reasons": reasons,
+    }
 
 
 def parse_live(payload: object) -> LiveSnapshot | None:

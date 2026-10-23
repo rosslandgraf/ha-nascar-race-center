@@ -4,6 +4,7 @@ from typing import Protocol
 
 from .api import NascarApiClient
 from .endpoints import DRIVERS, TRACKS
+from .models import ProviderError
 from .reference import (
     Driver,
     Track,
@@ -34,12 +35,21 @@ class CFReferenceProvider:
     def __init__(self, api: NascarApiClient) -> None:
         """Take the same transport used by the schedule/live provider."""
         self.api = api
+        self.driver_diagnostics: dict[str, object] = {}
 
     async def async_get_drivers(self) -> tuple[Driver, ...]:
         """Refresh driver metadata at most daily absent cache instructions."""
-        return parse_drivers(
-            await self.api.async_get_json(DRIVERS, minimum_ttl=REFERENCE_TTL)
-        )
+        self.driver_diagnostics = {"status": "not_parsed"}
+        try:
+            payload = await self.api.async_get_json(DRIVERS, minimum_ttl=REFERENCE_TTL)
+        except ProviderError:
+            self.driver_diagnostics["status"] = "request_failed"
+            raise
+        try:
+            return parse_drivers(payload, diagnostics=self.driver_diagnostics)
+        except ProviderError:
+            self.driver_diagnostics["status"] = "invalid_schema_or_no_usable_ids"
+            raise
 
     async def async_get_tracks(self) -> tuple[Track, ...]:
         """Keep venue lookup independent of the driver directory."""

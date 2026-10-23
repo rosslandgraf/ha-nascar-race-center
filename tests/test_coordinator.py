@@ -270,7 +270,7 @@ async def test_polling_uses_nearest_session_across_all_selected_series(
     ):
         await schedule.async_refresh()
         await live.async_refresh()
-    assert live.update_interval == timedelta(minutes=15)
+    assert live.update_interval == timedelta(minutes=5)
 
 
 async def test_future_source_clock_is_unknown_not_confirmed_live(

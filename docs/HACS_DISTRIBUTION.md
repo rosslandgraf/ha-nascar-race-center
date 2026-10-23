@@ -1,5 +1,11 @@
 # Bundled HACS distribution candidate
 
+This report pins the merged **0.2.0 /0.6.0** packaging baseline (PR #17,
+`986e49f`). For current 0.2.1 /0.6.1 artifacts and results use
+[REAL_CF_VALIDATION.md](REAL_CF_VALIDATION.md) and its [upgrade guide](REAL_CF_UPGRADE.md).
+Run this report's historical checksums only on its pinned baseline checkout.
+
+
 Integration **0.2.0**, card **0.6.0**, HA Core **2026.10.2**. Starts from merged
 PR #16, `7ca9d4d8d0ed837005adf366dcd5a5ecd9ae7a60`; preserves PR #15 and #16.
 This is packaging preparation, not a release or completed public HACS approval.

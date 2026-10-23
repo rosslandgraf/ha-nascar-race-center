@@ -247,15 +247,18 @@ class ScheduleCoordinator(DataUpdateCoordinator[ScheduleData]):
     def next_race(self, series_id: int) -> Race | None:
         """Find the next timestamped race without assuming provider list order."""
         now = dt_util.utcnow()
-        return next(
+        return min(
             (
                 race
                 for race in self.usable_races(series_id)
                 if race.start_time is not None
                 and race.start_time >= now
-                and race.status not in {"canceled", "cancelled"}
+                and race.status not in {"canceled", "cancelled", "completed"}
             ),
-            None,
+            key=lambda race: (
+                race.start_time or datetime.max.replace(tzinfo=dt_util.UTC)
+            ),
+            default=None,
         )
 
 
@@ -436,7 +439,11 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
             )
             if adaptive
             else legacy_decision(
-                selected, races, now, int(self.live_interval.total_seconds())
+                selected,
+                races,
+                now,
+                int(self.live_interval.total_seconds()),
+                schedules_known=len(known_series) == len(self.schedule.series),
             )
         )
         self.poll_decision = decision
@@ -452,9 +459,14 @@ class LiveCoordinator(DataUpdateCoordinator[LiveSnapshot | None]):
             else None
         )
         if self._clock_regressed or self._stale_reads:
-            seconds = max(
-                seconds, min(3600, 300 * 2 ** min(max(0, self._stale_reads - 1), 4))
-            )
+            stale_delay = min(3600, 300 * 2 ** min(max(0, self._stale_reads - 1), 4))
+            if decision.reason in {"approaching_session", "scheduled_window"}:
+                # A retained prior race still withholds timing. A bounded real
+                # schedule window may discover a new run, with stale backoff
+                # capped at 15 minutes; it never asserts activity or bypasses
+                # the CF request floor, cache, reservation or Retry-After.
+                stale_delay = min(stale_delay, 900)
+            seconds = max(seconds, stale_delay)
             self.interval_constraint = "source_not_advancing"
         if self._failure_count:
             seconds = max(seconds, min(3600, 60 * 2 ** min(self._failure_count - 1, 6)))

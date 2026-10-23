@@ -8,6 +8,10 @@ Start with [ENDPOINT_CATALOG.md](ENDPOINT_CATALOG.md), then
 it is separate from the smaller production allowlist. Listing an endpoint here
 does not enable it in the integration.
 
+The latest [owner-reported CF correction](../REAL_CF_EVIDENCE.md) narrows the
+schedule UTC contract and isolates driver identities. Its missing raw attachments
+and independent published-time corroboration are recorded explicitly.
+
 ## Evidence and data boundaries
 
 The imported observed package is now the primary structural source for Phase 3B.

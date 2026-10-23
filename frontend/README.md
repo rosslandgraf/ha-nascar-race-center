@@ -1,9 +1,14 @@
-# NASCAR Race Center card 0.6.0
+# NASCAR Race Center card 0.6.1
 
-Use integration **0.2.0**, which installs this compiled card inside its managed
+Use integration **0.2.1**, which installs this compiled card inside its managed
 directory. Follow the [one-time resource migration and update guide](../docs/HACS_MIGRATION.md)
 and [packaging audit](../docs/HACS_DISTRIBUTION.md). Existing snapshot and source
 assessment behavior remains supported; CF acceptance gates remain open.
+
+The [real-CF fix report](../docs/REAL_CF_VALIDATION.md) and
+[current upgrade/rollback](../docs/REAL_CF_UPGRADE.md) supersede the 0.2.0 pair.
+Upcoming-weekend previews preserve the full retained catalog; per-dataset HTTP
+statuses remain normal disclosure, and no extra NASCAR/WS request is made by rendering.
 
 A local, independently built Lit custom Lovelace card for dashboard API v1.
 Five connected views: Race Center, Live Timing, Race Weekend, History and Analytics.
@@ -26,7 +31,7 @@ CHROMIUM_PATH=bundled npm run test:browser
 ```
 
 The versioned ES module is
-`../custom_components/nascar_race_center/frontend/nascar-race-center-card-0.6.0.js`;
+`../custom_components/nascar_race_center/frontend/nascar-race-center-card-0.6.1.js`;
 Lit and license notices are included. `npm run build` also writes the compatible
 integration/card identity and SHA-256 in `bundle.json`. Register only
 `/nascar_race_center/card.js` in HA; do not copy this file into `/config/www/`.

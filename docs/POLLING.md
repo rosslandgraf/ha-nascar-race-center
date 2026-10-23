@@ -15,10 +15,13 @@ seconds from 30 through 60. Entity IDs and event preferences are unchanged.
 The provider's reviewed `PollingLimits` record is independent of options.
 `CF_LIMITS` deliberately disables adaptive operation and retains its 300-second
 floor. Selecting Adaptive or acknowledging data use cannot change that record.
-CF therefore continues using the existing active-observation minimum, 15-minute
-race-discovery window, one-hour nearby idle interval and six-hour off-season
-interval. A configured larger minimum, stale source, server cache or cooldown
-can only lengthen these intervals. CF's internal fallback cache TTL remains
+CF uses the configured conservative minimum for supported active observations
+and bounded approaching/scheduled practice, qualifying and race discovery. The
+default is 300 seconds; gaps to the next session within six hours also use that
+target. Nearby idle discovery is hourly; genuinely complete usable schedules
+without a session within seven days use six hours. Missing/ambiguous schedule
+coverage falls back to one hour. A higher configured minimum, failures, server
+cache or cooldown can lengthen these intervals. CF's internal fallback cache TTL remains
 60 seconds; its request floor prevents an expired fallback from causing an early
 network request. Standalone pits, stages and points remain unpolled.
 
@@ -54,9 +57,10 @@ five-minute discovery policy, never an active-session assertion. A supplied end
 limits that window (at most eight hours); without an end, discovery lasts only
 30 minutes, followed by hourly conservative checks within an eight-hour trailing
 window. This does not fabricate a duration or calendar end. Canceled and
-completed normalized schedule rows are excluded. Calendar/timezone behavior is
-unchanged: offset-free source timestamps, even names ending in `_utc`, remain
-unknown. No fixed NASCAR season dates or track timezone are guessed.
+completed normalized schedule rows are excluded. Schedule `start_time_utc` / `end_time_utc` now have a narrow, corroborated UTC
+contract; other ambiguous offset-free timestamps remain unknown. HA timezone
+conversion happens after UTC normalization. No fixed NASCAR season dates or
+track timezone are guessed. See [timestamp evidence](REAL_CF_EVIDENCE.md).
 
 Only fresh selected-series observations with positive race/run identities and
 recognized session kinds establish adaptive activity. A race additionally needs
@@ -137,16 +141,35 @@ sensor semantics. The full field remains in bounded runtime memory.
 
 See [executed validation and measured budgets](PHASE3DB_VALIDATION.md).
 
-## CF-readiness correction (0.1.2)
+## Historical CF-readiness correction (0.1.2)
 
 Conservative CF now recognizes fresh on-track practice/qualifying at zero race
 laps and uses the existing configured conservative minimum (300 seconds by
 default). Empty/cold/withheld/regressed CF timing does not choose the activity
 branch. First reported activity may select that interval while its display says
 activity-unconfirmed; a cache read does not change the activity assessment.
-No CF adaptive activation or floor reduction is included. Between/completed
-sessions still use race-based 900/3,600/21,600-second discovery, not the permitted
-synthetic provider's faster approach/gap targets. Unknown schedule times can
-therefore mean six-hour discovery. The [exact targets and remaining limits](CF_READINESS_VALIDATION.md#polling-and-resource-decisions)
-and [owner acceptance procedure](CF_OWNER_ACCEPTANCE.md) supersede assumptions
+No CF adaptive activation or floor reduction is included. At 0.1.2, between/completed
+sessions still used race-based 900/3,600/21,600-second discovery, not the permitted
+synthetic provider's faster approach/gap targets. Unknown schedule times could
+therefore mean six-hour discovery; 0.2.1 supersedes that behavior. The [exact targets and remaining limits](CF_READINESS_VALIDATION.md#polling-and-resource-decisions)
+and [owner acceptance procedure](CF_OWNER_ACCEPTANCE.md) document that earlier behavior rather than a promise
 that CF refreshes every five minutes in every state.
+
+
+## Real-CF schedule correction (0.2.1)
+
+Conservative CF shares the existing bounded session-window calculation across
+all selected series, clamped to its configured minimum and the unchanged
+300-second provider floor. It never enables 10-second adaptive CF polling.
+Practice and qualifying can be discovered before the race; an unknown schedule
+is not evidence of an off-season. A scheduled window is only discovery evidence.
+
+If retained/regressed timing would otherwise increase nonadvancement backoff to
+one hour, **known approaching/scheduled windows** cap that particular delay at
+900 seconds. This permits discovering a replacement run while retained content
+stays withheld. Failure backoff, configured higher minimums, server freshness,
+Retry-After, cooldowns and persisted network eligibility still take precedence.
+Outside those windows, existing 300/600/1,200/3,600-second nonadvancement backoff
+remains intact. No additional coordinator, per-card request or standalone detail
+poller is introduced. [Current decisions and executed validation](REAL_CF_VALIDATION.md)
+separate target intervals from actual network eligibility.

@@ -106,7 +106,10 @@ async def test_unknown_schedule_times_are_reported_without_guessing(
         await hass.async_block_till_done()
     diagnostics = await async_get_config_entry_diagnostics(hass, entry)
     assert diagnostics["schedule"]["unknown_start_time_counts"] == {"1": 2}
-    assert diagnostics["schedule"]["timestamp_policy"] == "explicit_offset_required"
+    assert (
+        diagnostics["schedule"]["timestamp_policy"]
+        == "named_utc_schedule_fields; explicit_offsets_elsewhere"
+    )
     registry = er.async_get(hass)
     count_id = registry.async_get_entity_id(
         "sensor", DOMAIN, f"{entry.entry_id}_1_scheduled_races"

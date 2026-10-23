@@ -292,7 +292,8 @@ acceptance. Session/live models retain numeric run/flag codes alongside existing
 normalized meanings; numeric directory Team values stay in bounded
 `DriverAssociation.team_raw` and do not become display names or join keys.
 Optional schedule enrichment with contradictory track IDs fails independently
-while valid basic races survive. Offset-free clocks remain unknown.
+while valid basic races survive. Generic offset-free clocks remain unknown;
+0.2.1 accepts only the corroborated named UTC schedule fields as UTC.
 
 Transport retains at most 24 fixed diagnostic outcomes, independent of its
 unchanged response cache/cooldowns. The CF adapter separately retains at most
@@ -512,7 +513,7 @@ See [evidence, actual checks and limits](docs/CF_READINESS_VALIDATION.md).
 
 ## Bundled HACS distribution candidate
 
-Integration 0.2.0 pins card 0.6.0 and its SHA-256 in installed `frontend/bundle.json`.
+Integration 0.2.1 pins card 0.6.1 and its SHA-256 in installed `frontend/bundle.json`.
 Global `async_setup` registers public, code-only routes once per Core process.
 The supported HTTP `StaticPathConfig` exposes exactly the versioned JS file;
 Python, metadata and the directory are not served. `/nascar_race_center/card.js`
@@ -528,3 +529,25 @@ entry/connection isolation, polling, IDs and config-entry version stay unchanged
 Supported static routes have process lifetime; disable/unload rejects data access
 while public code may remain until restart. A complete directory replacement,
 Core restart and browser reload form the supported upgrade/rollback boundary.
+
+## Real CF normalization correction, 0.2.1
+
+The [source contract](docs/REAL_CF_EVIDENCE.md) now permits offset-free UTC only
+for named schedule UTC fields. Basic race timing may derive from a single UTC
+race session; local/generic naive fields and source clocks are not reinterpreted.
+Session IDs exclude timing; detail-only events and independent sources survive.
+
+The shared driver parser uses NASCAR ID groups, cosmetic name normalization and
+per-ID quarantine, with published per-series association priority and compatible
+missing facts filled. Metadata ambiguity cannot become a guessed association;
+favorites remain independent IDs. Counters/samples are bounded, not raw rows.
+
+Conservative CF discovery reuses the existing bounded session-window algorithm
+across selected series without enabling fast CF. Source nonadvancement still
+withholds timing; only its discovery backoff is capped at 15 minutes inside a
+known approaching/scheduled window. The configured minimum, 300-second provider
+floor, failure backoff, HTTP cache, persisted reservation and server pauses win.
+One existing coordinator owns every request. Dashboard upcoming summaries use
+cached bootstrap data; retained schedule/history pagination remains available.
+The single Integration bundle, static resource, security and entry storage
+boundaries from PRs #15–#17 are preserved.

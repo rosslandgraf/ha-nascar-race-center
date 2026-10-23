@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -51,6 +52,16 @@ def test_preview_is_deterministic_complete_and_does_not_ship_development_data(tm
             digest, name = line.split("  ", 1)
             assert hashlib.sha256(archive.read(name)).hexdigest() == digest
         assert not json.loads(archive.read("DISTRIBUTION.json"))["published"]
+        upgrade = archive.read("REAL_CF_UPGRADE.md").decode()
+        assert "(UPGRADE.md)" in upgrade
+        assert "(HACS_MIGRATION.md)" not in upgrade
+        assert "(REAL_CF_ARTIFACTS.sha256)" in upgrade
+        assert "(REAL_CF_UPGRADE.md)" in archive.read("UPGRADE.md").decode()
+        assert archive.read("REAL_CF_ARTIFACTS.sha256")
+        for guide in ("README.md", "UPGRADE.md", "REAL_CF_UPGRADE.md", "DATA_USE.md"):
+            for target in re.findall(r"\]\(([^)]+)\)", archive.read(guide).decode()):
+                if ":" not in target and not target.startswith("#"):
+                    assert target.split("#")[0] in names, (guide, target)
         # A normal integration download/extraction contains all runtime assets.
         installed = tmp_path / "config"
         archive.extractall(installed)

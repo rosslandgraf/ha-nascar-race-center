@@ -468,7 +468,7 @@ async def test_cf_defaults_and_adaptive_option_cannot_grant_fast_permission(
     )
     assert live._next_interval(sample(0)) == timedelta(seconds=300)
     assert live.polling_diagnostics()["fast_permitted"] is False
-    assert live._next_interval(None) == timedelta(seconds=900)
+    assert live._next_interval(None) == timedelta(seconds=300)
     assert live.polling_diagnostics()["constraint"] == "provider_policy"
     assert provider.polling_limits == CF_LIMITS
     await live.async_shutdown()

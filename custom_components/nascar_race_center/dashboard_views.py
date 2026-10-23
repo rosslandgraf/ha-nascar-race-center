@@ -17,7 +17,7 @@ LIMITATIONS = (
     "no_official_finality_or_championship_inference",
     "global_live_feed_reports_one_series",
     "source_timing_units_unverified",
-    "schedule_naive_time_unknown",
+    "only_named_utc_schedule_fields_accept_naive_times",
     "standalone_scoring_requires_verified_association",
     "historical_path_context_does_not_certify_content_identity",
 )
@@ -54,6 +54,7 @@ def bootstrap(entry: NascarConfigEntry) -> dict[str, Any]:
             session.start_time
             for session in race.sessions
             if session.start_time is not None
+            and session.kind in {"practice", "qualifying", "race"}
             and session.start_time >= now
             and session.status not in ("canceled", "cancelled", "completed")
         ]
@@ -79,6 +80,7 @@ def bootstrap(entry: NascarConfigEntry) -> dict[str, Any]:
         for r in upcoming
         for s in r.sessions
         if s.start_time is not None
+        and s.kind in {"practice", "qualifying", "race"}
         and s.start_time >= now
         and s.status not in ("canceled", "cancelled", "completed")
     ]
@@ -90,6 +92,26 @@ def bootstrap(entry: NascarConfigEntry) -> dict[str, Any]:
     )
     next_activity = min(activity, key=lambda item: item[0]) if activity else None
     tracks = {r.track_id for r in compact}
+
+    def compact_sessions(race: Race) -> tuple[Session, ...]:
+        # Put the next supported activities into the bounded bootstrap rather
+        # than letting old/unsorted garage rows hide the next real session.
+        return tuple(
+            sorted(
+                race.sessions,
+                key=lambda session: (
+                    0
+                    if session.kind in {"practice", "qualifying", "race"}
+                    and session.start_time is not None
+                    and session.start_time >= now
+                    and session.status not in {"canceled", "cancelled", "completed"}
+                    else 1,
+                    session.start_time or datetime.max.replace(tzinfo=dt_util.UTC),
+                    session.session_id,
+                ),
+            )[:4]
+        )
+
     return {
         "series_ids": list(runtime.schedule.series),
         "favorite_driver_ids": [str(i) for i in runtime.favorites.ids],
@@ -129,7 +151,7 @@ def bootstrap(entry: NascarConfigEntry) -> dict[str, Any]:
         "upcoming": [
             {
                 **race_summary(r),
-                "sessions": project(r.sessions[:4]),
+                "sessions": project(compact_sessions(r)),
                 "sessions_complete": len(r.sessions) <= 4,
             }
             for r in compact

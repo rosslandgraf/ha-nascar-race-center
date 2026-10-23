@@ -1,13 +1,13 @@
 # NASCAR Race Center
 
-The **0.2.0 integration / 0.6.0 card** candidate bundles Python and the compiled
-card in one HACS Integration directory. The stable dashboard resource is
-`/nascar_race_center/card.js`. See the [packaging audit and validation](docs/HACS_DISTRIBUTION.md)
-and [existing-installation migration, updates and rollback](docs/HACS_MIGRATION.md).
-The repository remains private, which blocks HACS installation until an approved
-public distribution exists. No publication or owner installation is performed.
-The merged snapshot and CF-readiness corrections remain supported; real active
-CF sessions and data-use/cadence permission remain unverified.
+The **0.2.1 integration / 0.6.1 card** candidate fixes owner-reported CF schedule
+and driver-reference defects across Cup, O'Reilly and Craftsman Trucks. It preserves
+the single bundled Integration and stable `/nascar_race_center/card.js` resource.
+See [root causes, validation and hashes](docs/REAL_CF_VALIDATION.md),
+[exact source rules/evidence](docs/REAL_CF_EVIDENCE.md), and
+[upgrade/rollback](docs/REAL_CF_UPGRADE.md). The private repository still cannot
+be installed through HACS until an approved public distribution exists. No owner
+installation, NASCAR request or public release is performed by this PR.
 
 A Home Assistant custom integration for NASCAR's three national series, with season schedules, native calendars, experimental live timing and favorite-driver tracking. **Phases 1–6A and the PR #15 snapshot correction are merged. The owner reports successful Demonstration installation; broader physical acceptance, genuine active-source validation and release gates remain open.** The default offline demonstration works without NASCAR access. An experimental CF adapter is available only after explicit data-use authorization.
 
@@ -84,7 +84,14 @@ The [observed NASCAR API reference package](docs/nascar-api-reference/START_HERE
 
 ## Calendars and schedule times
 
-CF schedule dates require an explicit `Z` or numeric timezone offset. A date such as `2026-11-01T12:30:00` or `2026-11-01` has no verified timezone semantics and stays **unknown**; the integration never assumes UTC, Eastern time, the track timezone, or Home Assistant's timezone. Such races remain in the schedule count but are excluded from next-race selection and race-window polling. If every start is unknown, both next-race entities are unknown; with mixed data, they show the next race **among starts with verified offsets**, which may omit an earlier undated race. Check `unknown_start_times` on the scheduled-races sensor or `schedule.unknown_start_time_counts` and `timestamp_policy` in downloaded diagnostics. Real CF start times remain a validation limitation until source timezone semantics are evidenced; see [schema evidence](docs/SCHEMA_EVIDENCE.md).
+Schedule `start_time_utc` / `end_time_utc` accept offset-free UTC under the
+[corroborated narrow source contract](docs/REAL_CF_EVIDENCE.md). Explicit offsets
+are honored; local `start_time` and generic naive `date_scheduled` are not assigned
+a timezone. A single known UTC race session can supply an otherwise ambiguous
+basic race start. Missing/date-only/year-0001 values remain unknown, and no end
+or duration is invented. All three series share these rules. HA and the card
+convert aware instants to the user's timezone, including DST. Diagnostics expose
+normalization counts/reasons separately from HTTP and JSON outcomes.
 
 Open Home Assistant's **Calendar** view and select the NASCAR series calendars. Timed sessions require valid start/end values with explicit timezone offsets and a later end; Home Assistant displays them in the configured local timezone. A session with a known start but no reliable end is represented as a clearly labeled all-day notice, with its known start in the description. This avoids inventing practice or race duration. Sessions without a usable start are omitted. Weekend entries describe the local calendar dates covered by known sessions; they are date-range summaries, not claims that racing runs continuously. Canceled events are omitted when a normalized provider identifies them. No current CF cancellation/status field has been verified, so source cancellation detection remains limited.
 
@@ -98,7 +105,11 @@ Choose up to 50 favorites through **Configure** at any time. The selector suppor
 
 Demonstration options are explicitly marked **Demo** and use fictional driver IDs. Switching data sources preserves selected IDs without matching by name or car number; review favorites when moving from demonstration to CF mode, because a fictional ID does not identify a real NASCAR driver.
 
-Each selected driver gets one metadata sensor, whose state is the known driver name and whose compact attributes include the NASCAR ID, reported series associations and available car number, team and manufacturer. Up to three `series_metadata` records preserve unambiguous series-specific car/team/manufacturer facts. Live observations use their own sensors, described below. Opt-in pit and scoring summaries are described below. Multiple series records share one driver identity; ambiguous car/team details are not flattened into a guessed current value. The general directory does not prove an active entry or current roster. Source manufacturer-logo URLs are ignored.
+Each selected driver gets one metadata sensor, whose state is the known driver name and whose compact attributes include the NASCAR ID, reported series associations and available car number, team and manufacturer. Up to three `series_metadata` records preserve unambiguous series-specific car/team/manufacturer facts. Live observations use their own sensors, described below. Opt-in pit and scoring summaries are described below. Multiple series records share one driver identity; ambiguous car/team details are not flattened into a guessed current value. The general directory does not prove an active entry or current roster. Source manufacturer-logo URLs are ignored. Name conflicts now quarantine only the ambiguous NASCAR ID; case/spacing variants
+can merge without fuzzy identity aliases. Current O'Reilly and legacy Xfinity
+slugs both map to series 2. Published per-series metadata takes priority over draft
+rows, compatible gaps can fill, and conflicting facts remain unknown. Existing
+favorite IDs are preserved even when their reference record is quarantined.
 
 Adding/removing favorites reloads the entry. Existing favorites retain their unique IDs across reference changes and series changes. A missing, failed or more-than-seven-days-old driver reference makes its metadata sensor unavailable while preserving the selection. Track reference metadata enriches calendar descriptions when available; losing the track feed leaves schedule-supplied track names usable. References refresh daily, independently of the six-hour schedule refresh, so a driver or track outage does not disable race calendars. These intervals describe the integration's conservative policy, not an independently approved NASCAR polling allowance.
 

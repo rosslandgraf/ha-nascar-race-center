@@ -115,8 +115,8 @@ def test_unknown_codes_survive_without_new_status_meanings():
 def test_naive_schedule_times_and_unknown_session_kinds(series):
     race = parse_schedule(fixture("schedule"), series, year=2026)[0]
     assert race.series_id == series
-    assert race.start_time is None
-    assert all(session.start_time is None for session in race.sessions)
+    assert race.start_time == datetime(2026, 10, 25, 18, tzinfo=UTC)
+    assert all(session.start_time is not None for session in race.sessions)
     assert race.sessions[0].kind is None
     assert race.sessions[0].run_type_code == 0
     assert race.sessions[1].kind == "race"
@@ -127,8 +127,12 @@ def test_unmatched_session_race_is_preserved_and_local_zone_is_not_guessed():
     details = parse_schedule_feed(fixture("sessions"), 1, 2026)
     merged = merge_schedule(basic, details)
     assert {race.race_id for race in merged} == {99051, 99059}
-    assert all(race.start_time is None for race in merged)
-    assert all(session.end_time is None for race in merged for session in race.sessions)
+    assert all(
+        race.start_time == datetime(2026, 10, 25, 18, tzinfo=UTC) for race in merged
+    )
+    assert all(
+        session.end_time is not None for race in merged for session in race.sessions
+    )
     assert parse_tracks(fixture("tracks"))[0].track_id == merged[0].track_id
 
 

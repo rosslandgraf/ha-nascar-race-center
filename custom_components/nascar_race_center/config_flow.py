@@ -50,6 +50,8 @@ def _available_drivers(
         )
         if previous_provider == provider and getattr(entry, "runtime_data", None):
             runtime = cast("NascarConfigEntry", entry).runtime_data
+            if "drivers" in runtime.reference.data.failed_feeds:
+                return ()
             return tuple(runtime.reference.data.drivers.values())
     return demo_drivers() if provider == PROVIDER_DEMO else ()
 

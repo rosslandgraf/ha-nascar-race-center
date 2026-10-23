@@ -1,10 +1,14 @@
 # Existing installation → one managed integration
 
-Candidate **integration 0.2.0 / card 0.6.0**, Core 2026.10.2. This is an owner
+Candidate **integration 0.2.1 / card 0.6.1**, Core 2026.10.2. This is an owner
 procedure, not an installation already performed. The repository is currently
 private: **HACS adoption is blocked until an approved public distribution exists**.
 No token, custom repository setting or private-repository workaround closes that
 gate. Current manual installations continue working while approvals are pending.
+
+For an existing bundled 0.2.0 installation, follow the current
+[0.2.1 upgrade and rollback guide](REAL_CF_UPGRADE.md). Its resource URL stays
+unchanged. The one-time resource edit below is for an older `/local/` install.
 
 ## Before changing files
 
@@ -59,8 +63,8 @@ gate. Current manual installations continue working while approvals are pending.
    only if ordinary reload still shows the previous footer. Never import both
    the old manual module and the new loader into one document. Legacy 0.5.x files
    do not have the new guards and can still conflict if left registered together.
-9. Verify the footer says **Card 0.6.0**, and diagnostics → `packaging` reports
-   **integration 0.2.0**, card 0.6.0, `available` and the release's SHA-256. The
+9. Verify the footer says **Card 0.6.1**, and diagnostics → `packaging` reports
+   **integration 0.2.1**, card 0.6.1, `available` and the release's SHA-256. The
    loader request must be `/nascar_race_center/card.js`, `Cache-Control: no-store`;
    its module URL names the card version and full SHA-256 query. No copied JS in
    `/config/www/` is needed for this build. Existing old files may stay as backups;

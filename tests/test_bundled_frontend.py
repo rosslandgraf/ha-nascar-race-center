@@ -154,7 +154,7 @@ async def test_damaged_optional_bundle_fails_closed_without_disabling_entities(
 
 def test_bundle_identity_and_brand_are_installed_inside_integration():
     bundle = frontend.read_bundle(frontend.PACKAGE_DIR)
-    assert bundle.integration_version == "0.2.0" and bundle.card_version == "0.6.0"
+    assert bundle.integration_version == "0.2.1" and bundle.card_version == "0.6.1"
     icon = (frontend.PACKAGE_DIR / "brand/icon.png").read_bytes()
     assert icon.startswith(b"\x89PNG\r\n\x1a\n")
     assert (

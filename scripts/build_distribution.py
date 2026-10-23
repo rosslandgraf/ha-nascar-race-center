@@ -83,9 +83,15 @@ def build(output: Path, repository: str, *, root: Path = ROOT) -> Path:
     for source_name, target_name in (
         ("DISTRIBUTION_README.md", "README.md"),
         ("HACS_MIGRATION.md", "UPGRADE.md"),
-        ("DATA_USE.md", "DATA_USE.md"),
+        ("REAL_CF_UPGRADE.md", "REAL_CF_UPGRADE.md"),
+        ("REAL_CF_ARTIFACTS.sha256", "REAL_CF_ARTIFACTS.sha256"),
+        ("DISTRIBUTION_DATA_USE.md", "DATA_USE.md"),
     ):
         shutil.copyfile(root / "docs" / source_name, tree / target_name)
+    upgrade_path = tree / "REAL_CF_UPGRADE.md"
+    upgrade_path.write_text(
+        upgrade_path.read_text().replace("(HACS_MIGRATION.md)", "(UPGRADE.md)")
+    )
     manifest_path = destination / "manifest.json"
     manifest = json.loads(manifest_path.read_text())
     manifest.update(

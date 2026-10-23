@@ -1,5 +1,11 @@
 # Schema reference — evidence status and field dictionary
 
+Current normalization changes are recorded in [REAL_CF_EVIDENCE.md](../REAL_CF_EVIDENCE.md):
+named schedule UTC timestamps, year-1 sentinels, driver-ID quarantine and current
+series-2 slug. The historical inventory below remains a profile of its recorded
+fixtures/audit, not a statement that the earlier parser restrictions still apply.
+
+
 ## Actual current NASCAR observations
 
 **No response body was obtained. There are no observed real JSON schemas in this
